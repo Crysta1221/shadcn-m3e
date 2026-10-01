@@ -1,0 +1,45 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@fontsource-variable/roboto-flex";
+@import "@fontsource-variable/jetbrains-mono";
+@import "./styles/m3e.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@layer base {
+  /* thin, quiet scrollbars for every scrollable element (Firefox and Chromium) */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--md-sys-color-outline) transparent;
+  }
+  code,
+  kbd,
+  samp,
+  pre {
+    font-family: var(--font-mono);
+  }
+  /* inline code in prose */
+  :not(pre) > code {
+    border-radius: var(--md-sys-shape-corner-extra-small);
+    background-color: var(--md-sys-color-surface-container-highest);
+    padding: 0.1em 0.4em;
+    font-size: 0.9em;
+  }
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    @apply bg-background font-sans text-foreground antialiased;
+    color-scheme: light;
+  }
+  html.dark {
+    color-scheme: dark;
+  }
+  body {
+    @apply bg-background text-body-large text-foreground;
+  }
+  ::selection {
+    @apply bg-primary-container text-on-primary-container;
+  }
+}

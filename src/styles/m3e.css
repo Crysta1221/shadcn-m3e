@@ -1,0 +1,881 @@
+/*
+ * Material 3 Expressive design tokens for Tailwind CSS v4 + shadcn/ui.
+ *
+ *   color       --md-sys-color-*   (runtime-generated, see src/lib/m3e/color.ts)
+ *   shape       rounded-xs … rounded-4xl follow the M3 corner scale
+ *   type        text-display-large … text-label-small (+ -emphasized)
+ *   elevation   shadow-elevation-0 … shadow-elevation-5
+ *   motion      motion-spatial-fast … motion-effects-slow (springs as linear())
+ *   state       state-layer, focus-ring
+ */
+@import "./m3e.generated.css";
+
+/* ---------- shape ---------- */
+
+:root {
+  /* 1 = M3 default. The theme builder scales every corner with it. */
+  --md-sys-shape-scale: 1;
+  --md-sys-shape-corner-none: 0px;
+  --md-sys-shape-corner-extra-small: calc(4px * var(--md-sys-shape-scale));
+  --md-sys-shape-corner-small: calc(8px * var(--md-sys-shape-scale));
+  --md-sys-shape-corner-medium: calc(12px * var(--md-sys-shape-scale));
+  --md-sys-shape-corner-large: calc(16px * var(--md-sys-shape-scale));
+  --md-sys-shape-corner-large-increased: calc(20px * var(--md-sys-shape-scale));
+  --md-sys-shape-corner-extra-large: calc(28px * var(--md-sys-shape-scale));
+  --md-sys-shape-corner-extra-large-increased: calc(
+    32px * var(--md-sys-shape-scale)
+  );
+  --md-sys-shape-corner-extra-extra-large: calc(
+    48px * var(--md-sys-shape-scale)
+  );
+  --md-sys-shape-corner-full: 9999px;
+
+  /* M3 state layer opacities */
+  --md-sys-state-hover-opacity: 0.08;
+  --md-sys-state-focus-opacity: 0.1;
+  --md-sys-state-pressed-opacity: 0.1;
+  --md-sys-state-dragged-opacity: 0.16;
+
+  /* Standard easing tokens (for non-spring transitions) */
+  --md-sys-motion-easing-emphasized: cubic-bezier(0.2, 0, 0, 1);
+  --md-sys-motion-easing-emphasized-decelerate: cubic-bezier(0.05, 0.7, 0.1, 1);
+  --md-sys-motion-easing-emphasized-accelerate: cubic-bezier(0.3, 0, 0.8, 0.15);
+  --md-sys-motion-easing-standard: cubic-bezier(0.2, 0, 0, 1);
+  --md-sys-motion-easing-standard-decelerate: cubic-bezier(0, 0, 0, 1);
+  --md-sys-motion-easing-standard-accelerate: cubic-bezier(0.3, 0, 1, 1);
+}
+
+/* ---------- code (Shiki css-variables theme → M3 roles) ---------- */
+
+:root {
+  --shiki-foreground: var(--md-sys-color-on-surface);
+  --shiki-background: transparent;
+  --shiki-token-comment: var(--md-sys-color-outline);
+  --shiki-token-keyword: var(--md-sys-color-secondary);
+  --shiki-token-string: var(--md-sys-color-tertiary);
+  --shiki-token-string-expression: var(--md-sys-color-tertiary);
+  --shiki-token-constant: var(--md-sys-color-primary);
+  --shiki-token-function: var(--md-sys-color-secondary);
+  --shiki-token-parameter: var(--md-sys-color-on-surface);
+  --shiki-token-punctuation: var(--md-sys-color-on-surface-variant);
+  --shiki-token-link: var(--md-sys-color-primary);
+}
+
+/* ---------- shadcn semantic tokens → M3 roles ---------- */
+
+:root,
+.dark {
+  --background: var(--md-sys-color-surface);
+  --foreground: var(--md-sys-color-on-surface);
+  --card: var(--md-sys-color-surface-container-low);
+  --card-foreground: var(--md-sys-color-on-surface);
+  --popover: var(--md-sys-color-surface-container);
+  --popover-foreground: var(--md-sys-color-on-surface);
+  --primary: var(--md-sys-color-primary);
+  --primary-foreground: var(--md-sys-color-on-primary);
+  --secondary: var(--md-sys-color-secondary);
+  --secondary-foreground: var(--md-sys-color-on-secondary);
+  --muted: var(--md-sys-color-surface-container-highest);
+  --muted-foreground: var(--md-sys-color-on-surface-variant);
+  --accent: var(--md-sys-color-secondary-container);
+  --accent-foreground: var(--md-sys-color-on-secondary-container);
+  --destructive: var(--md-sys-color-error);
+  --destructive-foreground: var(--md-sys-color-on-error);
+  --border: var(--md-sys-color-outline-variant);
+  --input: var(--md-sys-color-outline);
+  --ring: var(--md-sys-color-secondary);
+  --chart-1: var(--md-sys-color-primary);
+  --chart-2: var(--md-sys-color-tertiary);
+  --chart-3: var(--md-sys-color-secondary);
+  --chart-4: var(--md-sys-color-primary-fixed-dim);
+  --chart-5: var(--md-sys-color-tertiary-fixed-dim);
+  --radius: var(--md-sys-shape-corner-large);
+  --sidebar: var(--md-sys-color-surface-container-low);
+  --sidebar-foreground: var(--md-sys-color-on-surface-variant);
+  --sidebar-primary: var(--md-sys-color-primary);
+  --sidebar-primary-foreground: var(--md-sys-color-on-primary);
+  --sidebar-accent: var(--md-sys-color-secondary-container);
+  --sidebar-accent-foreground: var(--md-sys-color-on-secondary-container);
+  --sidebar-border: var(--md-sys-color-outline-variant);
+  --sidebar-ring: var(--md-sys-color-secondary);
+}
+
+/* ---------- Tailwind theme ---------- */
+
+@theme inline {
+  --font-sans:
+    "Roboto Flex Variable", Roboto, "Noto Sans JP", system-ui, sans-serif;
+  --font-heading: var(--font-sans);
+  --font-mono:
+    "JetBrains Mono Variable", ui-monospace, "Cascadia Code", monospace;
+
+  /* shadcn semantic colors */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  /* M3 color roles: bg-primary-container, text-on-surface-variant, … */
+  --color-primary: var(--md-sys-color-primary);
+  --color-primary-dim: var(--md-sys-color-primary-dim);
+  --color-on-primary: var(--md-sys-color-on-primary);
+  --color-primary-container: var(--md-sys-color-primary-container);
+  --color-on-primary-container: var(--md-sys-color-on-primary-container);
+  --color-primary-fixed: var(--md-sys-color-primary-fixed);
+  --color-primary-fixed-dim: var(--md-sys-color-primary-fixed-dim);
+  --color-on-primary-fixed: var(--md-sys-color-on-primary-fixed);
+  --color-on-primary-fixed-variant: var(
+    --md-sys-color-on-primary-fixed-variant
+  );
+  --color-inverse-primary: var(--md-sys-color-inverse-primary);
+  --color-secondary: var(--md-sys-color-secondary);
+  --color-secondary-dim: var(--md-sys-color-secondary-dim);
+  --color-on-secondary: var(--md-sys-color-on-secondary);
+  --color-secondary-container: var(--md-sys-color-secondary-container);
+  --color-on-secondary-container: var(--md-sys-color-on-secondary-container);
+  --color-secondary-fixed: var(--md-sys-color-secondary-fixed);
+  --color-secondary-fixed-dim: var(--md-sys-color-secondary-fixed-dim);
+  --color-on-secondary-fixed: var(--md-sys-color-on-secondary-fixed);
+  --color-on-secondary-fixed-variant: var(
+    --md-sys-color-on-secondary-fixed-variant
+  );
+  --color-tertiary: var(--md-sys-color-tertiary);
+  --color-tertiary-dim: var(--md-sys-color-tertiary-dim);
+  --color-on-tertiary: var(--md-sys-color-on-tertiary);
+  --color-tertiary-container: var(--md-sys-color-tertiary-container);
+  --color-on-tertiary-container: var(--md-sys-color-on-tertiary-container);
+  --color-tertiary-fixed: var(--md-sys-color-tertiary-fixed);
+  --color-tertiary-fixed-dim: var(--md-sys-color-tertiary-fixed-dim);
+  --color-on-tertiary-fixed: var(--md-sys-color-on-tertiary-fixed);
+  --color-on-tertiary-fixed-variant: var(
+    --md-sys-color-on-tertiary-fixed-variant
+  );
+  --color-error: var(--md-sys-color-error);
+  --color-error-dim: var(--md-sys-color-error-dim);
+  --color-on-error: var(--md-sys-color-on-error);
+  --color-error-container: var(--md-sys-color-error-container);
+  --color-on-error-container: var(--md-sys-color-on-error-container);
+  --color-surface: var(--md-sys-color-surface);
+  --color-surface-dim: var(--md-sys-color-surface-dim);
+  --color-surface-bright: var(--md-sys-color-surface-bright);
+  --color-surface-container-lowest: var(
+    --md-sys-color-surface-container-lowest
+  );
+  --color-surface-container-low: var(--md-sys-color-surface-container-low);
+  --color-surface-container: var(--md-sys-color-surface-container);
+  --color-surface-container-high: var(--md-sys-color-surface-container-high);
+  --color-surface-container-highest: var(
+    --md-sys-color-surface-container-highest
+  );
+  --color-surface-variant: var(--md-sys-color-surface-variant);
+  --color-surface-tint: var(--md-sys-color-surface-tint);
+  --color-on-surface: var(--md-sys-color-on-surface);
+  --color-on-surface-variant: var(--md-sys-color-on-surface-variant);
+  --color-inverse-surface: var(--md-sys-color-inverse-surface);
+  --color-inverse-on-surface: var(--md-sys-color-inverse-on-surface);
+  --color-outline: var(--md-sys-color-outline);
+  --color-outline-variant: var(--md-sys-color-outline-variant);
+  --color-shadow: var(--md-sys-color-shadow);
+  --color-scrim: var(--md-sys-color-scrim);
+
+  /* M3 corner scale (Tailwind names → M3 names)
+     xs=extra-small 4 · sm=small 8 · md=medium 12 · lg=large 16
+     xl=large-increased 20 · 2xl=extra-large 28
+     3xl=extra-large-increased 32 · 4xl=extra-extra-large 48 */
+  --radius-xs: var(--md-sys-shape-corner-extra-small);
+  --radius-sm: var(--md-sys-shape-corner-small);
+  --radius-md: var(--md-sys-shape-corner-medium);
+  --radius-lg: var(--md-sys-shape-corner-large);
+  --radius-xl: var(--md-sys-shape-corner-large-increased);
+  --radius-2xl: var(--md-sys-shape-corner-extra-large);
+  --radius-3xl: var(--md-sys-shape-corner-extra-large-increased);
+  --radius-4xl: var(--md-sys-shape-corner-extra-extra-large);
+
+  /* M3 elevation */
+  --shadow-elevation-0: none;
+  --shadow-elevation-1:
+    0 1px 2px 0 rgb(0 0 0 / 0.3), 0 1px 3px 1px rgb(0 0 0 / 0.15);
+  --shadow-elevation-2:
+    0 1px 2px 0 rgb(0 0 0 / 0.3), 0 2px 6px 2px rgb(0 0 0 / 0.15);
+  --shadow-elevation-3:
+    0 1px 3px 0 rgb(0 0 0 / 0.3), 0 4px 8px 3px rgb(0 0 0 / 0.15);
+  --shadow-elevation-4:
+    0 2px 3px 0 rgb(0 0 0 / 0.3), 0 6px 10px 4px rgb(0 0 0 / 0.15);
+  --shadow-elevation-5:
+    0 4px 4px 0 rgb(0 0 0 / 0.3), 0 8px 12px 6px rgb(0 0 0 / 0.15);
+
+  /* M3 easing */
+  --ease-emphasized: var(--md-sys-motion-easing-emphasized);
+  --ease-emphasized-decelerate: var(
+    --md-sys-motion-easing-emphasized-decelerate
+  );
+  --ease-emphasized-accelerate: var(
+    --md-sys-motion-easing-emphasized-accelerate
+  );
+  --ease-standard: var(--md-sys-motion-easing-standard);
+  --ease-spatial-fast: var(--md-sys-motion-spring-fast-spatial);
+  --ease-spatial-default: var(--md-sys-motion-spring-default-spatial);
+  --ease-spatial-slow: var(--md-sys-motion-spring-slow-spatial);
+  --ease-effects-fast: var(--md-sys-motion-spring-fast-effects);
+  --ease-effects-default: var(--md-sys-motion-spring-default-effects);
+  --ease-effects-slow: var(--md-sys-motion-spring-slow-effects);
+}
+
+/* M3 Expressive type scale, generated from Compose TypeScaleTokens
+   (emphasized styles are the M3E heavier twins) */
+@theme {
+  --text-display-large: 3.5625rem;
+  --text-display-large--line-height: 4rem;
+  --text-display-large--letter-spacing: -0.0125rem;
+  --text-display-large--font-weight: 400;
+  --text-display-large-emphasized: 3.5625rem;
+  --text-display-large-emphasized--line-height: 4rem;
+  --text-display-large-emphasized--letter-spacing: 0rem;
+  --text-display-large-emphasized--font-weight: 500;
+  --text-display-medium: 2.8125rem;
+  --text-display-medium--line-height: 3.25rem;
+  --text-display-medium--letter-spacing: 0rem;
+  --text-display-medium--font-weight: 400;
+  --text-display-medium-emphasized: 2.8125rem;
+  --text-display-medium-emphasized--line-height: 3.25rem;
+  --text-display-medium-emphasized--letter-spacing: 0rem;
+  --text-display-medium-emphasized--font-weight: 500;
+  --text-display-small: 2.25rem;
+  --text-display-small--line-height: 2.75rem;
+  --text-display-small--letter-spacing: 0rem;
+  --text-display-small--font-weight: 400;
+  --text-display-small-emphasized: 2.25rem;
+  --text-display-small-emphasized--line-height: 2.75rem;
+  --text-display-small-emphasized--letter-spacing: 0rem;
+  --text-display-small-emphasized--font-weight: 500;
+  --text-headline-large: 2rem;
+  --text-headline-large--line-height: 2.5rem;
+  --text-headline-large--letter-spacing: 0rem;
+  --text-headline-large--font-weight: 400;
+  --text-headline-large-emphasized: 2rem;
+  --text-headline-large-emphasized--line-height: 2.5rem;
+  --text-headline-large-emphasized--letter-spacing: 0rem;
+  --text-headline-large-emphasized--font-weight: 500;
+  --text-headline-medium: 1.75rem;
+  --text-headline-medium--line-height: 2.25rem;
+  --text-headline-medium--letter-spacing: 0rem;
+  --text-headline-medium--font-weight: 400;
+  --text-headline-medium-emphasized: 1.75rem;
+  --text-headline-medium-emphasized--line-height: 2.25rem;
+  --text-headline-medium-emphasized--letter-spacing: 0rem;
+  --text-headline-medium-emphasized--font-weight: 500;
+  --text-headline-small: 1.5rem;
+  --text-headline-small--line-height: 2rem;
+  --text-headline-small--letter-spacing: 0rem;
+  --text-headline-small--font-weight: 400;
+  --text-headline-small-emphasized: 1.5rem;
+  --text-headline-small-emphasized--line-height: 2rem;
+  --text-headline-small-emphasized--letter-spacing: 0rem;
+  --text-headline-small-emphasized--font-weight: 500;
+  --text-title-large: 1.375rem;
+  --text-title-large--line-height: 1.75rem;
+  --text-title-large--letter-spacing: 0rem;
+  --text-title-large--font-weight: 400;
+  --text-title-large-emphasized: 1.375rem;
+  --text-title-large-emphasized--line-height: 1.75rem;
+  --text-title-large-emphasized--letter-spacing: 0rem;
+  --text-title-large-emphasized--font-weight: 500;
+  --text-title-medium: 1rem;
+  --text-title-medium--line-height: 1.5rem;
+  --text-title-medium--letter-spacing: 0.0125rem;
+  --text-title-medium--font-weight: 500;
+  --text-title-medium-emphasized: 1rem;
+  --text-title-medium-emphasized--line-height: 1.5rem;
+  --text-title-medium-emphasized--letter-spacing: 0.009375rem;
+  --text-title-medium-emphasized--font-weight: 700;
+  --text-title-small: 0.875rem;
+  --text-title-small--line-height: 1.25rem;
+  --text-title-small--letter-spacing: 0.00625rem;
+  --text-title-small--font-weight: 500;
+  --text-title-small-emphasized: 0.875rem;
+  --text-title-small-emphasized--line-height: 1.25rem;
+  --text-title-small-emphasized--letter-spacing: 0.00625rem;
+  --text-title-small-emphasized--font-weight: 700;
+  --text-body-large: 1rem;
+  --text-body-large--line-height: 1.5rem;
+  --text-body-large--letter-spacing: 0.03125rem;
+  --text-body-large--font-weight: 400;
+  --text-body-large-emphasized: 1rem;
+  --text-body-large-emphasized--line-height: 1.5rem;
+  --text-body-large-emphasized--letter-spacing: 0.009375rem;
+  --text-body-large-emphasized--font-weight: 500;
+  --text-body-medium: 0.875rem;
+  --text-body-medium--line-height: 1.25rem;
+  --text-body-medium--letter-spacing: 0.0125rem;
+  --text-body-medium--font-weight: 400;
+  --text-body-medium-emphasized: 0.875rem;
+  --text-body-medium-emphasized--line-height: 1.25rem;
+  --text-body-medium-emphasized--letter-spacing: 0.015625rem;
+  --text-body-medium-emphasized--font-weight: 500;
+  --text-body-small: 0.75rem;
+  --text-body-small--line-height: 1rem;
+  --text-body-small--letter-spacing: 0.025rem;
+  --text-body-small--font-weight: 400;
+  --text-body-small-emphasized: 0.75rem;
+  --text-body-small-emphasized--line-height: 1rem;
+  --text-body-small-emphasized--letter-spacing: 0.025rem;
+  --text-body-small-emphasized--font-weight: 500;
+  --text-label-large: 0.875rem;
+  --text-label-large--line-height: 1.25rem;
+  --text-label-large--letter-spacing: 0.00625rem;
+  --text-label-large--font-weight: 500;
+  --text-label-large-emphasized: 0.875rem;
+  --text-label-large-emphasized--line-height: 1.25rem;
+  --text-label-large-emphasized--letter-spacing: 0.00625rem;
+  --text-label-large-emphasized--font-weight: 700;
+  --text-label-medium: 0.75rem;
+  --text-label-medium--line-height: 1rem;
+  --text-label-medium--letter-spacing: 0.03125rem;
+  --text-label-medium--font-weight: 500;
+  --text-label-medium-emphasized: 0.75rem;
+  --text-label-medium-emphasized--line-height: 1rem;
+  --text-label-medium-emphasized--letter-spacing: 0.03125rem;
+  --text-label-medium-emphasized--font-weight: 700;
+  --text-label-small: 0.6875rem;
+  --text-label-small--line-height: 1rem;
+  --text-label-small--letter-spacing: 0.03125rem;
+  --text-label-small--font-weight: 500;
+  --text-label-small-emphasized: 0.6875rem;
+  --text-label-small-emphasized--line-height: 1rem;
+  --text-label-small-emphasized--letter-spacing: 0.03125rem;
+  --text-label-small-emphasized--font-weight: 700;
+}
+
+/* ---------- motion utilities ---------- */
+
+@utility motion-spatial-fast {
+  transition-timing-function: var(--md-sys-motion-spring-fast-spatial);
+  transition-duration: var(--md-sys-motion-spring-fast-spatial-duration);
+}
+@utility motion-spatial-default {
+  transition-timing-function: var(--md-sys-motion-spring-default-spatial);
+  transition-duration: var(--md-sys-motion-spring-default-spatial-duration);
+}
+@utility motion-spatial-slow {
+  transition-timing-function: var(--md-sys-motion-spring-slow-spatial);
+  transition-duration: var(--md-sys-motion-spring-slow-spatial-duration);
+}
+@utility motion-effects-fast {
+  transition-timing-function: var(--md-sys-motion-spring-fast-effects);
+  transition-duration: var(--md-sys-motion-spring-fast-effects-duration);
+}
+@utility motion-effects-default {
+  transition-timing-function: var(--md-sys-motion-spring-default-effects);
+  transition-duration: var(--md-sys-motion-spring-default-effects-duration);
+}
+@utility motion-effects-slow {
+  transition-timing-function: var(--md-sys-motion-spring-slow-effects);
+  transition-duration: var(--md-sys-motion-spring-slow-effects-duration);
+}
+
+/*
+ * Enter/exit motion for Base UI popups (they set data-starting-style /
+ * data-ending-style for one frame). Entering rides the spatial spring from the
+ * popup's transform origin; exiting is a quick accelerate fade.
+ */
+@utility motion-popup {
+  transform-origin: var(--transform-origin, center);
+  transition-property: opacity, scale, translate;
+  transition-duration:
+    var(--md-sys-motion-spring-default-effects-duration),
+    var(--md-sys-motion-spring-fast-spatial-duration);
+  transition-timing-function:
+    var(--md-sys-motion-spring-default-effects),
+    var(--md-sys-motion-spring-fast-spatial);
+  &[data-starting-style] {
+    opacity: 0;
+    scale: 0.85;
+  }
+  &[data-ending-style] {
+    opacity: 0;
+    scale: 0.95;
+    transition-duration: 150ms;
+    transition-timing-function: var(
+      --md-sys-motion-easing-emphasized-accelerate
+    );
+  }
+}
+
+/* menus unfold downwards (or upwards) from their anchor */
+@utility motion-menu {
+  transform-origin: var(--transform-origin, top);
+  transition-property: opacity, scale;
+  transition-duration:
+    var(--md-sys-motion-spring-fast-effects-duration),
+    var(--md-sys-motion-spring-default-spatial-duration);
+  transition-timing-function:
+    var(--md-sys-motion-spring-fast-effects),
+    var(--md-sys-motion-spring-default-spatial);
+  &[data-starting-style] {
+    opacity: 0;
+    scale: 1 0.6;
+  }
+  &[data-ending-style] {
+    opacity: 0;
+    scale: 1 0.9;
+    transition-duration: 120ms;
+    transition-timing-function: var(
+      --md-sys-motion-easing-emphasized-accelerate
+    );
+  }
+}
+
+@utility motion-dialog {
+  transition-property: opacity, scale, translate;
+  transition-duration:
+    var(--md-sys-motion-spring-default-effects-duration),
+    var(--md-sys-motion-spring-default-spatial-duration);
+  transition-timing-function:
+    var(--md-sys-motion-spring-default-effects),
+    var(--md-sys-motion-spring-default-spatial);
+  &[data-starting-style] {
+    opacity: 0;
+    scale: 0.8;
+  }
+  &[data-ending-style] {
+    opacity: 0;
+    scale: 0.9;
+    transition-duration: 150ms;
+    transition-timing-function: var(
+      --md-sys-motion-easing-emphasized-accelerate
+    );
+  }
+}
+
+@utility motion-scrim {
+  transition: opacity var(--md-sys-motion-spring-slow-effects-duration)
+    var(--md-sys-motion-spring-slow-effects);
+  &[data-starting-style],
+  &[data-ending-style] {
+    opacity: 0;
+  }
+}
+
+/* sheets / drawers slide in from an edge: set --sheet-from (e.g. 0 100%) */
+@utility motion-sheet {
+  transition-property: translate, opacity;
+  transition-duration:
+    var(--md-sys-motion-spring-slow-spatial-duration),
+    var(--md-sys-motion-spring-default-effects-duration);
+  transition-timing-function:
+    var(--md-sys-motion-spring-slow-spatial),
+    var(--md-sys-motion-spring-default-effects);
+  &[data-starting-style],
+  &[data-ending-style] {
+    translate: var(--sheet-from, 0 100%);
+  }
+  &[data-ending-style] {
+    transition-duration: 200ms;
+    transition-timing-function: var(
+      --md-sys-motion-easing-emphasized-accelerate
+    );
+  }
+}
+
+/* ---------- state layer ---------- */
+
+/*
+ * An overlay of the content color (currentColor) at the M3 state opacities.
+ * Put it on any interactive element; it inherits the element's corners.
+ * `state-layer-<color>` picks another overlay color.
+ */
+@utility state-layer {
+  position: relative;
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background-color: var(--state-layer-color, currentColor);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--md-sys-motion-spring-fast-effects-duration)
+      var(--md-sys-motion-spring-fast-effects);
+  }
+  @media (hover: hover) {
+    &:hover::before {
+      opacity: var(--md-sys-state-hover-opacity);
+    }
+  }
+  &:focus-visible::before,
+  &[data-highlighted]::before {
+    opacity: var(--md-sys-state-focus-opacity);
+  }
+  /* with a ripple inside, the ripple is the pressed feedback (Material Web) */
+  &:active:not(:has(> [data-slot="ripple"]))::before,
+  &[data-popup-open]::before {
+    opacity: var(--md-sys-state-pressed-opacity);
+  }
+  &:disabled::before,
+  &[data-disabled]::before,
+  &[aria-disabled="true"]::before {
+    opacity: 0;
+  }
+}
+
+@utility state-layer-* {
+  --state-layer-color: --value(--color-*);
+}
+
+/* Circular state layer for selection controls (checkbox, radio, switch handle) */
+@utility state-layer-circle {
+  position: relative;
+  &::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: var(--state-layer-size, 40px);
+    height: var(--state-layer-size, 40px);
+    translate: -50% -50%;
+    border-radius: 9999px;
+    background-color: var(--state-layer-color, currentColor);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--md-sys-motion-spring-fast-effects-duration)
+      var(--md-sys-motion-spring-fast-effects);
+  }
+  @media (hover: hover) {
+    &:hover::before {
+      opacity: var(--md-sys-state-hover-opacity);
+    }
+  }
+  &:focus-visible::before {
+    opacity: var(--md-sys-state-focus-opacity);
+  }
+  &:active::before {
+    opacity: var(--md-sys-state-pressed-opacity);
+  }
+  &[data-disabled]::before {
+    opacity: 0;
+  }
+}
+
+@utility ripple-* {
+  --ripple-color: --value(--color-*);
+}
+
+/*
+ * Shape morph (Compose Button: DefaultEffects, "intentional … to prevent any
+ * bounce"), colors and elevation on the fast effects spring, and size changes
+ * (M3E standard button group expansion) on the fast spatial spring.
+ */
+@utility transition-shape {
+  transition-property:
+    border-radius, background-color, color, border-color, box-shadow,
+    outline-color, padding, width, min-width, flex-grow;
+  transition-duration:
+    var(--md-sys-motion-spring-default-effects-duration),
+    var(--md-sys-motion-spring-fast-effects-duration),
+    var(--md-sys-motion-spring-fast-effects-duration),
+    var(--md-sys-motion-spring-fast-effects-duration),
+    var(--md-sys-motion-spring-fast-effects-duration),
+    var(--md-sys-motion-spring-fast-effects-duration),
+    var(--md-sys-motion-spring-fast-spatial-duration),
+    var(--md-sys-motion-spring-fast-spatial-duration),
+    var(--md-sys-motion-spring-fast-spatial-duration),
+    var(--md-sys-motion-spring-fast-spatial-duration);
+  transition-timing-function:
+    var(--md-sys-motion-spring-default-effects),
+    var(--md-sys-motion-spring-fast-effects),
+    var(--md-sys-motion-spring-fast-effects),
+    var(--md-sys-motion-spring-fast-effects),
+    var(--md-sys-motion-spring-fast-effects),
+    var(--md-sys-motion-spring-fast-effects),
+    var(--md-sys-motion-spring-fast-spatial),
+    var(--md-sys-motion-spring-fast-spatial),
+    var(--md-sys-motion-spring-fast-spatial),
+    var(--md-sys-motion-spring-fast-spatial);
+}
+
+/* M3 focus indicator: 3px secondary outline, 2px outside */
+@utility focus-ring {
+  outline: none;
+  &:focus-visible {
+    outline: 3px solid var(--md-sys-color-secondary);
+    outline-offset: 2px;
+  }
+}
+@utility focus-ring-inset {
+  outline: none;
+  &:focus-visible {
+    outline: 3px solid var(--md-sys-color-secondary);
+    outline-offset: -3px;
+  }
+}
+
+/* ---------- ripple ---------- */
+
+/* Material Web md-ripple (ripple/internal/_ripple.scss): a soft-edged
+   radial gradient, fading in over 105ms and out over 375ms. The grow
+   animation is driven from src/components/m3e/ripple.tsx. */
+@layer components {
+  .m3-ripple-host {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    border-radius: inherit;
+    pointer-events: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .m3-ripple {
+    position: absolute;
+    top: 0;
+    left: 0;
+    opacity: 0;
+    transform-origin: center center;
+    background: radial-gradient(
+      closest-side,
+      var(--ripple-color, currentColor) max(calc(100% - 70px), 65%),
+      transparent 100%
+    );
+    transition: opacity 375ms linear;
+  }
+  .m3-ripple[data-pressed] {
+    opacity: var(--md-sys-state-pressed-opacity);
+    transition-duration: 105ms;
+  }
+}
+
+/* ---------- progress ---------- */
+
+/* linear indeterminate: two bars (matraic/m3e, after Material Web). `left` moves
+   the HTML bars, `x` the SVG mask bars of the wavy variant. */
+@keyframes m3-progress-bar-1 {
+  0% {
+    left: -145.167%;
+    x: -145.167%;
+    width: 8%;
+  }
+  20% {
+    left: -113.333%;
+    x: -113.333%;
+    width: 48%;
+  }
+  60% {
+    left: 56.333%;
+    x: 56.333%;
+    width: 78%;
+  }
+  100% {
+    left: 100%;
+    x: 100%;
+    width: 8%;
+  }
+}
+@keyframes m3-progress-bar-2 {
+  0% {
+    left: -54.888%;
+    x: -54.888%;
+    width: 8%;
+  }
+  20% {
+    left: -20%;
+    x: -20%;
+    width: 48%;
+  }
+  60% {
+    left: 60%;
+    x: 60%;
+    width: 78%;
+  }
+  100% {
+    left: 160%;
+    x: 160%;
+    width: 8%;
+  }
+}
+.m3-progress-bar-1 {
+  animation: m3-progress-bar-1 2.1s linear infinite;
+}
+.m3-progress-bar-2 {
+  animation: m3-progress-bar-2 2.1s linear infinite 1.15s backwards;
+}
+@keyframes m3-wave-slide {
+  to {
+    transform: translateX(-40px);
+  }
+}
+
+@keyframes m3-spinner-rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* arc grows to ~75% then shrinks, advancing so it never looks static */
+@keyframes m3-spinner-arc {
+  0% {
+    stroke-dashoffset: 97;
+    transform: rotate(0deg);
+  }
+  50% {
+    stroke-dashoffset: 25;
+    transform: rotate(45deg);
+  }
+  100% {
+    stroke-dashoffset: 97;
+    transform: rotate(360deg);
+  }
+}
+
+/* circular progress (matraic/m3e) */
+.m3-cp-rotate {
+  animation: m3-cp-linear-rotate calc(1333ms * 360 / 306) linear infinite;
+}
+.m3-cp-spinner {
+  animation: m3-cp-rotate-arc calc(4 * 1333ms) cubic-bezier(0.4, 0, 0.2, 1)
+    infinite both;
+}
+.m3-cp-circle {
+  animation: m3-cp-expand-arc 1333ms cubic-bezier(0.4, 0, 0.2, 1) infinite both;
+}
+.m3-cp-left .m3-cp-circle {
+  rotate: 135deg;
+  right: -100%;
+  width: 200%;
+}
+.m3-cp-right .m3-cp-circle {
+  rotate: 100deg;
+  left: -100%;
+  width: 200%;
+  animation-delay: calc(-0.5 * 1333ms);
+}
+.m3-cp-wave {
+  animation: m3-cp-spin-reverse 8s linear infinite;
+}
+.m3-cp-wavy-spin {
+  animation: m3-cp-wavy-spin 1.575s linear infinite;
+}
+@keyframes m3-cp-expand-arc {
+  0% {
+    transform: rotate(265deg);
+  }
+  50% {
+    transform: rotate(130deg);
+  }
+  100% {
+    transform: rotate(265deg);
+  }
+}
+@keyframes m3-cp-rotate-arc {
+  12.5% {
+    transform: rotate(135deg);
+  }
+  25% {
+    transform: rotate(270deg);
+  }
+  37.5% {
+    transform: rotate(405deg);
+  }
+  50% {
+    transform: rotate(540deg);
+  }
+  62.5% {
+    transform: rotate(675deg);
+  }
+  75% {
+    transform: rotate(810deg);
+  }
+  87.5% {
+    transform: rotate(945deg);
+  }
+  100% {
+    transform: rotate(1080deg);
+  }
+}
+@keyframes m3-cp-linear-rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes m3-cp-spin-reverse {
+  from {
+    transform: rotate(360deg);
+  }
+  to {
+    transform: rotate(0deg);
+  }
+}
+@keyframes m3-cp-wavy-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  10% {
+    transform: rotate(90deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* ---------- icons ---------- */
+
+/* <Icon fill="auto">: outlined, filled while its control is selected */
+.m3-icon-auto > .m3-icon-filled {
+  display: none;
+}
+:is(
+    [data-pressed],
+    [aria-pressed="true"],
+    [aria-selected="true"],
+    [data-active],
+    [aria-current="page"],
+    [data-checked]
+  )
+  .m3-icon-auto
+  > .m3-icon-filled {
+  display: inline-block;
+}
+:is(
+    [data-pressed],
+    [aria-pressed="true"],
+    [aria-selected="true"],
+    [data-active],
+    [aria-current="page"],
+    [data-checked]
+  )
+  .m3-icon-auto
+  > .m3-icon-outline {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 1ms !important;
+  }
+}
