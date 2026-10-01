@@ -1,0 +1,46 @@
+shadcn M3E
+Copyright (c) 2026 Crysta1221, MIT License (see LICENSE)
+
+This project includes or is derived from the work below. Each project keeps its
+own license; the full texts are in the linked repositories.
+
+Compose Material3 (androidx/androidx) - Apache License 2.0
+  https://github.com/androidx/androidx
+  Design tokens (color, shape, type, elevation, motion), component dimensions
+  and behavior (src/styles, src/lib/m3e/baseline.ts, most components).
+
+Material Web (material-components/material-web) - Apache License 2.0
+  https://github.com/material-components/material-web
+  The press ripple (src/components/m3e/ripple.tsx, src/styles/m3e.css).
+
+material-components-android - Apache License 2.0
+  https://github.com/material-components/material-components-android
+  LoadingIndicator animator and drawing model (src/lib/m3e/shapes.ts), through
+  lnkiai/m3e-canvas.
+
+matraic/m3e - MIT License
+  https://github.com/matraic/m3e
+  Pressed-state controller, shape library and clip-path sampling
+  (src/lib/m3e/shape-library.ts, shape.tsx), circular and linear progress
+  rendering, button group behavior. The shape outlines are (c) Google LLC.
+
+lnkiai/m3e-canvas - MIT License
+  https://github.com/lnkiai/m3e-canvas
+  Loading indicator shapes and morph model (src/lib/m3e/shapes.ts).
+
+@material/material-color-utilities - Apache License 2.0
+  https://github.com/material-foundation/material-color-utilities
+  Dynamic color schemes (src/lib/m3e/color.ts).
+
+shadcn/ui - MIT License
+  https://github.com/shadcn-ui/ui
+  The component APIs this library restyles, and the originals kept in
+  src/components/ui.
+
+Material Symbols (Google) - Apache License 2.0, via Iconify
+  The bundled icon glyphs (src/components/m3e/icon-data*.ts).
+
+Roboto Flex and JetBrains Mono - SIL Open Font License 1.1, via Fontsource
+
+Material Design is a trademark of Google LLC. This project is not affiliated
+with or endorsed by Google or shadcn/ui.
