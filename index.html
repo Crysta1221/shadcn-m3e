@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>shadcn M3E — Material 3 Expressive for shadcn/ui</title>
+    <script>
+      // apply the color mode (light / dark) before first paint;
+      // "color-mode" is the storageKey of ColorModeProvider
+      try {
+        const m = localStorage.getItem("color-mode") || "system"
+        const dark =
+          m === "dark" ||
+          (m === "system" && matchMedia("(prefers-color-scheme: dark)").matches)
+        document.documentElement.classList.add(dark ? "dark" : "light")
+      } catch {}
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
