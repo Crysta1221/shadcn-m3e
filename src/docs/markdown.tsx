@@ -1,7 +1,9 @@
 import * as React from "react"
 import { Link } from "@tanstack/react-router"
-import ReactMarkdown, { type Components } from "react-markdown"
-import remarkGfm from "remark-gfm"
+import {
+  Markdown as TanStackMarkdown,
+  type MarkdownComponents,
+} from "@tanstack/markdown/react"
 
 import { Icon } from "@/components/m3e/icon"
 import { ScrollArea } from "@/components/m3e/scroll-area"
@@ -57,7 +59,7 @@ function heading(level: 1 | 2 | 3 | 4, className: string) {
   }
 }
 
-const components: Components = {
+const components: MarkdownComponents = {
   h1: heading(1, "text-display-small-emphasized text-on-surface"),
   h2: heading(2, "mt-6 text-headline-small text-on-surface"),
   h3: heading(3, "mt-2 text-title-large text-on-surface"),
@@ -158,15 +160,13 @@ const components: Components = {
   ),
 }
 
-/** Renders a guide page. Fenced code goes through the Shiki `CodeBlock`. */
+/** Renders a guide page. Fenced code goes through the TanStack Highlight `CodeBlock`. */
 function Markdown({ source }: { source: string }) {
   // {{origin}} is the hosted site: the registry lives there
   const text = source.replaceAll("{{origin}}", SITE_ORIGIN)
   return (
     <div className="flex flex-col gap-4">
-      <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
-        {text}
-      </ReactMarkdown>
+      <TanStackMarkdown components={components}>{text}</TanStackMarkdown>
     </div>
   )
 }

@@ -30,6 +30,10 @@ function Tabs({
  *  secondary / line:  2dp full-width indicator, active label in on-surface
  *  segmented:         M3E pill that slides between segments
  * The indicator is Base UI's Tabs.Indicator, moved by the spatial spring.
+ * The state layer, ripple and focus ring are clipped to a 16dp (rounded-lg) shape
+ * (m3e-tab: focus-ring shape = corner.large) and inset 4dp from the divider,
+ * so hover never paints a full-bleed rectangle. Hover color follows the label:
+ * on-surface when unselected, primary when selected (m3e-tab hover colors).
  */
 const tabsListVariants = cva(
   "group/tabs-list relative inline-flex items-center text-on-surface-variant group-data-vertical/tabs:h-fit group-data-vertical/tabs:flex-col group-data-vertical/tabs:items-stretch",
@@ -106,10 +110,12 @@ function TabsTrigger({
     <TabsPrimitive.Tab
       data-slot="tabs-trigger"
       className={cn(
-        "state-layer relative z-1 inline-flex h-full flex-1 cursor-pointer items-center justify-center gap-2 overflow-hidden px-4 text-title-small whitespace-nowrap text-on-surface-variant focus-ring-inset transition-shape select-none disabled:pointer-events-none disabled:opacity-38 has-data-[icon=inline-end]:pr-3 has-data-[icon=inline-start]:pl-3 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-5",
-        "group-data-vertical/tabs:min-h-12 group-data-vertical/tabs:w-full group-data-vertical/tabs:justify-start",
+        "state-layer relative z-1 inline-flex flex-1 cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-lg px-4 text-title-small whitespace-nowrap text-on-surface-variant focus-ring-inset transition-shape select-none state-layer-on-surface disabled:pointer-events-none disabled:opacity-38 has-data-[icon=inline-end]:pr-3 has-data-[icon=inline-start]:pl-3 data-active:state-layer-primary [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-5",
+        "group-data-horizontal/tabs:my-1 group-data-horizontal/tabs:h-10",
+        "group-data-vertical/tabs:my-0.5 group-data-vertical/tabs:mr-1 group-data-vertical/tabs:min-h-11 group-data-vertical/tabs:w-auto group-data-vertical/tabs:justify-start",
         "group-data-[variant=default]/tabs-list:data-active:text-primary group-data-[variant=primary]/tabs-list:data-active:text-primary",
         "group-data-[variant=line]/tabs-list:data-active:text-on-surface group-data-[variant=secondary]/tabs-list:data-active:text-on-surface",
+        "group-data-horizontal/tabs:group-data-[variant=segmented]/tabs-list:my-0 group-data-horizontal/tabs:group-data-[variant=segmented]/tabs-list:h-full",
         "group-data-[variant=segmented]/tabs-list:rounded-full group-data-[variant=segmented]/tabs-list:text-label-large group-data-[variant=segmented]/tabs-list:data-active:text-on-secondary-container",
         className
       )}

@@ -5,7 +5,7 @@ import { Icon } from "@/components/m3e/icon"
 import { ScrollArea } from "@/components/m3e/scroll-area"
 import { cn } from "@/lib/utils"
 
-import { peek, tokenize, type CodeLang, type ThemedToken } from "./highlighter"
+import { tokenize, type CodeLang, type HighlightToken } from "./highlighter"
 
 function CopyButton({ text, className }: { text: string; className?: string }) {
   const [copied, setCopied] = React.useState(false)
@@ -26,31 +26,15 @@ function CopyButton({ text, className }: { text: string; className?: string }) {
   )
 }
 
-/** Shiki font style flags: 1 italic, 2 bold, 4 underline */
-function tokenStyle(t: ThemedToken): React.CSSProperties {
-  const s = t.fontStyle ?? 0
-  return {
-    color: t.color,
-    fontStyle: s & 1 ? "italic" : undefined,
-    fontWeight: s & 2 ? 600 : undefined,
-    textDecoration: s & 4 ? "underline" : undefined,
-  }
-}
-
-function Highlighted({ tokens }: { tokens: ThemedToken[][] }) {
-  return (
-    <>
-      {tokens.map((line, i) => (
-        <React.Fragment key={i}>
-          {line.map((t, j) => (
-            <span key={j} style={tokenStyle(t)}>
-              {t.content}
-            </span>
-          ))}
-          {i < tokens.length - 1 && "\n"}
-        </React.Fragment>
-      ))}
-    </>
+function Highlighted({ tokens }: { tokens: HighlightToken[] }) {
+  return tokens.map((t, i) =>
+    t.className ? (
+      <span key={i} className={`th-${t.className}`}>
+        {t.value}
+      </span>
+    ) : (
+      t.value
+    )
   )
 }
 
@@ -69,18 +53,7 @@ function CodeBlock({
   maxHeight?: string
 }) {
   const text = code.replace(/\n+$/, "")
-  const [tokens, setTokens] = React.useState(() => peek(text, lang))
-
-  React.useEffect(() => {
-    let alive = true
-    tokenize(text, lang).then(
-      (t) => alive && setTokens(t),
-      () => {} // fall back to plain text
-    )
-    return () => {
-      alive = false
-    }
-  }, [text, lang])
+  const tokens = React.useMemo(() => tokenize(text, lang), [text, lang])
 
   return (
     <div
@@ -101,7 +74,9 @@ function CodeBlock({
         style={maxHeight ? { "--code-max-h": maxHeight } : undefined}
       >
         <pre className="w-max min-w-full p-4 pr-12 font-mono text-body-small leading-relaxed">
-          <code>{tokens ? <Highlighted tokens={tokens} /> : text}</code>
+          <code>
+            <Highlighted tokens={tokens} />
+          </code>
         </pre>
       </ScrollArea>
       {copy && (

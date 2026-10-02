@@ -245,9 +245,10 @@ export class LoadingAnimator {
     this.spring.target = 1
   }
 
-  update(ts: number) {
+  /** `speed` scales time itself, so the morph, rotation and spring all follow. */
+  update(ts: number, speed = 1) {
     if (this.lastTs === 0) this.lastTs = ts
-    const dt = Math.min((ts - this.lastTs) / 1000, 0.1)
+    const dt = Math.min((ts - this.lastTs) / 1000, 0.1) * Math.max(speed, 0)
     this.lastTs = ts
     if (dt <= 0) return
     this.elapsed += dt * 1000

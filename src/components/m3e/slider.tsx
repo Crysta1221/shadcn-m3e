@@ -1,3 +1,6 @@
+"use client"
+
+import * as React from "react"
 import { Slider as SliderPrimitive } from "@base-ui/react/slider"
 import { cn } from "@/lib/m3e/cn"
 
@@ -8,6 +11,9 @@ import { cn } from "@/lib/m3e/cn"
  * The indicator element spans the active range; its children draw the active
  * segment (inset by the gap) and the inactive segments beyond it, and the
  * rounded track clips them.
+ *
+ * The handle is inset so it stays inside the track at both ends, and the stop
+ * indicator is hidden once the handle reaches the end it would sit beside.
  */
 const GAP = "8px" // 6dp gap + half of the 4dp handle
 
@@ -17,9 +23,13 @@ function Slider({
   value,
   min = 0,
   max = 100,
+  onValueChange,
   ...props
 }: SliderPrimitive.Root.Props) {
-  const current = value ?? defaultValue
+  const [internal, setInternal] = React.useState(defaultValue)
+  const current = value ?? internal
+  const last = Array.isArray(current) ? current[current.length - 1] : current
+  const atMax = last !== undefined && last >= max
   const count = Array.isArray(current) ? current.length : 1
   const range = count > 1
 
@@ -34,6 +44,11 @@ function Slider({
       value={value}
       min={min}
       max={max}
+      thumbAlignment="edge"
+      onValueChange={(next, details) => {
+        setInternal(next)
+        onValueChange?.(next, details)
+      }}
       style={{ "--slider-gap": GAP }}
       {...props}
     >
@@ -78,7 +93,10 @@ function Slider({
           {/* stop indicator */}
           <span
             aria-hidden
-            className="pointer-events-none absolute size-1 rounded-full bg-primary group-data-disabled/slider:bg-on-surface/38 group-data-horizontal/slider:top-1/2 group-data-horizontal/slider:right-1.5 group-data-horizontal/slider:-translate-y-1/2 group-data-vertical/slider:top-1.5 group-data-vertical/slider:left-1/2 group-data-vertical/slider:-translate-x-1/2"
+            className={cn(
+              "pointer-events-none absolute size-1 rounded-full bg-primary group-data-disabled/slider:bg-on-surface/38 group-data-horizontal/slider:top-1/2 group-data-horizontal/slider:right-1.5 group-data-horizontal/slider:-translate-y-1/2 group-data-vertical/slider:top-1.5 group-data-vertical/slider:left-1/2 group-data-vertical/slider:-translate-x-1/2",
+              atMax && "hidden"
+            )}
           />
         </SliderPrimitive.Track>
         {Array.from({ length: count }, (_, index) => (

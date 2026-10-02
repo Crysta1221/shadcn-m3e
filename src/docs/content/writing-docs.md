@@ -9,7 +9,7 @@ The site you are reading has two kinds of pages, both plain files in `src/docs`.
 
 That's all: the route, the navigation entry, the table of contents (from `##` and `###` headings) and previous / next links come from the outline.
 
-Markdown is GitHub-flavored — tables, task lists, strikethrough. Fenced code is highlighted with Shiki and gets a copy button; use `tsx`, `css`, `bash` or `json`.
+Markdown is parsed by TanStack Markdown — tables, task lists, strikethrough. Fenced code is highlighted with TanStack Highlight and gets a copy button; use `tsx`, `css`, `bash` or `json`.
 
 ````md
 ```tsx
@@ -57,6 +57,8 @@ export default function Example() {
 ```
 
 The file's own source is shown as the code below the demo (without `meta`), so what you see and what you copy can never drift apart. Files are ordered by number.
+
+A demo that lays out a whole page (an app shell, anything `position: fixed`) goes in `src/docs/showcases/<name>.tsx` instead. It has the same format, plus `frame` in `meta` for the preview height in px, and appears on the Examples page. Point the component at it with `showcase: "<name>"` in its entry.
 
 ## Checking your work
 

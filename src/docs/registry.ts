@@ -1,6 +1,7 @@
 /**
  * Everything the documentation site knows about a component. Live demos are
- * the files in `src/docs/examples/<slug>/*.tsx` (see `examples.ts`); the data
+ * the files in `src/docs/examples/<slug>/*.tsx` (see `examples.ts`; page-scale
+ * ones live in `src/docs/showcases/`); the data
  * here is the prose, the import line and the props table.
  */
 export const CATEGORIES = [
@@ -43,6 +44,8 @@ export type DocEntry = {
   notes?: string[]
   /** Material Design guidance page */
   spec?: string
+  /** id of a page-scale example on the Examples page that uses this component */
+  showcase?: string
 }
 
 export const importLine = (i: DocEntry["imports"][number]) =>

@@ -1,63 +1,44 @@
 /**
- * Syntax highlighting with Shiki. The theme is "css-variables": tokens carry
- * `var(--shiki-token-*)` colors, which `src/styles/m3e.css` maps to M3 color
- * roles, so code follows the active color scheme (light, dark, any seed).
- *
- * Shiki and its grammars are loaded on first use, in their own chunks.
+ * Syntax highlighting with TanStack Highlight: synchronous, and each token only
+ * carries a class (`th-keyword`, …). `src/styles/m3e.css` maps those classes to
+ * M3 color roles, so code follows the active color scheme (light, dark, any
+ * seed). Only the languages the docs use are registered.
  */
 import {
-  createCssVariablesTheme,
-  createHighlighterCore,
-  type HighlighterCore,
-  type ThemedToken,
-} from "shiki/core"
-import { createJavaScriptRegexEngine } from "shiki/engine/javascript"
+  createHighlighter,
+  type HighlightToken,
+} from "@tanstack/highlight/core"
+import { css } from "@tanstack/highlight/languages/css"
+import { json } from "@tanstack/highlight/languages/json"
+import { plaintext } from "@tanstack/highlight/languages/plaintext"
+import { shell } from "@tanstack/highlight/languages/shell"
+import { tsx } from "@tanstack/highlight/languages/tsx"
 
 export type CodeLang = "tsx" | "css" | "bash" | "json" | "text"
-export type { ThemedToken }
+export type { HighlightToken }
 
-const theme = createCssVariablesTheme({
-  name: "m3e",
-  variablePrefix: "--shiki-",
-  variableDefaults: {},
-  fontStyle: true,
+const highlighter = createHighlighter({
+  languages: [css, json, plaintext, shell, tsx],
+  fallbackLanguage: "plaintext",
 })
 
-let highlighter: Promise<HighlighterCore> | null = null
-
-function load() {
-  highlighter ??= createHighlighterCore({
-    themes: [theme],
-    langs: [
-      import("shiki/langs/tsx.mjs"),
-      import("shiki/langs/css.mjs"),
-      import("shiki/langs/bash.mjs"),
-      import("shiki/langs/json.mjs"),
-    ],
-    engine: createJavaScriptRegexEngine(),
-  })
-  return highlighter
+const LANG: Record<CodeLang, string> = {
+  tsx: "tsx",
+  css: "css",
+  bash: "shell",
+  json: "json",
+  text: "plaintext",
 }
 
-const cache = new Map<string, ThemedToken[][]>()
+const cache = new Map<string, HighlightToken[]>()
 
-/** the tokens of a snippet, line by line */
-export async function tokenize(
-  code: string,
-  lang: CodeLang
-): Promise<ThemedToken[][]> {
+/** the tokens of a snippet; newlines stay inside the token values */
+export function tokenize(code: string, lang: CodeLang): HighlightToken[] {
   const key = `${lang}\0${code}`
-  const hit = cache.get(key)
-  if (hit) return hit
-  const h = await load()
-  const { tokens } = h.codeToTokens(code, {
-    lang: lang === "text" ? "text" : lang,
-    theme: "m3e",
-  })
-  cache.set(key, tokens)
+  let tokens = cache.get(key)
+  if (!tokens) {
+    tokens = highlighter.tokenize(code, { lang: LANG[lang] }).tokens
+    cache.set(key, tokens)
+  }
   return tokens
 }
-
-/** the tokens if they are already computed */
-export const peek = (code: string, lang: CodeLang) =>
-  cache.get(`${lang}\0${code}`)

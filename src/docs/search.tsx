@@ -6,7 +6,10 @@ import { SearchResult, SearchView } from "@/components/m3e/search"
 import { DOCS } from "./registry"
 import { GUIDE_PAGES } from "./outline"
 
-const PAGES = [{ slug: "theme", title: "Theme", icon: "palette" }]
+const PAGES = [
+  { to: "/theme", title: "Theme", icon: "palette" },
+  { to: "/examples", title: "Examples", icon: "dashboard" },
+] as const
 
 /** Header search over the guide and the component reference (Ctrl/⌘K focuses). */
 function DocsSearch() {
@@ -19,7 +22,7 @@ function DocsSearch() {
 
   const comps = q ? DOCS.filter((d) => match([d.name, d.slug, d.category])) : []
   const pages = q ? GUIDE_PAGES.filter((p) => match([p.title, p.slug])) : []
-  const site = q ? PAGES.filter((p) => match([p.title, p.slug])) : []
+  const site = q ? PAGES.filter((p) => match([p.title, p.to])) : []
 
   React.useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -58,7 +61,7 @@ function DocsSearch() {
         if (p) return goGuide(p.slug)
         if (site[0]) {
           setOpen(false)
-          void navigate({ to: "/theme" })
+          void navigate({ to: site[0].to })
         }
       }}
       placeholder="Search docs"
@@ -86,12 +89,12 @@ function DocsSearch() {
       ))}
       {site.map((p) => (
         <SearchResult
-          key={`s-${p.slug}`}
+          key={`s-${p.to}`}
           icon={p.icon}
-          trailing="Theme"
+          trailing="Page"
           onClick={() => {
             setOpen(false)
-            void navigate({ to: "/theme" })
+            void navigate({ to: p.to })
           }}
         >
           {p.title}

@@ -76,6 +76,7 @@ export default defineConfig({
         files: [
           "src/routes/**",
           "src/docs/examples/**",
+          "src/docs/showcases/**",
           "src/components/m3e/**",
         ],
         rules: {
