@@ -123,6 +123,13 @@ export const communication: DocEntry[] = [
             default: "48",
             description: "Container size in px.",
           },
+          {
+            name: "speed",
+            type: "number",
+            default: "1",
+            description:
+              "Playback speed. 1 is the spec; 2 runs the morph and rotation twice as fast; 0 pauses. It can change while mounted.",
+          },
         ],
       },
     ],

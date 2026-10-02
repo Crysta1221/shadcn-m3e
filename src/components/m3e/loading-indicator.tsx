@@ -27,6 +27,8 @@ type LoadingIndicatorProps = Omit<React.ComponentProps<"div">, "children"> &
   VariantProps<typeof loadingIndicatorVariants> & {
     /** container size in px (48 by default) */
     size?: number
+    /** playback speed: 1 is the spec, 2 is twice as fast, 0 pauses */
+    speed?: number
   }
 
 function toPath(points: [number, number][], r: number) {
@@ -42,11 +44,17 @@ function LoadingIndicator({
   className,
   variant,
   size = 48,
+  speed = 1,
   style,
   ...props
 }: LoadingIndicatorProps) {
   const pathRef = React.useRef<SVGPathElement>(null)
   const groupRef = React.useRef<SVGGElement>(null)
+  const speedRef = React.useRef(speed)
+
+  React.useEffect(() => {
+    speedRef.current = speed
+  }, [speed])
 
   React.useEffect(() => {
     const path = pathRef.current
@@ -63,7 +71,7 @@ function LoadingIndicator({
       return undefined
     }
     let frame = requestAnimationFrame(function tick(ts) {
-      animator.update(ts)
+      animator.update(ts, speedRef.current)
       draw()
       frame = requestAnimationFrame(tick)
     })
