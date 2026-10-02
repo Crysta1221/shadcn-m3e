@@ -320,9 +320,7 @@ export const navigation: DocEntry[] = [
         ],
       },
     ],
-    notes: [
-      "The sidebar is fixed to the window, so its example is shown as code only.",
-    ],
+    showcase: "sidebar-layout",
   },
   {
     slug: "search",

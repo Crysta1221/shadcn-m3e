@@ -2,7 +2,7 @@ import { Link, createFileRoute } from "@tanstack/react-router"
 
 import { Icon } from "@/components/m3e/icon"
 import { Badge } from "@/components/m3e/badge"
-import { getExamples } from "@/docs/examples"
+import { countExamples } from "@/docs/examples"
 import { CATEGORIES, DOCS } from "@/docs/registry"
 
 export const Route = createFileRoute("/components/")({
@@ -59,8 +59,8 @@ function ComponentsOverview() {
                       {d.description}
                     </span>
                     <span className="mt-auto text-label-small text-on-surface-variant">
-                      {getExamples(d.slug).length} example
-                      {getExamples(d.slug).length === 1 ? "" : "s"}
+                      {countExamples(d.slug)} example
+                      {countExamples(d.slug) === 1 ? "" : "s"}
                     </span>
                   </Link>
                 </li>

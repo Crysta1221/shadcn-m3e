@@ -5,12 +5,13 @@ import { Button } from "@/components/m3e/button"
 import { Icon } from "@/components/m3e/icon"
 import { CodeBlock } from "@/docs/code-block"
 import { ExampleView } from "@/docs/example-view"
-import { getExamples } from "@/docs/examples"
+import { loadExamples } from "@/docs/examples"
 import { PropsTable } from "@/docs/props-table"
 import { RegistryInstall } from "@/docs/registry-install"
 import { CATEGORIES, DOCS, importLine } from "@/docs/registry"
 
 export const Route = createFileRoute("/components/$slug")({
+  loader: ({ params }) => loadExamples(params.slug),
   component: ComponentPage,
 })
 
@@ -18,6 +19,7 @@ const ORDER = CATEGORIES.flatMap((c) => DOCS.filter((d) => d.category === c))
 
 function ComponentPage() {
   const { slug } = Route.useParams()
+  const examples = Route.useLoaderData()
   const doc = DOCS.find((d) => d.slug === slug)
 
   if (!doc) {
@@ -33,7 +35,6 @@ function ComponentPage() {
     )
   }
 
-  const examples = getExamples(doc.slug)
   const at = ORDER.findIndex((d) => d.slug === doc.slug)
   const prev = ORDER[at - 1]
   const next = ORDER[at + 1]
@@ -90,6 +91,23 @@ function ComponentPage() {
               <li key={n}>{n}</li>
             ))}
           </ul>
+        </section>
+      )}
+
+      {doc.showcase && (
+        <section className="flex flex-col items-start gap-3">
+          <h2 className="text-headline-small text-on-surface">Examples</h2>
+          <p className="text-body-large text-on-surface-variant">
+            {doc.name} lays out a whole page, so it runs on the Examples page.
+          </p>
+          <Button
+            variant="tonal"
+            render={<Link to="/examples" hash={doc.showcase} />}
+            nativeButton={false}
+          >
+            <Icon name="dashboard" size={20} />
+            See it on the Examples page
+          </Button>
         </section>
       )}
 

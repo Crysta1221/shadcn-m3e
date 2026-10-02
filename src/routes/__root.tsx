@@ -21,6 +21,7 @@ const NAV = [
   { to: "/", icon: "home", label: "Home" },
   { to: "/docs", icon: "menu_book", label: "Docs" },
   { to: "/components", icon: "widgets", label: "Components" },
+  { to: "/examples", icon: "dashboard", label: "Examples" },
   { to: "/theme", icon: "palette", label: "Theme" },
 ] as const
 

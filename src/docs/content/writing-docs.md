@@ -58,6 +58,8 @@ export default function Example() {
 
 The file's own source is shown as the code below the demo (without `meta`), so what you see and what you copy can never drift apart. Files are ordered by number.
 
+A demo that lays out a whole page (an app shell, anything `position: fixed`) goes in `src/docs/showcases/<name>.tsx` instead. It has the same format, plus `frame` in `meta` for the preview height in px, and appears on the Examples page. Point the component at it with `showcase: "<name>"` in its entry.
+
 ## Checking your work
 
 ```bash
