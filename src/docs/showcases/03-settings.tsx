@@ -29,8 +29,8 @@ export const meta = {
 
 const LANGUAGES = [
   { value: "en", label: "English" },
-  { value: "ja", label: "日本語" },
-  { value: "de", label: "Deutsch" },
+  { value: "ja", label: "Japanese" },
+  { value: "de", label: "German" },
 ]
 
 export default function Demo() {
