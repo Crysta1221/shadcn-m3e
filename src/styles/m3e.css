@@ -45,20 +45,36 @@
   --md-sys-motion-easing-standard-accelerate: cubic-bezier(0.3, 0, 1, 1);
 }
 
-/* ---------- code (Shiki css-variables theme → M3 roles) ---------- */
+/* ---------- code (TanStack Highlight `th-*` classes → M3 roles) ---------- */
 
-:root {
-  --shiki-foreground: var(--md-sys-color-on-surface);
-  --shiki-background: transparent;
-  --shiki-token-comment: var(--md-sys-color-outline);
-  --shiki-token-keyword: var(--md-sys-color-secondary);
-  --shiki-token-string: var(--md-sys-color-tertiary);
-  --shiki-token-string-expression: var(--md-sys-color-tertiary);
-  --shiki-token-constant: var(--md-sys-color-primary);
-  --shiki-token-function: var(--md-sys-color-secondary);
-  --shiki-token-parameter: var(--md-sys-color-on-surface);
-  --shiki-token-punctuation: var(--md-sys-color-on-surface-variant);
-  --shiki-token-link: var(--md-sys-color-primary);
+.th-comment,
+.th-meta {
+  color: var(--md-sys-color-outline);
+}
+.th-keyword,
+.th-function,
+.th-command,
+.th-tag,
+.th-selector {
+  color: var(--md-sys-color-secondary);
+}
+.th-string,
+.th-inserted {
+  color: var(--md-sys-color-tertiary);
+}
+.th-number,
+.th-literal,
+.th-type,
+.th-attr,
+.th-heading,
+.th-link {
+  color: var(--md-sys-color-primary);
+}
+.th-operator {
+  color: var(--md-sys-color-on-surface-variant);
+}
+.th-deleted {
+  color: var(--md-sys-color-error);
 }
 
 /* ---------- shadcn semantic tokens → M3 roles ---------- */

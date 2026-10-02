@@ -9,7 +9,7 @@ The site you are reading has two kinds of pages, both plain files in `src/docs`.
 
 That's all: the route, the navigation entry, the table of contents (from `##` and `###` headings) and previous / next links come from the outline.
 
-Markdown is GitHub-flavored — tables, task lists, strikethrough. Fenced code is highlighted with Shiki and gets a copy button; use `tsx`, `css`, `bash` or `json`.
+Markdown is parsed by TanStack Markdown — tables, task lists, strikethrough. Fenced code is highlighted with TanStack Highlight and gets a copy button; use `tsx`, `css`, `bash` or `json`.
 
 ````md
 ```tsx
