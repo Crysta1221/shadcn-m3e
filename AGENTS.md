@@ -91,4 +91,4 @@ M3E is not M3. Never build a component from memory of the old M3; read the prima
 
 ## Docs and copy
 
-Docs, UI text, comments, commit messages and PR descriptions are in English. `README.md` is the one Japanese file. Reply to the maintainer in the language they write in.
+Docs, UI text, comments, commit messages and PR descriptions are in English. Reply to the maintainer in the language they write in.
