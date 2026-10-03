@@ -1,4 +1,11 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@fontsource-variable/roboto-flex";
+/* the shadcn M3E components the parts are drawn with (packages/m3e) */
+@import "../../../packages/m3e/src/styles/m3e.css";
+@source "../../../packages/m3e/src";
+@custom-variant dark (&:is(.dark *));
 
 html,
 body {

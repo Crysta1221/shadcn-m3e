@@ -19,6 +19,10 @@
       }
     ],
     "paths": {
+      "@/components/m3e/*": ["../../packages/m3e/src/components/*"],
+      "@/lib/m3e/*": ["../../packages/m3e/src/lib/*"],
+      "@/hooks/*": ["../../packages/m3e/src/hooks/*"],
+      "@/styles/*": ["../../packages/m3e/src/styles/*"],
       "@/*": ["./*"]
     }
   },
