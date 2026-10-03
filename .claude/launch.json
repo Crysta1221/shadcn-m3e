@@ -6,6 +6,12 @@
       "runtimeExecutable": "bun",
       "runtimeArgs": ["run", "dev", "--port", "5173", "--strictPort"],
       "port": 5173
+    },
+    {
+      "name": "canvas",
+      "runtimeExecutable": "bun",
+      "runtimeArgs": ["run", "dev:canvas", "--port", "3000"],
+      "port": 3000
     }
   ]
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { buildCode } from "@/lib/codegen";
 import { PromptMark, buildPrompt, promptMarks } from "@/lib/prompt";
 import { Doc, Palette, Platform, defaultPlatformOf } from "@/lib/tokens";
 import { Icon } from "./M3Node";
@@ -109,13 +110,14 @@ const COPY_W = 200;
 
 /** The copy button, in a slow drift of the theme's colours: the one thing here that leaves the
  *  editor. Tapped, it keeps its look and its width and shows only a check for a moment. */
-function CopyButton({ copied, onClick, p }: { copied: boolean; onClick: () => void; p: Palette }) {
+function CopyButton({ copied, onClick, p, code = false }: { copied: boolean; onClick: () => void; p: Palette; code?: boolean }) {
   const lang = useLang();
+  const label = t(code ? "copyCode" : "copyPrompt", lang);
   return (
     <button
       onClick={onClick}
       className="m3-press"
-      title={t("copyPrompt", lang)}
+      title={label}
       style={{
         width: COPY_W,
         height: 44,
@@ -138,7 +140,7 @@ function CopyButton({ copied, onClick, p }: { copied: boolean; onClick: () => vo
       {/* both faces are laid out, so the button keeps one width while it flips */}
       <span style={{ gridArea: "1 / 1", display: "inline-flex", alignItems: "center", gap: 8, visibility: copied ? "hidden" : "visible" }}>
         <Icon name="content_copy" size={20} />
-        {t("copyPrompt", lang)}
+        {label}
       </span>
       <span style={{ gridArea: "1 / 1", display: "inline-flex", visibility: copied ? "visible" : "hidden" }}>
         <Icon name="check" size={22} />
@@ -322,6 +324,10 @@ export function PromptPanel({
   const text = edited ? doc.promptEdit! : generated;
   const marks = useMemo(() => promptMarks(text, doc.frame === "phone" ? doc.frames : [], lang), [text, doc.frames, doc.frame, lang]);
   const starts = useMemo(() => lineStartsOf(text), [text]);
+  /** what the panel shows: the prompt for a model, or the code of the sketch itself */
+  const [mode, setMode] = useState<"prompt" | "code">("prompt");
+  const code = useMemo(() => (mode === "code" ? buildCode(doc, widths).code : ""), [mode, doc, widths]);
+  const codeStarts = useMemo(() => lineStartsOf(code), [code]);
   const [copied, setCopied] = useState(false);
   /** the full-screen cover: gone, or up -- and whether it has grown to the whole window yet */
   const [cover, setCover] = useState<"off" | "on" | "closing">("off");
@@ -340,6 +346,7 @@ export function PromptPanel({
   const [lit, setLit] = useState(-1);
   const [jump, setJump] = useState(0);
   const area = useRef<HTMLTextAreaElement | null>(null);
+  const codeArea = useRef<HTMLTextAreaElement | null>(null);
   const wideArea = useRef<HTMLTextAreaElement | null>(null);
 
   useEffect(() => {
@@ -426,7 +433,7 @@ export function PromptPanel({
 
   const copy = async () => {
     try {
-      await navigator.clipboard.writeText(text);
+      await navigator.clipboard.writeText(mode === "code" ? code : text);
       setCopied(true);
     } catch {}
   };
@@ -452,27 +459,57 @@ export function PromptPanel({
     <>
       {/* the target stands above the box, which starts under the panel's fade band */}
       <div ref={panel} style={{ display: "flex", flexDirection: "column", height: "100%", padding: `${PANEL_PAD_TOP}px 12px 12px`, gap: 10 }}>
-        {platform}
-        <PromptBox
-          text={text}
-          starts={starts}
-          marks={marks}
-          lit={-1}
-          jump={0}
-          onText={() => {}}
-          onCaret={() => {}}
+        <Segmented<"prompt" | "code">
+          options={[
+            { key: "prompt", icon: "description", label: t("prompt", lang) },
+            { key: "code", icon: "code", label: t("codeTab", lang) },
+          ]}
+          value={mode}
+          onChange={setMode}
           p={p}
-          areaRef={area}
-          readOnly
-          corner={
-            <div style={{ display: "flex", width: "100%", justifyContent: "flex-end" }}>
-              <div className="m3-run" style={{ display: "flex", gap: 3 }}>
-                <CopyButton copied={copied} onClick={copy} p={p} />
-                <IconBtn icon="open_in_full" p={p} size={44} on onClick={open} title={t("fullscreen", lang)} />
-              </div>
-            </div>
-          }
+          height={40}
         />
+        {mode === "prompt" && platform}
+        {mode === "prompt" ? (
+          <PromptBox
+            text={text}
+            starts={starts}
+            marks={marks}
+            lit={-1}
+            jump={0}
+            onText={() => {}}
+            onCaret={() => {}}
+            p={p}
+            areaRef={area}
+            readOnly
+            corner={
+              <div style={{ display: "flex", width: "100%", justifyContent: "flex-end" }}>
+                <div className="m3-run" style={{ display: "flex", gap: 3 }}>
+                  <CopyButton copied={copied} onClick={copy} p={p} />
+                  <IconBtn icon="open_in_full" p={p} size={44} on onClick={open} title={t("fullscreen", lang)} />
+                </div>
+              </div>
+            }
+          />
+        ) : (
+          <PromptBox
+            text={code}
+            starts={codeStarts}
+            marks={[]}
+            lit={-1}
+            jump={0}
+            onText={() => {}}
+            onCaret={() => {}}
+            p={p}
+            areaRef={codeArea}
+            readOnly
+            corner={
+              <div style={{ display: "flex", width: "100%", justifyContent: "flex-end" }}>
+                <CopyButton copied={copied} onClick={copy} p={p} code />
+              </div>
+            }
+          />
+        )}
       </div>
       {cover !== "off" && (
         <div

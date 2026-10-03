@@ -10,7 +10,8 @@
     "build": "next build",
     "start": "npx serve out",
     "typecheck": "tsc --noEmit -p .",
-    "test": "vitest run"
+    "test": "vitest run",
+    "check:codegen": "bun scripts/check-codegen.ts"
   },
   "dependencies": {
     "html-to-image": "^1.11.13",

@@ -25,3 +25,4 @@ dist-ssr
 **/public/r
 .tanstack
 videos/
+apps/docs/src/__codegen__
