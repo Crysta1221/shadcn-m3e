@@ -11,12 +11,13 @@ shadcn M3E is **Material 3 Expressive** for shadcn/ui. It keeps the shadcn/ui wo
 
 ## How it is organized
 
-| Path                 | What lives there                                                     |
-| -------------------- | -------------------------------------------------------------------- |
-| `src/components/m3e` | The components you import.                                           |
-| `src/components/ui`  | Untouched shadcn/ui output, kept for reference. Not used by the app. |
-| `src/styles/m3e.css` | Design tokens and the Tailwind utilities built on them.              |
-| `src/lib/m3e`        | Color generation, image extraction, shape morphing.                  |
+| Path                              | What lives there                                                     |
+| --------------------------------- | -------------------------------------------------------------------- |
+| `packages/m3e/src/components`     | The components you import.                                           |
+| `packages/m3e/reference/ui`       | Untouched shadcn/ui output, kept for reference. Not used by the app. |
+| `packages/m3e/src/styles/m3e.css` | Design tokens and the Tailwind utilities built on them.              |
+| `packages/m3e/src/lib`            | Color generation, image extraction, shape morphing.                  |
+| `apps/docs`                       | This documentation site, which also serves the registry.             |
 
 > M3 and M3E differ in many places (shapes, sizes, motion). This project follows **M3E** everywhere; where the two disagree, the expressive version wins.
 

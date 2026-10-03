@@ -15,7 +15,7 @@
 // ["x", "Label"] pairs, symbol("x-rounded") in symbols.tsx, and a
 // `// @icons x y z` line for names built at runtime.
 //
-// Options: --src <dir> (default src)  --dir <m3e components dir>
+// Options: --src <dir[,dir…]> (default src)  --dir <m3e components dir>
 import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs"
 import { join, relative } from "node:path"
 
@@ -25,8 +25,8 @@ const flag = (name, fallback) => {
   return i >= 0 ? args[i + 1] : fallback
 }
 const CHECK = args.includes("--check")
-const SRC = flag("--src", "src")
-const DIR = flag("--dir", join(SRC, "components", "m3e"))
+const SRCS = flag("--src", "src").split(",")
+const DIR = flag("--dir", join(SRCS[0], "components", "m3e"))
 const CORE_OUT = join(DIR, "icon-data.ts")
 const APP_OUT = join(DIR, "icon-data.app.ts")
 const PREFIX = "material-symbols"
@@ -74,7 +74,7 @@ const scan = (inCore) => {
       const core = q.startsWith(norm(DIR) + "/")
       if (core !== inCore) continue
       const src = readFileSync(p, "utf8")
-      const file = relative(SRC, p).replaceAll("\\", "/")
+      const file = relative(process.cwd(), p).replaceAll("\\", "/")
       for (const n of iconAttrs(src)) addTo(logical, n, file)
       for (const m of src.matchAll(/\bicon:\s*"([a-z0-9_]+)"/g))
         addTo(logical, m[1], file)
@@ -86,7 +86,7 @@ const scan = (inCore) => {
         addTo(raw, m[1], file)
     }
   }
-  walk(SRC)
+  for (const dir of SRCS) walk(dir)
   return { logical, raw }
 }
 

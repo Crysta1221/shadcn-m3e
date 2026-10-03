@@ -1,5 +1,5 @@
 /**
- * Generates `src/styles/m3e.generated.css`:
+ * Generates `packages/m3e/src/styles/m3e.generated.css`:
  *  - the default color scheme (official M3 Expressive baseline)
  *  - the M3 Expressive motion springs as CSS `linear()` easings
  *
@@ -8,7 +8,7 @@
 import { writeFileSync } from "node:fs"
 import { fileURLToPath } from "node:url"
 
-import { themeCss } from "../src/lib/m3e/color"
+import { themeCss } from "../src/lib/color"
 
 const OUT = fileURLToPath(
   new URL("../src/styles/m3e.generated.css", import.meta.url)

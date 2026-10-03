@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "paths": {
+      "@/components/m3e/*": ["../../packages/m3e/src/components/*"],
+      "@/components/ui/*": ["../../packages/m3e/reference/ui/*"],
+      "@/lib/m3e/*": ["../../packages/m3e/src/lib/*"],
+      "@/hooks/*": ["../../packages/m3e/src/hooks/*"],
+      "@/styles/*": ["../../packages/m3e/src/styles/*"],
+      "@/*": ["./src/*"],
+      "cn": ["../../packages/m3e/src/lib/cn.ts"]
+    }
+  }
+}

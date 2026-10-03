@@ -22,7 +22,7 @@ They set `transition-timing-function` and `transition-duration`; add the propert
 
 ## How the springs are made
 
-The springs are the values of the Compose `ExpressiveMotionTokens` (stiffness and damping ratio). `bun run gen:tokens` solves each spring and writes it as a CSS `linear()` easing with a matching duration to `src/styles/m3e.generated.css`. CSS can't animate a real spring, but a sampled one looks the same.
+The springs are the values of the Compose `ExpressiveMotionTokens` (stiffness and damping ratio). `bun run gen:tokens` solves each spring and writes it as a CSS `linear()` easing with a matching duration to `packages/m3e/src/styles/m3e.generated.css`. CSS can't animate a real spring, but a sampled one looks the same.
 
 | Spring                        | Expressive        | Standard          |
 | ----------------------------- | ----------------- | ----------------- |

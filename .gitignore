@@ -22,6 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-public/r
+**/public/r
 .tanstack
 videos/

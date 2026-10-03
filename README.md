@@ -41,14 +41,16 @@ bun run build           # type-check, then build the docs site
 
 ## Directory structure
 
-| Path                 | Contents                                                    |
-| -------------------- | ----------------------------------------------------------- |
-| `src/components/m3e` | All M3E components (each one is published as `@m3e/<name>`) |
-| `src/lib/m3e`        | Shared library code, such as color schemes and shapes       |
-| `src/styles`         | Design tokens and Tailwind utilities                        |
-| `src/docs`           | Source of the documentation site                            |
-| `scripts`            | Scripts for tokens, the registry and icons                  |
-| `public/r`           | Generated registry output (not tracked by git)              |
+A bun workspace.
+
+| Path                          | Contents                                                    |
+| ----------------------------- | ----------------------------------------------------------- |
+| `packages/m3e/src/components` | All M3E components (each one is published as `@m3e/<name>`) |
+| `packages/m3e/src/lib`        | Shared library code, such as color schemes and shapes       |
+| `packages/m3e/src/styles`     | Design tokens and Tailwind utilities                        |
+| `packages/m3e/scripts`        | Scripts for tokens, the registry and icons                  |
+| `apps/docs`                   | The documentation site; it also serves the registry         |
+| `apps/docs/public/r`          | Generated registry output (not tracked by git)              |
 
 Development conventions are described in [AGENTS.md](AGENTS.md).
 

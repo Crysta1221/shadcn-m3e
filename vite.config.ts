@@ -1,10 +1,8 @@
-import path from "path"
-import tailwindcss from "@tailwindcss/vite"
-import { tanstackRouter } from "@tanstack/router-plugin/vite"
-import react from "@vitejs/plugin-react"
-import { defineConfig, lazyPlugins } from "vite-plus"
+import { defineConfig } from "vite-plus"
 
-// https://vite.dev/config/
+// Lint and format settings for the whole repository (run from the root:
+// bun run lint / format). The docs app has its own vite.config.ts for the dev
+// server and the build.
 export default defineConfig({
   fmt: {
     semi: false,
@@ -12,17 +10,18 @@ export default defineConfig({
     trailingComma: "es5",
     printWidth: 80,
     sortTailwindcss: {
-      stylesheet: "./src/index.css",
+      stylesheet: "./apps/docs/src/index.css",
       functions: ["cn", "cva"],
     },
     ignorePatterns: [
-      "src/routeTree.gen.ts",
+      "apps/docs/src/routeTree.gen.ts",
       "bun.lock",
-      "src/components/ui/**",
-      "src/components/m3e/icon-data*.ts",
-      "src/docs/registry-meta.generated.ts",
-      "public/r/**",
+      "packages/m3e/reference/ui/**",
+      "packages/m3e/src/components/icon-data*.ts",
+      "apps/docs/src/docs/registry-meta.generated.ts",
+      "apps/docs/public/r/**",
       "videos/**",
+      "apps/canvas/**",
     ],
   },
   lint: {
@@ -37,15 +36,16 @@ export default defineConfig({
     },
     settings: {
       tailwindcss: {
-        entryPoint: "./src/index.css",
+        entryPoint: "./apps/docs/src/index.css",
       },
     },
     ignorePatterns: [
       "dist",
-      "src/routeTree.gen.ts",
-      "src/components/ui",
-      "public/r",
+      "apps/docs/src/routeTree.gen.ts",
+      "packages/m3e/reference/ui",
+      "apps/docs/public/r",
       "videos",
+      "apps/canvas",
     ],
     rules: {
       "react/react-in-jsx-scope": "off",
@@ -74,37 +74,37 @@ export default defineConfig({
     overrides: [
       {
         files: [
-          "src/routes/**",
-          "src/docs/examples/**",
-          "src/docs/showcases/**",
-          "src/components/m3e/**",
+          "apps/docs/src/routes/**",
+          "apps/docs/src/docs/examples/**",
+          "apps/docs/src/docs/showcases/**",
+          "packages/m3e/src/components/**",
         ],
         rules: {
           "react/only-export-components": "off",
         },
       },
       {
-        files: ["src/components/m3e/**"],
+        files: ["packages/m3e/src/components/**"],
         rules: {
           "jsx-a11y/prefer-tag-over-role": "off",
         },
       },
       {
-        files: ["src/components/m3e/expressive-carousel.tsx"],
+        files: ["packages/m3e/src/components/expressive-carousel.tsx"],
         rules: {
           "jsx-a11y/no-noninteractive-tabindex": "off",
           "jsx-a11y/no-noninteractive-element-interactions": "off",
         },
       },
       {
-        files: ["src/components/m3e/input-group.tsx"],
+        files: ["packages/m3e/src/components/input-group.tsx"],
         rules: {
           "jsx-a11y/click-events-have-key-events": "off",
           "jsx-a11y/no-noninteractive-element-interactions": "off",
         },
       },
       {
-        files: ["src/components/m3e/label.tsx"],
+        files: ["packages/m3e/src/components/label.tsx"],
         rules: {
           "jsx-a11y/label-has-associated-control": "off",
         },
@@ -123,21 +123,6 @@ export default defineConfig({
         name: "tailwindcss",
         specifier: "oxlint-tailwindcss",
       },
-    ],
-  },
-  plugins: lazyPlugins(() => [
-    tanstackRouter({ target: "react", autoCodeSplitting: true }),
-    react(),
-    tailwindcss(),
-  ]),
-  resolve: {
-    alias: [
-      // configured cn (M3 type scale etc.), see src/lib/m3e/cn.ts
-      {
-        find: /^cn$/,
-        replacement: path.resolve(__dirname, "./src/lib/m3e/cn.ts"),
-      },
-      { find: "@", replacement: path.resolve(__dirname, "./src") },
     ],
   },
 })

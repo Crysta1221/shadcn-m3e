@@ -3,7 +3,10 @@
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/roboto-flex";
 @import "@fontsource-variable/jetbrains-mono";
-@import "./styles/m3e.css";
+@import "../../../packages/m3e/src/styles/m3e.css";
+
+/* class names used by the components live outside this app */
+@source "../../../packages/m3e/src";
 
 @custom-variant dark (&:is(.dark *));
 
