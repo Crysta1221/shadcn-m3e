@@ -1,0 +1,25 @@
+{
+  "id": "./",
+  "name": "M3E Canvas",
+  "short_name": "M3E Canvas",
+  "description": "Sketch Material 3 Expressive screens in the browser and turn them into vibe-coding prompts.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#FFFBFE",
+  "theme_color": "#6750A4",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

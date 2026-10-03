@@ -1,0 +1,17 @@
+M3E Canvas
+
+This product contains code ported from material-components-android
+(Apache License 2.0):
+  Copyright (C) 2024 The Android Open Source Project
+  https://github.com/material-components/material-components-android
+
+  LoadingIndicatorAnimatorDelegate.java -> lib/shapes.ts (LoadingAnimator, Spring)
+  LoadingIndicatorDrawingDelegate.java  -> lib/shapes.ts (shape sampling)
+
+The port follows the TypeScript adaptation in
+https://github.com/Aler1x/m3-loading-indicator (Apache License 2.0,
+Copyright 2026 Alerix).
+
+This product contains SVG shape path data from Material Design assets:
+  Copyright (C) 2024 Google LLC
+  https://m3.material.io/components/loading-indicator

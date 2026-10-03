@@ -1,0 +1,97 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`legacy 4dp SVG rendering > circular 24 flat determinate 1`] = `"da743bb40bdea13caddb24c8808b7e7a698e637118631b9804ba8754c49e9c29"`;
+
+exports[`legacy 4dp SVG rendering > circular 24 flat determinate 2`] = `"da743bb40bdea13caddb24c8808b7e7a698e637118631b9804ba8754c49e9c29"`;
+
+exports[`legacy 4dp SVG rendering > circular 24 flat indeterminate 1`] = `"3a8753e913d100a1eb09185dfbf8c7e0742f555159c7486e06f1e96de9161715"`;
+
+exports[`legacy 4dp SVG rendering > circular 24 flat indeterminate 2`] = `"3a8753e913d100a1eb09185dfbf8c7e0742f555159c7486e06f1e96de9161715"`;
+
+exports[`legacy 4dp SVG rendering > circular 24 wavy determinate 1`] = `"9a9146cdfe87605d7616db6addaebdd1d36a403c0cf2b480055e2e9552a2628e"`;
+
+exports[`legacy 4dp SVG rendering > circular 24 wavy determinate 2`] = `"9a9146cdfe87605d7616db6addaebdd1d36a403c0cf2b480055e2e9552a2628e"`;
+
+exports[`legacy 4dp SVG rendering > circular 24 wavy indeterminate 1`] = `"6654de9b1989093dea16be4a786f306e6398b256cc559f4774935be08f631188"`;
+
+exports[`legacy 4dp SVG rendering > circular 24 wavy indeterminate 2`] = `"6654de9b1989093dea16be4a786f306e6398b256cc559f4774935be08f631188"`;
+
+exports[`legacy 4dp SVG rendering > circular 48 flat determinate 1`] = `"def4f3020d70bbec4bd161696b8b40b128402384dd7551c3748ea0d07f5e7ca2"`;
+
+exports[`legacy 4dp SVG rendering > circular 48 flat determinate 2`] = `"def4f3020d70bbec4bd161696b8b40b128402384dd7551c3748ea0d07f5e7ca2"`;
+
+exports[`legacy 4dp SVG rendering > circular 48 flat indeterminate 1`] = `"c95c2265089fbb38dd838b2ebe24b7ee51729901316f32f31c732b2fe848bbb3"`;
+
+exports[`legacy 4dp SVG rendering > circular 48 flat indeterminate 2`] = `"c95c2265089fbb38dd838b2ebe24b7ee51729901316f32f31c732b2fe848bbb3"`;
+
+exports[`legacy 4dp SVG rendering > circular 48 wavy determinate 1`] = `"5bbc38fcad84f69056d52496e6ef5c754cc96bb1e3dc9c9a2ac56e26b62a7032"`;
+
+exports[`legacy 4dp SVG rendering > circular 48 wavy determinate 2`] = `"5bbc38fcad84f69056d52496e6ef5c754cc96bb1e3dc9c9a2ac56e26b62a7032"`;
+
+exports[`legacy 4dp SVG rendering > circular 48 wavy indeterminate 1`] = `"06cc4a411e769c4aadc02fa1c89a320c5c75ef76bbdb02279d720ec7d0d61bbb"`;
+
+exports[`legacy 4dp SVG rendering > circular 48 wavy indeterminate 2`] = `"06cc4a411e769c4aadc02fa1c89a320c5c75ef76bbdb02279d720ec7d0d61bbb"`;
+
+exports[`legacy 4dp SVG rendering > circular 96 flat determinate 1`] = `"0c5398625dd94bae81cd2229abb0b02b47fac9139b64663e3ff9e8cb17ef0ad9"`;
+
+exports[`legacy 4dp SVG rendering > circular 96 flat determinate 2`] = `"0c5398625dd94bae81cd2229abb0b02b47fac9139b64663e3ff9e8cb17ef0ad9"`;
+
+exports[`legacy 4dp SVG rendering > circular 96 flat indeterminate 1`] = `"d8c784e8ec6e8c203a95dfa2b2f28d91d2669360b2aed52beaf228fa82a2a78d"`;
+
+exports[`legacy 4dp SVG rendering > circular 96 flat indeterminate 2`] = `"d8c784e8ec6e8c203a95dfa2b2f28d91d2669360b2aed52beaf228fa82a2a78d"`;
+
+exports[`legacy 4dp SVG rendering > circular 96 wavy determinate 1`] = `"38e7ea0ad51cb130573c4823a1eb991379ba78dc8c47a016ffc6bb2273930e73"`;
+
+exports[`legacy 4dp SVG rendering > circular 96 wavy determinate 2`] = `"38e7ea0ad51cb130573c4823a1eb991379ba78dc8c47a016ffc6bb2273930e73"`;
+
+exports[`legacy 4dp SVG rendering > circular 96 wavy indeterminate 1`] = `"10da6fa5eb6333ae60c0d9e1f163c5abacfb5860ce6519f9674b3943570419e8"`;
+
+exports[`legacy 4dp SVG rendering > circular 96 wavy indeterminate 2`] = `"10da6fa5eb6333ae60c0d9e1f163c5abacfb5860ce6519f9674b3943570419e8"`;
+
+exports[`legacy 4dp SVG rendering > linear 24 flat determinate 1`] = `"f8132a904d8ce6962527ebb73b004dc4b95c3038238d6f226e81332ffdbbaf5c"`;
+
+exports[`legacy 4dp SVG rendering > linear 24 flat determinate 2`] = `"f8132a904d8ce6962527ebb73b004dc4b95c3038238d6f226e81332ffdbbaf5c"`;
+
+exports[`legacy 4dp SVG rendering > linear 24 flat indeterminate 1`] = `"b139c756869fa41a418be0564ee5932f5b9e9a7d226c3a0c6d9bb7eb30688b87"`;
+
+exports[`legacy 4dp SVG rendering > linear 24 flat indeterminate 2`] = `"b139c756869fa41a418be0564ee5932f5b9e9a7d226c3a0c6d9bb7eb30688b87"`;
+
+exports[`legacy 4dp SVG rendering > linear 24 wavy determinate 1`] = `"ede8c7501bda827fcf400bd13b0da008720a997a5d703a010a86e84965497fcd"`;
+
+exports[`legacy 4dp SVG rendering > linear 24 wavy determinate 2`] = `"ede8c7501bda827fcf400bd13b0da008720a997a5d703a010a86e84965497fcd"`;
+
+exports[`legacy 4dp SVG rendering > linear 24 wavy indeterminate 1`] = `"adf286e087f467d0b1b5201f40479cff12d84631ca5140ab7588f9ceb510b38b"`;
+
+exports[`legacy 4dp SVG rendering > linear 24 wavy indeterminate 2`] = `"adf286e087f467d0b1b5201f40479cff12d84631ca5140ab7588f9ceb510b38b"`;
+
+exports[`legacy 4dp SVG rendering > linear 240 flat determinate 1`] = `"d8f61586a31cbe2949d606ed8b8296a87af6bcc8e5302bf31efebf16540c8e2a"`;
+
+exports[`legacy 4dp SVG rendering > linear 240 flat determinate 2`] = `"d8f61586a31cbe2949d606ed8b8296a87af6bcc8e5302bf31efebf16540c8e2a"`;
+
+exports[`legacy 4dp SVG rendering > linear 240 flat indeterminate 1`] = `"d7d9c3a0223de2115f9dfdc48a3d1cd89352c74cf34303c633cb799ab070c88c"`;
+
+exports[`legacy 4dp SVG rendering > linear 240 flat indeterminate 2`] = `"d7d9c3a0223de2115f9dfdc48a3d1cd89352c74cf34303c633cb799ab070c88c"`;
+
+exports[`legacy 4dp SVG rendering > linear 240 wavy determinate 1`] = `"45d212847fcfa60c1b175c79c32b74f7d2dfca0d2ab8a1635cc615db383e66a4"`;
+
+exports[`legacy 4dp SVG rendering > linear 240 wavy determinate 2`] = `"45d212847fcfa60c1b175c79c32b74f7d2dfca0d2ab8a1635cc615db383e66a4"`;
+
+exports[`legacy 4dp SVG rendering > linear 240 wavy indeterminate 1`] = `"23d1671d90b777147369064dc974cba7c15c705ac3bd814468ae0ceda331d24d"`;
+
+exports[`legacy 4dp SVG rendering > linear 240 wavy indeterminate 2`] = `"23d1671d90b777147369064dc974cba7c15c705ac3bd814468ae0ceda331d24d"`;
+
+exports[`legacy 4dp SVG rendering > linear 480 flat determinate 1`] = `"4d5c90a8810d37f32e7a4fb48c435d9d0183d50c45eb999efbe2fbc4dca06433"`;
+
+exports[`legacy 4dp SVG rendering > linear 480 flat determinate 2`] = `"4d5c90a8810d37f32e7a4fb48c435d9d0183d50c45eb999efbe2fbc4dca06433"`;
+
+exports[`legacy 4dp SVG rendering > linear 480 flat indeterminate 1`] = `"6c79104c27b15d6f6b197298caf436ccd38d6fd3b9a92845c3ebff88e53f10c7"`;
+
+exports[`legacy 4dp SVG rendering > linear 480 flat indeterminate 2`] = `"6c79104c27b15d6f6b197298caf436ccd38d6fd3b9a92845c3ebff88e53f10c7"`;
+
+exports[`legacy 4dp SVG rendering > linear 480 wavy determinate 1`] = `"ea98ccc6d27efc6ae2574d2c274e0104b082463e4ffde671af957b35248f580d"`;
+
+exports[`legacy 4dp SVG rendering > linear 480 wavy determinate 2`] = `"ea98ccc6d27efc6ae2574d2c274e0104b082463e4ffde671af957b35248f580d"`;
+
+exports[`legacy 4dp SVG rendering > linear 480 wavy indeterminate 1`] = `"6d7af409056609e41f83e0edac09db8b50c11835bb141c7b913a3835ff133b1e"`;
+
+exports[`legacy 4dp SVG rendering > linear 480 wavy indeterminate 2`] = `"6d7af409056609e41f83e0edac09db8b50c11835bb141c7b913a3835ff133b1e"`;
