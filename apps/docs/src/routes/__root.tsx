@@ -22,8 +22,12 @@ const NAV = [
   { to: "/docs", icon: "menu_book", label: "Docs" },
   { to: "/components", icon: "widgets", label: "Components" },
   { to: "/examples", icon: "dashboard", label: "Examples" },
+  { to: "/playground", icon: "draw", label: "Playground" },
   { to: "/theme", icon: "palette", label: "Theme" },
 ] as const
+
+/** a navigation bar holds at most five destinations: Home is the logo in the header there */
+const BAR_NAV = NAV.filter((n) => n.to !== "/")
 
 function ColorModeToggle() {
   const { resolvedMode, toggleMode } = useColorMode()
@@ -46,7 +50,9 @@ function SiteHeader() {
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center gap-2 bg-surface-container px-3">
       <div className="flex min-w-12 flex-1 items-center">
-        <img src="/favicon.svg" alt="" className="size-8 md:hidden" />
+        <Link to="/" aria-label="Home" className="md:hidden">
+          <img src="/favicon.svg" alt="" className="size-8" />
+        </Link>
       </div>
       <div className="relative h-11 w-full max-w-md min-w-0 shrink">
         <DocsSearch />
@@ -89,7 +95,7 @@ function Root() {
 
       <div className="fixed inset-x-0 bottom-0 z-40 md:hidden">
         <NavigationBar elevated>
-          {NAV.map((n) => (
+          {BAR_NAV.map((n) => (
             <NavigationBarItem
               key={n.to}
               icon={n.icon}

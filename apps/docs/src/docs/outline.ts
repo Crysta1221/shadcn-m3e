@@ -108,6 +108,13 @@ export const OUTLINE: GuideSection[] = [
         description: "Moving an existing shadcn/ui project to M3E.",
       },
       {
+        slug: "playground",
+        title: "Playground",
+        icon: "draw",
+        description:
+          "Sketch a screen from M3E parts and copy it as shadcn M3E code or a prompt.",
+      },
+      {
         slug: "registry",
         title: "Registry",
         icon: "inventory_2",

@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ComponentsRouteImport } from './routes/components'
 import { Route as DocsRouteImport } from './routes/docs'
 import { Route as ExamplesRouteImport } from './routes/examples'
+import { Route as PlaygroundRouteImport } from './routes/playground'
 import { Route as ShowcaseRouteImport } from './routes/showcase'
 import { Route as ThemeRouteImport } from './routes/theme'
 import { Route as ComponentsIndexRouteImport } from './routes/components.index'
@@ -38,6 +39,11 @@ const DocsRoute = DocsRouteImport.update({
 const ExamplesRoute = ExamplesRouteImport.update({
   id: '/examples',
   path: '/examples',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlaygroundRoute = PlaygroundRouteImport.update({
+  id: '/playground',
+  path: '/playground',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ShowcaseRoute = ShowcaseRouteImport.update({
@@ -76,6 +82,7 @@ export interface FileRoutesByFullPath {
   '/components': typeof ComponentsRouteWithChildren
   '/docs': typeof DocsRouteWithChildren
   '/examples': typeof ExamplesRoute
+  '/playground': typeof PlaygroundRoute
   '/showcase': typeof ShowcaseRoute
   '/theme': typeof ThemeRoute
   '/components/$slug': typeof ComponentsSlugRoute
@@ -86,6 +93,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/examples': typeof ExamplesRoute
+  '/playground': typeof PlaygroundRoute
   '/showcase': typeof ShowcaseRoute
   '/theme': typeof ThemeRoute
   '/components/$slug': typeof ComponentsSlugRoute
@@ -99,6 +107,7 @@ export interface FileRoutesById {
   '/components': typeof ComponentsRouteWithChildren
   '/docs': typeof DocsRouteWithChildren
   '/examples': typeof ExamplesRoute
+  '/playground': typeof PlaygroundRoute
   '/showcase': typeof ShowcaseRoute
   '/theme': typeof ThemeRoute
   '/components/$slug': typeof ComponentsSlugRoute
@@ -113,6 +122,7 @@ export interface FileRouteTypes {
     | '/components'
     | '/docs'
     | '/examples'
+    | '/playground'
     | '/showcase'
     | '/theme'
     | '/components/$slug'
@@ -123,6 +133,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/examples'
+    | '/playground'
     | '/showcase'
     | '/theme'
     | '/components/$slug'
@@ -135,6 +146,7 @@ export interface FileRouteTypes {
     | '/components'
     | '/docs'
     | '/examples'
+    | '/playground'
     | '/showcase'
     | '/theme'
     | '/components/$slug'
@@ -148,6 +160,7 @@ export interface RootRouteChildren {
   ComponentsRoute: typeof ComponentsRouteWithChildren
   DocsRoute: typeof DocsRouteWithChildren
   ExamplesRoute: typeof ExamplesRoute
+  PlaygroundRoute: typeof PlaygroundRoute
   ShowcaseRoute: typeof ShowcaseRoute
   ThemeRoute: typeof ThemeRoute
 }
@@ -180,6 +193,13 @@ declare module '@tanstack/react-router' {
       path: '/examples'
       fullPath: '/examples'
       preLoaderRoute: typeof ExamplesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/playground': {
+      id: '/playground'
+      path: '/playground'
+      fullPath: '/playground'
+      preLoaderRoute: typeof PlaygroundRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/showcase': {
@@ -258,6 +278,7 @@ const rootRouteChildren: RootRouteChildren = {
   ComponentsRoute: ComponentsRouteWithChildren,
   DocsRoute: DocsRouteWithChildren,
   ExamplesRoute: ExamplesRoute,
+  PlaygroundRoute: PlaygroundRoute,
   ShowcaseRoute: ShowcaseRoute,
   ThemeRoute: ThemeRoute,
 }
