@@ -1,0 +1,51 @@
+name: Bug report
+description: Something in the editor, the preview or the prompt does not work as expected
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. Reproduction steps and a screenshot make most bugs quick to fix.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you did, what you expected, and what happened instead.
+      placeholder: I connected two buttons, grouped them with Ctrl+G, and the corners became fully round.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Add two buttons and bring them together
+        2. Select both and press Ctrl+G
+        3. Look at the inner corners
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and OS
+      placeholder: Chrome 140 on Windows 11 / Safari on iPhone 16
+    validations:
+      required: true
+  - type: dropdown
+    id: where
+    attributes:
+      label: Where
+      options:
+        - Editor (desktop)
+        - Editor (phone)
+        - Preview
+        - Generated prompt
+        - PNG export
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: extra
+    attributes:
+      label: Screenshot or screen recording
+      description: Drag an image or video here. If the bug is in the prompt, paste the relevant lines.
