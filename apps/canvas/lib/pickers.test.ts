@@ -53,7 +53,6 @@ const docWith = (item: Item): Doc => ({
   brief: "",
   paletteKey: "purple",
   frame: "phone",
-  platform: "android",
   theme: DEFAULT_THEME,
   frames: [{ id: "f", name: "Home", x: 0, y: 0 }],
   groups: [{ id: "g", x: 16, y: 100, axis: "x", items: [item] }],

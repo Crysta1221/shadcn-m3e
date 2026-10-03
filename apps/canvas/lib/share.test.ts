@@ -4,7 +4,7 @@ import { DOC_PARAM, DOCZ_PARAM, hasShareHash, readShareHash, shareable, shareLin
 import type { Doc, Item } from "./tokens";
 
 const doc = (): Doc => ({
-  title: "設計 中文 한국어 🎨 + & # %", brief: "First line\nSecond line", paletteKey: "purple", frame: "phone", platform: "web",
+  title: "設計 中文 한국어 🎨 + & # %", brief: "First line\nSecond line", paletteKey: "purple", frame: "phone",
   frames: [{ id: "f", name: "Home", x: 0, y: 0, w: 1280, h: 800, note: "Keep frame note", noteHistory: ["Private frame draft"] }],
   groups: [{ id: "g", x: -10, y: 20, axis: "x", items: [
     { id: "i", kind: "image", label: "画像", icon: null, variant: "filled", src: "data:image/png;base64,AAAA", note: "Keep item note", noteHistory: ["Private item draft"] },

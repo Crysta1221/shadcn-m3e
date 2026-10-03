@@ -49,8 +49,6 @@ import {
   iconSlotsOf,
   setIconSlot,
   normalizeTheme,
-  defaultPlatformOf,
-  isPlatform,
   makeItem,
   cardDefaultFillOf,
   cardFillOf,
@@ -318,23 +316,6 @@ describe("normalizeTheme", () => {
     });
   });
 
-});
-
-describe("isPlatform / defaultPlatformOf", () => {
-  it("isPlatform narrows to 'android' | 'web'", () => {
-    expect(isPlatform("android")).toBe(true);
-    expect(isPlatform("web")).toBe(true);
-    expect(isPlatform("ios")).toBe(false);
-    expect(isPlatform(undefined)).toBe(false);
-  });
-
-  it("defaultPlatformOf: web as soon as a desktop frame exists in phone mode", () => {
-    const phone: Frame = { id: "p", name: "P", x: 0, y: 0 };
-    const desk: Frame = { id: "d", name: "D", x: 100, y: 0, w: DESKTOP_W, h: DESKTOP_H };
-    expect(defaultPlatformOf([phone], "phone")).toBe("android");
-    expect(defaultPlatformOf([phone, desk], "phone")).toBe("web");
-    expect(defaultPlatformOf([phone, desk], "blank")).toBe("android");
-  });
 });
 
 describe("makeItem", () => {

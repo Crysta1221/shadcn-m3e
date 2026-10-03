@@ -18,7 +18,6 @@ const doc = (patch: Partial<Doc> = {}): Doc => ({
   brief: "",
   paletteKey: "purple",
   frame: "phone",
-  platform: "android",
   theme: DEFAULT_THEME,
   frames: [
     { id: "f1", name: "Home", x: 0, y: 0 },
@@ -59,8 +58,8 @@ describe("prompt options", () => {
   it.each(LANGS)("keeps the deliverable line at the end unless it is switched off, in %s", (lang) => {
     const on = buildPrompt(doc(), {}, undefined, lang);
     const off = buildPrompt(doc({ promptOptions: [] }), {}, undefined, lang);
-    expect(on).toMatch(/release APK/);
-    expect(off).not.toMatch(/release APK/);
+    expect(on).toMatch(/production build/);
+    expect(off).not.toMatch(/production build/);
     /* the choice only ever adds lines at the very end */
     expect(on.startsWith(off)).toBe(true);
   });

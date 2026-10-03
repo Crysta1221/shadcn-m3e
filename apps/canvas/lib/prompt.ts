@@ -3,7 +3,6 @@ import { constrainModalRails } from "./rail";
 import {
   CONTENT_W,
   Place,
-  Platform,
   Action,
   BACK_TARGET,
   H,
@@ -32,7 +31,6 @@ import {
   SWIPE_DIRS,
   Theme,
   Variant,
-  defaultPlatformOf,
   explodeGroup,
   frameOfGroup,
   frameRect,
@@ -169,7 +167,7 @@ const trimEnd = (s: string) => s.trim().replace(/[。.\s]+$/, "");
 /** Rails without either expressive setting preserve their original export. */
 function railStateText(it: Item, lang: Lang): string {
   if (!isWideRail(it)) return "";
-  const component = it.railModal ? "ModalWideNavigationRail" : "WideNavigationRail";
+  const component = "NavigationRail";
   const width = railWidth(it);
   if (lang === "ja") return `。${component}、${it.railExpanded ? "展開状態" : "折りたたみ状態"}、幅 ${width}dp。${it.railModal ? "モーダル型：展開時はスクリム付きで本文に重ね、レイアウトの占有幅は 96dp のまま" : "非モーダル型：現在の幅だけレイアウトを占有"}。上部のメニューボタンで展開・折りたたみを切り替える`;
   if (lang === "zh") return `。${component}，${it.railExpanded ? "展开状态" : "折叠状态"}，宽 ${width}dp。${it.railModal ? "模态覆盖：展开时带遮罩覆盖内容，布局占位保持 96dp" : "非模态布局：按当前宽度占据布局空间"}。顶部菜单按钮切换展开与折叠`;
@@ -273,10 +271,10 @@ function fabMenuText(it: Item, lang: Lang): string {
   const q = quote(lang);
   const items = (it.tabs ?? []).map((t) => `${q(t.label || "-")}(${t.icon || "-"})`).join(lang === "en" ? ", " : "、");
   const n = it.tabs?.length ?? 0;
-  if (lang === "ja") return `。タップすると ${n} 項目のメニュー（${items}）がボタンの上にせり上がり、アイコンは close に変わる（M3 Expressive の FloatingActionButtonMenu）`;
-  if (lang === "zh") return `。点击后在按钮上方展开 ${n} 个菜单项（${items}），图标变为 close（M3 Expressive 的 FloatingActionButtonMenu）`;
-  if (lang === "ko") return `. 탭하면 버튼 위로 ${n}개 항목 메뉴(${items})가 올라오고 아이콘은 close로 바뀐다(M3 Expressive FloatingActionButtonMenu)`;
-  return `; tapping it raises a menu of ${n} items (${items}) above the button and turns its icon into close (the M3 Expressive FloatingActionButtonMenu)`;
+  if (lang === "ja") return `。タップすると ${n} 項目のメニュー（${items}）がボタンの上にせり上がり、アイコンは close に変わる（M3 Expressive の FabMenu）`;
+  if (lang === "zh") return `。点击后在按钮上方展开 ${n} 个菜单项（${items}），图标变为 close（M3 Expressive 的 FabMenu）`;
+  if (lang === "ko") return `. 탭하면 버튼 위로 ${n}개 항목 메뉴(${items})가 올라오고 아이콘은 close로 바뀐다(M3 Expressive FabMenu)`;
+  return `; tapping it raises a menu of ${n} items (${items}) above the button and turns its icon into close (the M3 Expressive FabMenu)`;
 }
 
 /** what a split button's arrow opens, and which way it goes */
@@ -1152,7 +1150,7 @@ const STYLE_NOTES: Record<Lang, Partial<Record<Kind, string>>> = {
     iconButton:
       "アイコンボタン: 既定は 56dp の円形（M3 の M サイズ）。大きさを指定されたものは M3 のサイズ（XS 32dp / S 40dp / M 56dp / L 96dp / XL 136dp）に従い、アイコンもそのサイズのものにする。塗りつぶし・トーナル・アウトライン・スタンダードを指定通りに使い分ける。連結したアイコンボタン群は Connected button group として実装する。",
     carousel:
-      "カルーセル: M3 の Carousel（Compose は HorizontalMultiBrowseCarousel / HorizontalUncontainedCarousel、Web は横スクロールのカード列）。カードは角丸 16dp のコンテナで、マルチブラウズとヒーローでは先頭のカードが大きく後ろほど小さく、均等では全カードが同じ幅、全画面では 1 枚が行を占める。画面の左右端まで使い、先頭の余白は 16dp、カード間は 8dp。カードの見出しはカードの下端に載せる。",
+      "カルーセル: M3 の Carousel（横スクロールのカード列）。カードは角丸 16dp のコンテナで、マルチブラウズとヒーローでは先頭のカードが大きく後ろほど小さく、均等では全カードが同じ幅、全画面では 1 枚が行を占める。画面の左右端まで使い、先頭の余白は 16dp、カード間は 8dp。カードの見出しはカードの下端に載せる。",
     datePicker:
       "日付ピッカー: M3 の DatePicker。モーダルは見出し・月の切り替え・曜日の行・日付のグリッド・キャンセル／OK を持つ角丸 28dp のダイアログ、ドッキングは入力欄の下に付く同じカレンダー、入力欄のみは末尾にカレンダーのアイコンが付いたアウトラインのテキストフィールド。選択日は primary の円で示す。",
     timePicker:
@@ -1186,7 +1184,7 @@ const STYLE_NOTES: Record<Lang, Partial<Record<Kind, string>>> = {
     map: "地図: 角丸 20dp。地図 SDK のビューをこの領域に置き、読み込み中は surfaceContainerHighest に地図アイコンを置く。",
     divider: "区切り線: 1dp の outlineVariant、左右に 16dp の余白。",
     box: "ボックス: 指定した背景色と角丸を持つ単なるコンテナ。中に重ねる部品の背景として使い、独自の挙動は付けない。",
-    bottomSheet: "ボトムシート: ModalBottomSheet として下から出す。上部中央にドラッグハンドルを置き、指定した背景色と上の角丸を使い、下の角は直角のまま。",
+    bottomSheet: "ボトムシート: モーダルのボトムシートとして下から出す。上部中央にドラッグハンドルを置き、指定した背景色と上の角丸を使い、下の角は直角のまま。",
     loadingIndicator:
       "ローディング表示: M3 Expressive の形が変化する LoadingIndicator（回転しながら多角形の間を変形するもの）を使う。コンテナ付きは secondaryContainer の円の中に置く。",
     linearProgress: "リニアプログレス: 指定された太さ（指定がなければ 4dp）で、端を丸くする。波形指定のときは M3 Expressive の wavy スタイルにする。トラックは secondaryContainer、進捗は primary。",
@@ -1194,9 +1192,9 @@ const STYLE_NOTES: Record<Lang, Partial<Record<Kind, string>>> = {
     splitButton:
       "スプリットボタン: M3 Expressive の SplitButton。左のセグメントが主アクション、右の矢印セグメントがメニューを開く。2 つのセグメントは 2dp の隙間で並べ、外側の角は完全な丸、隣り合う内側の角は 8dp。高さはボタンと同じ XS 32 / S 40 / M 56 / L 96 / XL 136dp のスケールに従い、余白とアイコンもその高さに合わせる。メニューを開くと矢印が回転し、セグメントの角が丸くなる。",
     fabMenu:
-      "FAB メニュー: M3 Expressive の FloatingActionButtonMenu。閉じているときは通常の FAB、タップすると項目が上に向かって順に現れ、FAB のアイコンが close に変わる。各項目は高さ 56dp、角は完全な丸、アイコンとラベル付きで右揃え。",
+      "FAB メニュー: M3 Expressive の FabMenu。閉じているときは通常の FAB、タップすると項目が上に向かって順に現れ、FAB のアイコンが close に変わる。各項目は高さ 56dp、角は完全な丸、アイコンとラベル付きで右揃え。",
     toolbar:
-      "フローティングツールバー: M3 Expressive の HorizontalFloatingToolbar。高さ 64dp、角は完全な丸、画面下端から 16dp 上に浮かせ、内容の上に重ねる。スタンダードは surfaceContainer、ビブラントは primaryContainer。中のアイコンボタンは 48dp。",
+      "フローティングツールバー: M3 Expressive の FloatingToolbar。高さ 64dp、角は完全な丸、画面下端から 16dp 上に浮かせ、内容の上に重ねる。スタンダードは surfaceContainer、ビブラントは primaryContainer。中のアイコンボタンは 48dp。",
     tabs: "タブ: M3 のプライマリタブ。高さ 48dp、ラベルは titleSmall、選択中のタブは primary の文字とラベル幅の 3dp インジケータ（上の角丸）、下に outlineVariant の区切り線。タブをタップすると内容が切り替わる。",
     radio: "ラジオボタン: 20dp の円。選択時は primary の枠と中央の点、未選択は onSurfaceVariant の枠。同じグループ内では 1 つだけ選べる。ラベルは右に bodyLarge。",
   },
@@ -1206,7 +1204,7 @@ const STYLE_NOTES: Record<Lang, Partial<Record<Kind, string>>> = {
     iconButton:
       "Icon buttons: 56dp circles by default (M3's medium size); one given a size follows the M3 size scale (XS 32dp, S 40dp, M 56dp, L 96dp, XL 136dp), with the icon of that size. Filled / tonal / outlined / standard as specified. A connected run of icon buttons is a connected button group.",
     carousel:
-      "Carousel: the M3 Carousel (HorizontalMultiBrowseCarousel / HorizontalUncontainedCarousel in Compose; a sideways-scrolling row of cards on the web). Cards are containers with 16dp corners; multi-browse and hero show the first card large and the rest smaller, uncontained shows every card at one width, full-screen gives one card the row. It runs edge to edge with a 16dp start margin and 8dp between cards. A card's title sits along its bottom edge.",
+      "Carousel: the M3 Carousel (a sideways-scrolling row of cards). Cards are containers with 16dp corners; multi-browse and hero show the first card large and the rest smaller, uncontained shows every card at one width, full-screen gives one card the row. It runs edge to edge with a 16dp start margin and 8dp between cards. A card's title sits along its bottom edge.",
     datePicker:
       "Date picker: the M3 DatePicker. The modal is a 28dp-cornered dialog with a headline, the month switcher, the weekday row, the day grid and Cancel / OK; docked is the same calendar hanging under a text field; input only is an outlined text field with a calendar icon at its end. The selected day is a primary circle.",
     timePicker:
@@ -1248,9 +1246,9 @@ const STYLE_NOTES: Record<Lang, Partial<Record<Kind, string>>> = {
     splitButton:
       "Split button: the M3 Expressive SplitButton. The leading segment is the main action and the trailing arrow segment opens a menu. The two segments sit 2dp apart with fully rounded outer corners and 8dp inner corners. The height follows the same XS 32 / S 40 / M 56 / L 96 / XL 136dp scale a button does, with the padding and icon that height asks for. Opening the menu rotates the arrow and rounds the segment.",
     fabMenu:
-      "FAB menu: the M3 Expressive FloatingActionButtonMenu. Closed, it is a normal FAB; tapping it reveals the items upward one after another and the FAB icon becomes close. Each item is 56dp tall, fully rounded, right-aligned with an icon and a label.",
+      "FAB menu: the M3 Expressive FabMenu. Closed, it is a normal FAB; tapping it reveals the items upward one after another and the FAB icon becomes close. Each item is 56dp tall, fully rounded, right-aligned with an icon and a label.",
     toolbar:
-      "Floating toolbar: the M3 Expressive HorizontalFloatingToolbar. 64dp tall, fully rounded, floating 16dp above the bottom edge over the content. Standard uses surfaceContainer, vibrant uses primaryContainer. The icon buttons inside are 48dp.",
+      "Floating toolbar: the M3 Expressive FloatingToolbar. 64dp tall, fully rounded, floating 16dp above the bottom edge over the content. Standard uses surfaceContainer, vibrant uses primaryContainer. The icon buttons inside are 48dp.",
     tabs: "Tabs: M3 primary tabs. 48dp tall, labels in titleSmall; the selected tab has primary text and a 3dp label-width indicator with rounded top corners, with an outlineVariant divider underneath. Tapping a tab switches the content.",
     radio: "Radio buttons: 20dp circles. Selected shows a primary ring with a center dot, unselected an onSurfaceVariant ring. Only one in a group can be selected. Label on the right in bodyLarge.",
   },
@@ -1259,7 +1257,7 @@ const STYLE_NOTES: Record<Lang, Partial<Record<Kind, string>>> = {
       "按钮：中号，高 56dp，完全圆角（胶囊形）。填充用 primary，色调用 secondaryContainer，描边用 1dp 的 outline 边框。横向相连的按钮组以 3dp 间距排列，只把相邻的内侧圆角缩小到 8dp，外侧保持圆角（M3 Expressive 的 Connected button group）。指定了高度的按钮遵循 M3 尺寸（XS 32dp / S 40dp / M 56dp / L 96dp / XL 136dp）：左右内边距、文字和图标取该尺寸的值，圆角为高度的一半。",
     iconButton: "图标按钮：默认 56dp 圆形（M3 的 M 尺寸）；指定了尺寸的按 M3 尺寸（XS 32dp / S 40dp / M 56dp / L 96dp / XL 136dp）实现，图标也取该尺寸。按指定使用填充／色调／描边／标准样式。相连的图标按钮组实现为 Connected button group。",
     carousel:
-      "轮播：M3 的 Carousel（Compose 为 HorizontalMultiBrowseCarousel / HorizontalUncontainedCarousel，Web 为横向滚动的卡片行）。卡片为圆角 16dp 的容器；多浏览与主图布局中首张卡片最大、越靠后越小，等宽滚动中每张卡片同宽，全屏布局中一张卡片占满整行。贴近屏幕左右边缘，起始留白 16dp，卡片间距 8dp。卡片标题放在卡片底部。",
+      "轮播：M3 的 Carousel（横向滚动的卡片行）。卡片为圆角 16dp 的容器；多浏览与主图布局中首张卡片最大、越靠后越小，等宽滚动中每张卡片同宽，全屏布局中一张卡片占满整行。贴近屏幕左右边缘，起始留白 16dp，卡片间距 8dp。卡片标题放在卡片底部。",
     datePicker:
       "日期选择器：M3 的 DatePicker。模态形式是圆角 28dp 的对话框，含标题、月份切换、星期行、日期网格与取消／确定；停靠形式是挂在输入框下方的同一日历；仅输入框形式是末尾带日历图标的描边文本框。选中日期用 primary 圆形标出。",
     timePicker:
@@ -1293,16 +1291,16 @@ const STYLE_NOTES: Record<Lang, Partial<Record<Kind, string>>> = {
     map: "地图：圆角 20dp。在此区域放置地图 SDK 视图；加载期间在 surfaceContainerHighest 上显示地图图标。",
     divider: "分割线：1dp 的 outlineVariant，左右留 16dp 边距。",
     box: "容器框：只是带指定背景色和圆角的容器，作为叠放在其上的组件的背景，本身没有任何行为。",
-    bottomSheet: "底部面板：做成从底部滑出的模态底部面板（ModalBottomSheet），顶部居中放拖动条，使用指定的背景色和上方圆角，下方保持直角。",
+    bottomSheet: "底部面板：做成从底部滑出的模态底部面板，顶部居中放拖动条，使用指定的背景色和上方圆角，下方保持直角。",
     loadingIndicator: "加载指示：使用 M3 Expressive 形状变化的 LoadingIndicator（旋转并在多边形之间变形）。带容器的放在 secondaryContainer 的圆形中。",
     linearProgress: "线性进度条：使用指定的轨道粗细（未指定则为 4dp）和圆形端帽。指定波浪形时使用 M3 Expressive 的 wavy 样式。轨道为 secondaryContainer，进度为 primary。",
     circularProgress: "圆形进度条：使用指定的轨道粗细（未指定则为 4dp）和圆形端帽。指定波浪形时使用 M3 Expressive 的 wavy 样式。",
     splitButton:
       "拆分按钮：M3 Expressive 的 SplitButton。左段为主操作，右侧箭头段打开菜单。两段间距 2dp，外侧完全圆角，相邻内侧圆角 8dp。高度沿用按钮的 XS 32 / S 40 / M 56 / L 96 / XL 136dp 尺寸，内边距与图标随高度而定。打开菜单时箭头旋转、段变为圆形。",
     fabMenu:
-      "FAB 菜单：M3 Expressive 的 FloatingActionButtonMenu。关闭时是普通 FAB，点击后各项依次向上展开，FAB 图标变为 close。每项高 56dp，完全圆角，带图标和标签并右对齐。",
+      "FAB 菜单：M3 Expressive 的 FabMenu。关闭时是普通 FAB，点击后各项依次向上展开，FAB 图标变为 close。每项高 56dp，完全圆角，带图标和标签并右对齐。",
     toolbar:
-      "悬浮工具栏：M3 Expressive 的 HorizontalFloatingToolbar。高 64dp，完全圆角，悬浮在距屏幕底部 16dp 处并覆盖在内容之上。标准样式用 surfaceContainer，鲜明样式用 primaryContainer。内部图标按钮 48dp。",
+      "悬浮工具栏：M3 Expressive 的 FloatingToolbar。高 64dp，完全圆角，悬浮在距屏幕底部 16dp 处并覆盖在内容之上。标准样式用 surfaceContainer，鲜明样式用 primaryContainer。内部图标按钮 48dp。",
     tabs: "标签页：M3 的主标签页。高 48dp，标签用 titleSmall，选中项文字为 primary 并带与标签同宽的 3dp 指示条（上方圆角），下方为 outlineVariant 分割线。点击标签切换内容。",
     radio: "单选按钮：20dp 圆形。选中时为 primary 的圆环加中心圆点，未选中为 onSurfaceVariant 圆环。同一组内只能选一个。标签在右侧，用 bodyLarge。",
   },
@@ -1311,7 +1309,7 @@ const STYLE_NOTES: Record<Lang, Partial<Record<Kind, string>>> = {
     navRail: "내비게이션 레일: 너비 80dp, 배경 surfaceContainer, 왼쪽 가장자리의 전체 높이를 채운다. 항목은 위에서부터 세로로 배치한다. 선택 항목은 secondaryContainer 알약 표시기(56×32dp), 채운 아이콘과 아래쪽 labelMedium 레이블로 표시한다. 콘텐츠는 레일 오른쪽에 배치한다.",
     iconButton: "아이콘 버튼: 기본 56dp 원형(M3 M 크기). 크기가 지정된 것은 M3 크기(XS 32dp / S 40dp / M 56dp / L 96dp / XL 136dp)를 따르고 아이콘도 그 크기로 한다. 지정된 채움, 토널, 윤곽선, 표준 스타일을 사용하며 연결된 아이콘 버튼은 Connected button group으로 구현한다.",
     carousel:
-      "캐러셀: M3 Carousel(Compose는 HorizontalMultiBrowseCarousel / HorizontalUncontainedCarousel, 웹은 가로로 스크롤하는 카드 행). 카드는 모서리 16dp 컨테이너이며, 멀티 브라우즈와 히어로는 첫 카드가 크고 뒤로 갈수록 작아지고, 언컨테인드는 모든 카드가 같은 너비, 전체 화면은 카드 한 장이 행을 차지한다. 화면 좌우 끝까지 쓰고 시작 여백 16dp, 카드 간격 8dp. 카드 제목은 카드 아래쪽에 놓는다.",
+      "캐러셀: M3 Carousel(가로로 스크롤하는 카드 행). 카드는 모서리 16dp 컨테이너이며, 멀티 브라우즈와 히어로는 첫 카드가 크고 뒤로 갈수록 작아지고, 언컨테인드는 모든 카드가 같은 너비, 전체 화면은 카드 한 장이 행을 차지한다. 화면 좌우 끝까지 쓰고 시작 여백 16dp, 카드 간격 8dp. 카드 제목은 카드 아래쪽에 놓는다.",
     datePicker:
       "날짜 선택기: M3 DatePicker. 모달은 제목, 월 전환, 요일 행, 날짜 그리드, 취소 / 확인을 갖춘 모서리 28dp 대화상자이고, 도킹은 입력란 아래에 붙는 같은 달력, 입력란만은 끝에 달력 아이콘이 있는 윤곽선 텍스트 필드다. 선택한 날은 primary 원으로 표시한다.",
     timePicker:
@@ -1338,13 +1336,13 @@ const STYLE_NOTES: Record<Lang, Partial<Record<Kind, string>>> = {
     map: "지도: 모서리 20dp. 이 영역에 지도 SDK 뷰를 두고, 불러오는 동안은 surfaceContainerHighest 위에 지도 아이콘을 둔다.",
     divider: "구분선: 1dp outlineVariant, 좌우 여백 16dp.",
     box: "상자: 지정된 배경 토큰과 모서리를 가진 단순 컨테이너. 겹쳐 놓은 부품의 배경으로 사용하며 자체 동작은 넣지 않는다.",
-    bottomSheet: "하단 시트: 아래에서 올라오는 ModalBottomSheet로 만든다. 위쪽 가운데에 드래그 핸들을 두고 지정된 배경과 위 모서리를 쓰며 아래 모서리는 직각으로 둔다.",
+    bottomSheet: "하단 시트: 아래에서 올라오는 모달 하단 시트로 만든다. 위쪽 가운데에 드래그 핸들을 두고 지정된 배경과 위 모서리를 쓰며 아래 모서리는 직각으로 둔다.",
     loadingIndicator: "로딩: 다각형이 회전하며 형태가 바뀌는 M3 Expressive LoadingIndicator를 사용한다. 컨테이너형은 secondaryContainer 원 안에 둔다.",
     linearProgress: "선형 진행 표시기: 지정된 트랙 두께(지정이 없으면 4dp)와 둥근 끝을 사용한다. 지정된 경우 M3 Expressive 물결 스타일을 사용하며 트랙은 secondaryContainer, 진행은 primary로 표시한다.",
     circularProgress: "원형 진행 표시기: 지정된 트랙 두께(지정이 없으면 4dp)와 둥근 끝을 사용한다. 지정된 경우 M3 Expressive 물결 스타일을 사용한다.",
     splitButton: "분할 버튼: M3 Expressive SplitButton. 왼쪽은 주 동작, 오른쪽 화살표 영역은 메뉴를 연다. 두 영역 간격 2dp, 바깥 모서리는 완전 둥글게, 안쪽은 8dp로 한다. 높이는 버튼과 같은 XS 32 / S 40 / M 56 / L 96 / XL 136dp 스케일을 따르고, 여백과 아이콘도 그 높이에 맞춘다.",
-    fabMenu: "FAB 메뉴: M3 Expressive FloatingActionButtonMenu. 닫혔을 때는 일반 FAB이고 탭하면 항목이 위로 차례로 나타나며 아이콘은 close로 바뀐다. 각 항목은 높이 56dp, 완전 둥근 모서리, 아이콘과 레이블을 포함한다.",
-    toolbar: "플로팅 도구 모음: M3 Expressive HorizontalFloatingToolbar. 높이 64dp, 완전 둥근 모서리로 화면 아래쪽에서 16dp 띄운다. 표준은 surfaceContainer, 비브런트는 primaryContainer, 내부 아이콘 버튼은 48dp.",
+    fabMenu: "FAB 메뉴: M3 Expressive FabMenu. 닫혔을 때는 일반 FAB이고 탭하면 항목이 위로 차례로 나타나며 아이콘은 close로 바뀐다. 각 항목은 높이 56dp, 완전 둥근 모서리, 아이콘과 레이블을 포함한다.",
+    toolbar: "플로팅 도구 모음: M3 Expressive FloatingToolbar. 높이 64dp, 완전 둥근 모서리로 화면 아래쪽에서 16dp 띄운다. 표준은 surfaceContainer, 비브런트는 primaryContainer, 내부 아이콘 버튼은 48dp.",
     tabs: "탭: M3 기본 탭. 높이 48dp, 레이블 titleSmall. 선택 탭은 primary 텍스트와 레이블 너비의 3dp 표시기를 사용하고 아래에 outlineVariant 구분선을 둔다.",
     radio: "라디오 버튼: 20dp 원형. 선택 시 primary 테두리와 가운데 점, 미선택 시 onSurfaceVariant 테두리. 그룹에서 하나만 선택되며 레이블은 오른쪽 bodyLarge.",
   },
@@ -1422,14 +1420,14 @@ function themeLines(th: Theme, lang: Lang): string[] {
   return [`- ${n.shape[th.shape]}`, `- ${FONT_NOTE[lang](fontName)}${sp}${th.emphasized ? n.emphasized : n.plainType}`, `- ${n.motion[th.motion]}`];
 }
 
-/** the closing guidance; the lines that depend on the target are written for the chosen platform */
-const GENERAL: Record<Lang, (string | ((pl: Platform) => string))[]> = {
+/** the closing guidance */
+const GENERAL: Record<Lang, string[]> = {
   ja: [
     "まず画面の目的から「これは何のアプリか」を判断し、そのカテゴリのアプリとして一般に期待される機能（作成・一覧・詳細・編集・削除・検索・設定など、該当するもの）を、スケッチに描かれていなくても一通り実装する。",
-    (pl: Platform) => `データは本物として扱う。ユーザーが作成したデータは${pl === "web" ? "ブラウザに（IndexedDB など）" : "端末に（Room や DataStore など）"}永続化し、${pl === "web" ? "再読み込み" : "再起動"}後も残す。ダミーやサンプルのデータは入れず、何もない状態には空の案内を表示する。入力は検証し、失敗や削除は適切に確認・通知する。`,
+    `データは本物として扱う。ユーザーが作成したデータはブラウザに（IndexedDB など）永続化し、再読み込み後も残す。ダミーやサンプルのデータは入れず、何もない状態には空の案内を表示する。入力は検証し、失敗や削除は適切に確認・通知する。`,
     "スケッチに書かれていない振る舞いは、画面の目的と部品のラベルから補う。動作の指定がないボタンや項目は、そのラベルにふさわしい処理（保存、送信、詳細画面を開く、など）を実装し、何も起きないままにしない。",
     "配置は意図（順序・まとまり・上下左右の位置関係）を守れば十分で、寸法や余白は内容に合わせて調整してよい。実機で崩れるなら、スケッチより動くことを優先する。",
-    (pl: Platform) => `コンポーネントは ${pl === "web" ? "Material Web" : "Jetpack Compose の material3（Expressive API を含む最新版）"} の標準部品を使い、ライブラリにある部品を独自描画しない。`,
+    "コンポーネントは導入済みの shadcn M3E（@m3e レジストリ。`@/components/m3e/*` から import）を使い、ライブラリにある部品を独自に作り直さない。",
     "色は必ず上のカラースキームのロール名（primary、surfaceContainer など）で参照し、ハードコードした色を使わない。",
     "余白は画面端 16dp、部品同士は 8〜16dp を基本にし、タイポグラフィは M3 の型（titleLarge、bodyMedium など）を使う。",
     "「横一列に並べる」と書いた部品は必ず 1 つの Row（横並びコンテナ）に入れて同じ行に置き、縦に積んだり次の行に折り返したりしない。行の高さは一番高い部品に合わせ、他は縦中央に揃える。",
@@ -1439,10 +1437,10 @@ const GENERAL: Record<Lang, (string | ((pl: Platform) => string))[]> = {
   ],
   en: [
     "Work out what kind of app this is from the purpose of the screens, and implement the features such an app is normally expected to have (create, list, detail, edit, delete, search, settings, whichever apply) even where the sketch does not show them.",
-    (pl: Platform) => `Treat the data as real. Persist what the user creates ${pl === "web" ? "in the browser (IndexedDB or similar) so it survives reloads" : "on the device (Room, DataStore or similar) so it survives restarts"}. Do not ship dummy or sample data; show an empty state when there is nothing yet. Validate input, and confirm or report failures and deletions appropriately.`,
+    `Treat the data as real. Persist what the user creates in the browser (IndexedDB or similar) so it survives reloads. Do not ship dummy or sample data; show an empty state when there is nothing yet. Validate input, and confirm or report failures and deletions appropriately.`,
     "Fill in behavior the sketch leaves out from the purpose of the screen and the labels of the parts. A button or item with no behavior specified should do what its label implies (save, send, open a detail screen, and so on), never nothing.",
     "The layout only needs to keep the intent (order, grouping, relative placement); sizes and spacing may be adjusted to fit the content. If something would break on a device, prefer working over matching the sketch.",
-    (pl: Platform) => `Use the standard components from ${pl === "web" ? "Material Web" : "Jetpack Compose material3 (latest, including the Expressive APIs)"}; do not custom-draw parts the library provides.`,
+    "Use the already-installed shadcn M3E components (the @m3e registry, imported from `@/components/m3e/*`); do not recreate parts the library provides.",
     "Always reference colors through the scheme roles above (primary, surfaceContainer, …) instead of hard-coded values.",
     "Keep 16dp screen margins and 8–16dp between parts, and use the M3 type styles (titleLarge, bodyMedium, …).",
     "Parts described as \"in one row\" must share a single Row (horizontal container) on the same line; never stack them vertically or wrap them. The row is as tall as its tallest part and the others are vertically centered in it.",
@@ -1452,10 +1450,10 @@ const GENERAL: Record<Lang, (string | ((pl: Platform) => string))[]> = {
   ],
   zh: [
     "先根据屏幕目的判断这是什么类型的应用，并实现该类应用通常应有的功能（新建、列表、详情、编辑、删除、搜索、设置等，视情况而定），即使草图中没有画出。",
-    (pl: Platform) => `把数据当作真实数据处理：用户创建的数据要持久化到${pl === "web" ? "浏览器（IndexedDB 等），重新加载" : "设备（Room、DataStore 等），重启"}后仍保留。不要放入虚拟或示例数据，没有数据时显示空状态提示。校验输入，删除和失败要有适当的确认或提示。`,
+    `把数据当作真实数据处理：用户创建的数据要持久化到浏览器（IndexedDB 等），重新加载后仍保留。不要放入虚拟或示例数据，没有数据时显示空状态提示。校验输入，删除和失败要有适当的确认或提示。`,
     "草图没有写明的行为，根据屏幕目的和组件标签补全。未指定行为的按钮或项目要实现与其标签相符的操作（保存、发送、打开详情页等），不要什么都不做。",
     "布局只需保持意图（顺序、分组、相对位置），尺寸和间距可根据内容调整。若在真机上会出问题，宁可能用也不要死守草图。",
-    (pl: Platform) => `组件使用 ${pl === "web" ? "Material Web" : "Jetpack Compose material3（包含 Expressive API 的最新版）"} 的标准组件，库里已有的组件不要自行绘制。`,
+    "组件使用已安装的 shadcn M3E（@m3e 注册表，从 `@/components/m3e/*` 导入），库里已有的组件不要自行重做。",
     "颜色必须通过上面配色方案的角色名（primary、surfaceContainer 等）引用，不要写死颜色值。",
     "屏幕边缘留 16dp，组件之间 8〜16dp，排版使用 M3 的字体样式（titleLarge、bodyMedium 等）。",
     "写明“横向排成一行”的组件必须放进同一个 Row（横向容器）并在同一行显示，不要竖着堆叠或换行。行高以最高的组件为准，其余组件垂直居中。",
@@ -1465,10 +1463,10 @@ const GENERAL: Record<Lang, (string | ((pl: Platform) => string))[]> = {
   ],
   ko: [
     "화면의 목적에서 앱의 종류를 판단하고, 스케치에 없더라도 그 종류의 앱에 일반적으로 필요한 기능(만들기, 목록, 상세, 편집, 삭제, 검색, 설정 등)을 구현한다.",
-    (pl: Platform) => `데이터를 실제 데이터로 취급한다. 사용자가 만든 데이터는 ${pl === "web" ? "브라우저(IndexedDB 등)에 저장해 새로고침" : "기기(Room, DataStore 등)에 저장해 재시작"} 후에도 유지한다. 더미나 샘플 데이터는 넣지 않고 데이터가 없으면 빈 상태를 표시한다. 입력을 검증하고 실패와 삭제는 적절히 확인하거나 알린다.`,
+    `데이터를 실제 데이터로 취급한다. 사용자가 만든 데이터는 브라우저(IndexedDB 등)에 저장해 새로고침 후에도 유지한다. 더미나 샘플 데이터는 넣지 않고 데이터가 없으면 빈 상태를 표시한다. 입력을 검증하고 실패와 삭제는 적절히 확인하거나 알린다.`,
     "스케치에 없는 동작은 화면 목적과 부품 레이블을 바탕으로 보완한다. 동작이 지정되지 않은 버튼이나 항목도 레이블에 맞는 동작(저장, 보내기, 상세 화면 열기 등)을 수행해야 한다.",
     "레이아웃은 의도한 순서, 그룹, 상대 위치를 유지하되 크기와 간격은 내용에 맞게 조정할 수 있다. 실제 기기에서 깨진다면 스케치 일치보다 정상 동작을 우선한다.",
-    (pl: Platform) => `${pl === "web" ? "Material Web" : "최신 Expressive API를 포함한 Jetpack Compose material3"}의 표준 컴포넌트를 사용하고 라이브러리에 있는 부품을 직접 그리지 않는다.`,
+    "이미 설치된 shadcn M3E(@m3e 레지스트리, `@/components/m3e/*`에서 import)의 컴포넌트를 사용하고 라이브러리에 있는 부품을 다시 만들지 않는다.",
     "색상은 하드코딩하지 말고 위 색상 구성의 역할 이름(primary, surfaceContainer 등)으로 참조한다.",
     "화면 가장자리는 16dp, 부품 사이는 8~16dp를 기본으로 하고 M3 글꼴 스타일(titleLarge, bodyMedium 등)을 사용한다.",
     "'한 행에 배치'한 부품은 하나의 Row(가로 컨테이너)에서 같은 줄에 두고 세로로 쌓거나 줄 바꿈하지 않는다. 행 높이는 가장 높은 부품에 맞추고 나머지는 세로 중앙 정렬한다.",
@@ -1478,7 +1476,7 @@ const GENERAL: Record<Lang, (string | ((pl: Platform) => string))[]> = {
   ],
 };
 
-/** notes that differ on the web, where a browser has no status bar or gesture area to inset for */
+/** notes that replace the ones above for the bars: a browser has no status bar or gesture area to inset for */
 const STYLE_NOTES_WEB: Record<Lang, Partial<Record<Kind, string>>> = {
   ko: {
     topAppBar: "상단 앱 바: 높이 64dp, 배경 surface. 제목은 titleLarge, 양쪽 아이콘 버튼은 48dp를 사용한다. 스크롤 시 surfaceContainer로 색상이 바뀌는 표준 동작을 사용한다.",
@@ -1521,27 +1519,22 @@ const PH = {
     intro: (title: string, brief: string) => `${title}を Material 3 Expressive のデザインで実装してください。${brief ? trimEnd(brief) + "。" : ""}`,
     titleOnly: (name: string) => `${name}画面`,
     titleAll: (n: number) => (n > 1 ? "このアプリ" : "この画面"),
-    target: (vp: Viewport, pl: Platform, dark: boolean, both: boolean) =>
+    target: (vp: Viewport, dark: boolean, both: boolean) =>
       `${
         vp === "phone"
           ? "想定はスマホの縦画面（412×892dp）で、"
           : vp === "desktop"
-            ? pl === "web"
-              ? "想定はデスクトップのブラウザ画面（基準 1280×800）で、"
-              : "想定は横向きのタブレット画面（基準 1280×800dp）で、"
+            ? "想定はデスクトップのブラウザ画面（基準 1280×800）で、"
             : vp === "mixed"
-              ? `スマホの縦画面（412×892）と${pl === "web" ? "デスクトップのブラウザ画面" : "横向きのタブレット画面"}（1280×800）の両方を想定し、同じ名前の画面は 1 つの画面の 2 つの幅として、レスポンシブに実装します。`
+              ? `スマホの縦画面（412×892）とデスクトップのブラウザ画面（1280×800）の両方を想定し、同じ名前の画面は 1 つの画面の 2 つの幅として、レスポンシブに実装します。`
               : "レイアウトは自由配置で、"
       }${both ? "ライトモードとダークモードの両方に対応し、端末のシステム設定に従って切り替えます。" : dark ? "ダークモード固定です。" : "ライトモード固定です。"}`,
-    platform: (pl: Platform) => (pl === "web" ? "実装先は Web（ブラウザで動くアプリ）です。" : "実装先は Android（ネイティブアプリ）です。"),
+    platform: "実装先は Web（ブラウザで動くアプリ）です。UI は shadcn M3E（@m3e レジストリの shadcn コンポーネント）で作ります。導入済みなので、これらのコンポーネントを import して使い、独自に作り直さないでください。",
     schemeHead: (dark: boolean) => (dark ? "ダークスキーム:" : "ライトスキーム:"),
     sketch:
       "下の画面構成は、意図を伝えるためのラフスケッチです。完成図の仕様ではないので、静止画のように再現するのではなく、この種のアプリとして普通に期待される機能を一通り備えた、実際に使える完成品として仕上げてください。",
     hColor: "## カラー",
-    dynamic: (pl: Platform) =>
-      pl === "web"
-        ? "ダイナミックカラーを使います。ブラウザや OS がユーザーのアクセントカラーを公開している場合はそれを種にして Material 3 のスキームを生成し、取得できない環境では下の色をフォールバックにしてください。"
-        : "ダイナミックカラーを使います。Android 12 以降ではユーザーの壁紙から生成されるカラースキーム（dynamicLightColorScheme / dynamicDarkColorScheme）を適用し、それが使えない端末では下の色をフォールバックにしてください。",
+    dynamic: "ダイナミックカラーを使います。ブラウザや OS がユーザーのアクセントカラーを公開している場合はそれを種にして Material 3 のスキームを生成し（M3ThemeProvider の source.primary に渡す）、取得できない環境では下の色をフォールバックにしてください。",
     colorIntro: (label: string, fallback: boolean, th: Theme) => {
       const scheme = `Material 3 の${th.bothModes ? "ライトとダークの" : th.dark ? "ダーク" : "ライト"}カラースキーム${th.contrast === "high" ? "（高コントラスト）" : th.contrast === "medium" ? "（中コントラスト）" : ""}`;
       return `${fallback ? "フォールバック用のテーマ" : "テーマ"}は ${label} 系です。${scheme}に次の色を設定し、UI の色はすべてこのロール経由で参照してください。`;
@@ -1564,27 +1557,22 @@ const PH = {
     intro: (title: string, brief: string) => `Please implement ${title} in the Material 3 Expressive design language.${brief ? ` ${trimEnd(brief)}.` : ""}`,
     titleOnly: (name: string) => `the ${name} screen`,
     titleAll: (n: number) => (n > 1 ? "this app" : "this screen"),
-    target: (vp: Viewport, pl: Platform, dark: boolean, both: boolean) =>
+    target: (vp: Viewport, dark: boolean, both: boolean) =>
       `${
         vp === "phone"
           ? "Target a portrait phone screen (412×892dp)"
           : vp === "desktop"
-            ? pl === "web"
-              ? "Target a desktop browser viewport (1280×800 reference)"
-              : "Target a landscape tablet screen (1280×800dp reference)"
+            ? "Target a desktop browser viewport (1280×800 reference)"
             : vp === "mixed"
-              ? `Target both a portrait phone (412×892) and a ${pl === "web" ? "desktop browser viewport" : "landscape tablet"} (1280×800); screens that share a name are one screen at two widths, so build them responsively`
+              ? `Target both a portrait phone (412×892) and a desktop browser viewport (1280×800); screens that share a name are one screen at two widths, so build them responsively`
               : "The layout is free-form"
       }, ${both ? "supporting both light and dark mode and following the device's system setting" : `${dark ? "dark" : "light"} mode only`}.`,
-    platform: (pl: Platform) => (pl === "web" ? "Build it for the web, as an app that runs in the browser." : "Build it for Android, as a native app."),
+    platform: "Build it for the web, as an app that runs in the browser. Build the UI with shadcn M3E (the shadcn components of the @m3e registry). It is already installed: import and use those components instead of recreating them.",
     schemeHead: (dark: boolean) => (dark ? "Dark scheme:" : "Light scheme:"),
     sketch:
       "The layout below is a rough sketch that conveys intent, not a finished spec. Do not reproduce it as a static picture; build the complete, usable app that this kind of product is normally expected to be.",
     hColor: "## Colors",
-    dynamic: (pl: Platform) =>
-      pl === "web"
-        ? "Use dynamic color: where the browser or OS exposes the user's accent color, generate the Material 3 scheme from it as the seed, and fall back to the colors below where it is unavailable."
-        : "Use dynamic color: on Android 12+ apply the scheme generated from the user's wallpaper (dynamicLightColorScheme / dynamicDarkColorScheme), and fall back to the colors below where it is unavailable.",
+    dynamic: "Use dynamic color: where the browser or OS exposes the user's accent color, use it as the seed of the Material 3 scheme (pass it as source.primary of M3ThemeProvider), and fall back to the colors below where it is unavailable.",
     colorIntro: (label: string, fallback: boolean, th: Theme) => {
       const scheme = `Material 3 ${th.bothModes ? "light and dark color schemes" : `${th.dark ? "dark" : "light"} color scheme`}${th.contrast === "high" ? " (high contrast)" : th.contrast === "medium" ? " (medium contrast)" : ""}`;
       return `The ${fallback ? "fallback theme" : "theme"} is ${label}. Set these on the ${scheme} and reference every UI color through its role.`;
@@ -1607,27 +1595,22 @@ const PH = {
     intro: (title: string, brief: string) => `请用 Material 3 Expressive 的设计实现${title}。${brief ? trimEnd(brief) + "。" : ""}`,
     titleOnly: (name: string) => `${name}屏幕`,
     titleAll: (n: number) => (n > 1 ? "这个应用" : "这个屏幕"),
-    target: (vp: Viewport, pl: Platform, dark: boolean, both: boolean) =>
+    target: (vp: Viewport, dark: boolean, both: boolean) =>
       `${
         vp === "phone"
           ? "目标为竖屏手机（412×892dp）"
           : vp === "desktop"
-            ? pl === "web"
-              ? "目标为桌面浏览器视口（以 1280×800 为基准）"
-              : "目标为横屏平板（以 1280×800dp 为基准）"
+            ? "目标为桌面浏览器视口（以 1280×800 为基准）"
             : vp === "mixed"
-              ? `同时面向竖屏手机（412×892）和${pl === "web" ? "桌面浏览器视口" : "横屏平板"}（1280×800）；同名的屏幕是同一个屏幕的两种宽度，请做成响应式`
+              ? `同时面向竖屏手机（412×892）和桌面浏览器视口（1280×800）；同名的屏幕是同一个屏幕的两种宽度，请做成响应式`
               : "布局为自由排布"
       }，${both ? "同时支持浅色和深色模式，并跟随设备的系统设置切换" : `只做${dark ? "深色" : "浅色"}模式`}。`,
-    platform: (pl: Platform) => (pl === "web" ? "实现目标是 Web（在浏览器中运行的应用）。" : "实现目标是 Android（原生应用）。"),
+    platform: "实现目标是 Web（在浏览器中运行的应用）。UI 使用 shadcn M3E（@m3e 注册表中的 shadcn 组件）构建。它已经安装好了：直接导入使用这些组件，不要自行重做。",
     schemeHead: (dark: boolean) => (dark ? "深色配色：" : "浅色配色："),
     sketch:
       "下面的屏幕结构是传达意图的草图，不是最终规格。不要把它当静态图片照搬，而要做成这类应用通常应具备的功能齐全、真正可用的成品。",
     hColor: "## 配色",
-    dynamic: (pl: Platform) =>
-      pl === "web"
-        ? "使用动态配色：浏览器或系统提供用户强调色时，以它为种子生成 Material 3 配色方案；无法获取时使用下面的颜色作为备用。"
-        : "使用动态配色：在 Android 12 及以上应用由用户壁纸生成的配色方案（dynamicLightColorScheme / dynamicDarkColorScheme），不支持的设备则使用下面的颜色作为备用。",
+    dynamic: "使用动态配色：浏览器或系统提供用户强调色时，以它为种子生成 Material 3 配色方案（传给 M3ThemeProvider 的 source.primary）；无法获取时使用下面的颜色作为备用。",
     colorIntro: (label: string, fallback: boolean, th: Theme) => {
       const scheme = `Material 3 的${th.bothModes ? "浅色和深色" : th.dark ? "深色" : "浅色"}配色方案${th.contrast === "high" ? "（高对比度）" : th.contrast === "medium" ? "（中对比度）" : ""}`;
       return `${fallback ? "备用主题" : "主题"}为 ${label} 系。请在${scheme}中设置以下颜色，UI 的所有颜色都通过这些角色引用。`;
@@ -1650,12 +1633,12 @@ const PH = {
     intro: (title: string, brief: string) => `Material 3 Expressive 디자인으로 구현해 주세요: ${title}.${brief ? ` ${trimEnd(brief)}.` : ""}`,
     titleOnly: (name: string) => `${name} 화면`,
     titleAll: (n: number) => (n > 1 ? "이 앱" : "이 화면"),
-    target: (vp: Viewport, pl: Platform, dark: boolean, both: boolean) => `${vp === "phone" ? "세로형 휴대전화 화면(412×892dp)을 대상으로 하며" : vp === "desktop" ? `${pl === "web" ? "데스크톱 브라우저" : "가로형 태블릿"} 화면(1280×800 기준)을 대상으로 하며` : vp === "mixed" ? `세로형 휴대전화(412×892)와 ${pl === "web" ? "데스크톱 브라우저" : "가로형 태블릿"}(1280×800)을 모두 지원하며, 이름이 같은 화면은 서로 다른 너비의 동일한 화면이므로 반응형으로 구현하고` : "레이아웃은 자유 배치이며"}, ${both ? "라이트 모드와 다크 모드를 모두 지원하고 기기의 시스템 설정을 따른다" : `${dark ? "다크" : "라이트"} 모드만 지원한다`}.`,
-    platform: (pl: Platform) => (pl === "web" ? "브라우저에서 실행되는 웹 앱으로 구현한다." : "Android 네이티브 앱으로 구현한다."),
+    target: (vp: Viewport, dark: boolean, both: boolean) => `${vp === "phone" ? "세로형 휴대전화 화면(412×892dp)을 대상으로 하며" : vp === "desktop" ? `데스크톱 브라우저 화면(1280×800 기준)을 대상으로 하며` : vp === "mixed" ? `세로형 휴대전화(412×892)와 데스크톱 브라우저(1280×800)을 모두 지원하며, 이름이 같은 화면은 서로 다른 너비의 동일한 화면이므로 반응형으로 구현하고` : "레이아웃은 자유 배치이며"}, ${both ? "라이트 모드와 다크 모드를 모두 지원하고 기기의 시스템 설정을 따른다" : `${dark ? "다크" : "라이트"} 모드만 지원한다`}.`,
+    platform: "브라우저에서 실행되는 웹 앱으로 구현한다. UI는 shadcn M3E(@m3e 레지스트리의 shadcn 컴포넌트)로 만든다. 이미 설치되어 있으므로 이 컴포넌트를 import해서 사용하고 다시 만들지 않는다.",
     schemeHead: (dark: boolean) => (dark ? "다크 색상 구성:" : "라이트 색상 구성:"),
     sketch: "아래 화면 구성은 의도를 전달하는 대략적인 스케치이며 완성 사양이 아니다. 정적인 그림처럼 복제하지 말고 이 종류의 제품에 일반적으로 필요한 기능을 갖춘 실제 사용 가능한 앱으로 완성한다.",
     hColor: "## 색상",
-    dynamic: (pl: Platform) => pl === "web" ? "동적 색상을 사용한다. 브라우저나 운영체제에서 사용자의 강조 색상을 제공하면 이를 기준으로 Material 3 색상 구성을 생성하고, 사용할 수 없으면 아래 색상으로 대체한다." : "동적 색상을 사용한다. Android 12 이상에서는 사용자 배경화면에서 생성된 색상 구성(dynamicLightColorScheme / dynamicDarkColorScheme)을 적용하고 사용할 수 없는 기기에서는 아래 색상을 대체 값으로 사용한다.",
+    dynamic: "동적 색상을 사용한다. 브라우저나 운영체제에서 사용자의 강조 색상을 제공하면 이를 기준으로 Material 3 색상 구성을 생성하고(M3ThemeProvider의 source.primary로 전달), 사용할 수 없으면 아래 색상으로 대체한다.",
     colorIntro: (label: string, fallback: boolean, th: Theme) => {
       const scheme = `Material 3 ${th.bothModes ? "라이트 및 다크" : th.dark ? "다크" : "라이트"} 색상 구성${th.contrast === "high" ? "(고대비)" : th.contrast === "medium" ? "(중간 대비)" : ""}`;
       return `${fallback ? "대체 테마" : "테마"}는 ${label} 계열이다. ${scheme}에 다음 색상을 설정하고 모든 UI 색상을 해당 역할로 참조한다.`;
@@ -1683,30 +1666,30 @@ export const PROMPT_OPTIONS: PromptOption[] = ["deliverable", "tests", "darkMode
 export const DEFAULT_PROMPT_OPTIONS: PromptOption[] = ["deliverable"];
 export const isPromptOption = (v: unknown): v is PromptOption => PROMPT_OPTIONS.includes(v as PromptOption);
 export const promptOptionsOf = (doc: Pick<Doc, "promptOptions">): PromptOption[] => (doc.promptOptions ? doc.promptOptions.filter(isPromptOption) : DEFAULT_PROMPT_OPTIONS);
-export const PROMPT_OPTION_TEXT: Record<Lang, Record<PromptOption, { label: string; icon: string; line: string | ((pl: Platform) => string) }>> = {
+export const PROMPT_OPTION_TEXT: Record<Lang, Record<PromptOption, { label: string; icon: string; line: string }>> = {
   ja: {
-    deliverable: { label: "検証不要・成果物のみ", icon: "package_2", line: (pl) => `${pl === "web" ? "ブラウザでの" : "エミュレータや実機での"}動作検証は不要。実装が終わったら${pl === "web" ? "production build を実行し、その出力" : "署名済みの release APK "}を成果物として提供する。` },
+    deliverable: { label: "検証不要・成果物のみ", icon: "package_2", line: "ブラウザでの動作検証は不要。実装が終わったら production build を実行し、その出力を成果物として提供する。" },
     tests: { label: "テストを書く", icon: "science", line: "主要なロジックにユニットテストを書き、すべて通る状態で提出する。" },
     darkMode: { label: "ダークモード対応", icon: "dark_mode", line: "ライトとダークの両方のカラースキームに対応し、システム設定に追従する。" },
     languages: { label: "日本語と英語", icon: "translate", line: "UI の文言は日本語と英語の両方を用意し、端末の言語設定に追従する。" },
     offline: { label: "オフライン対応", icon: "cloud_off", line: "ネットワークがなくても主要な機能が使えるようにし、必要なら再接続時に同期する。" },
   },
   en: {
-    deliverable: { label: "No verification, deliverable only", icon: "package_2", line: (pl) => `Do not verify ${pl === "web" ? "in a browser" : "on an emulator or a device"}. When the implementation is done, ${pl === "web" ? "run the production build and provide its output" : "produce a signed release APK"} as the deliverable.` },
+    deliverable: { label: "No verification, deliverable only", icon: "package_2", line: "Do not verify in a browser. When the implementation is done, run the production build and provide its output as the deliverable." },
     tests: { label: "Write tests", icon: "science", line: "Write unit tests for the main logic and hand it over with all of them passing." },
     darkMode: { label: "Dark mode", icon: "dark_mode", line: "Support both the light and the dark color scheme, following the system setting." },
     languages: { label: "Japanese and English", icon: "translate", line: "Provide the UI text in both Japanese and English, following the device language." },
     offline: { label: "Works offline", icon: "cloud_off", line: "Keep the main features usable without a network, syncing when it returns if needed." },
   },
   zh: {
-    deliverable: { label: "无需验证，仅交付成果", icon: "package_2", line: (pl) => `不需要在${pl === "web" ? "浏览器" : "模拟器或真机"}上验证。实现完成后${pl === "web" ? "运行 production build 并提供其输出" : "生成已签名的 release APK "}作为交付物。` },
+    deliverable: { label: "无需验证，仅交付成果", icon: "package_2", line: "不需要在浏览器上验证。实现完成后运行 production build 并提供其输出作为交付物。" },
     tests: { label: "编写测试", icon: "science", line: "为主要逻辑编写单元测试，并在全部通过的状态下交付。" },
     darkMode: { label: "支持深色模式", icon: "dark_mode", line: "同时支持浅色与深色配色方案，并跟随系统设置。" },
     languages: { label: "日语和英语", icon: "translate", line: "UI 文案同时提供日语和英语，并跟随设备语言设置。" },
     offline: { label: "支持离线", icon: "cloud_off", line: "在没有网络时也能使用主要功能，必要时在重新连接后同步。" },
   },
   ko: {
-    deliverable: { label: "검증 없이 결과물만", icon: "package_2", line: (pl) => `${pl === "web" ? "브라우저" : "에뮬레이터나 실제 기기"} 동작 검증은 필요 없다. 구현 후 ${pl === "web" ? "production build를 실행하고 그 출력" : "서명된 release APK"}을 결과물로 제공한다.` },
+    deliverable: { label: "검증 없이 결과물만", icon: "package_2", line: "브라우저 동작 검증은 필요 없다. 구현 후 production build를 실행하고 그 출력을 결과물로 제공한다." },
     tests: { label: "테스트 작성", icon: "science", line: "주요 로직에 단위 테스트를 작성하고 모두 통과하는 상태로 제출한다." },
     darkMode: { label: "다크 모드 지원", icon: "dark_mode", line: "라이트와 다크 색상 스킴을 모두 지원하고 시스템 설정을 따른다." },
     languages: { label: "일본어와 영어", icon: "translate", line: "UI 문구를 일본어와 영어로 모두 준비하고 기기 언어 설정을 따른다." },
@@ -1747,7 +1730,6 @@ export function buildPrompt(doc: Doc, widths: Record<string, number>, onlyFrameI
   const th = normalizeTheme(doc.theme);
   const pal = paletteOf(doc.paletteKey, doc.customPalette, th);
   const phone = doc.frame === "phone";
-  const platform: Platform = doc.platform ?? defaultPlatformOf(doc.frames, doc.frame);
   const allFrames = phone ? doc.frames : [];
   const only = onlyFrameId ? allFrames.find((f) => f.id === onlyFrameId) : undefined;
   const frames = only ? [only] : allFrames;
@@ -1781,18 +1763,18 @@ export function buildPrompt(doc: Doc, widths: Record<string, number>, onlyFrameI
       }
     }
   const styleNotes = kindsUsed
-    .map((k) => (k === "navRail" && wideRail ? `${legacyRail ? `${STYLE_NOTES[lang].navRail} ` : ""}${WIDE_RAIL_STYLE[lang]}` : (platform === "web" && STYLE_NOTES_WEB[lang][k]) || STYLE_NOTES[lang][k]))
+    .map((k) => (k === "navRail" && wideRail ? `${legacyRail ? `${STYLE_NOTES[lang].navRail} ` : ""}${WIDE_RAIL_STYLE[lang]}` : STYLE_NOTES_WEB[lang][k] || STYLE_NOTES[lang][k]))
     .filter((s): s is string => !!s);
 
   const title = only ? ph.titleOnly(q(only.name || ph.screen)) : doc.title.trim() || ph.titleAll(frames.length);
   lines.push(ph.intro(title, doc.brief.trim()));
-  lines.push(ph.target(viewport, platform, th.dark, th.bothModes));
-  lines.push(ph.platform(platform));
+  lines.push(ph.target(viewport, th.dark, th.bothModes));
+  lines.push(ph.platform);
   lines.push(ph.sketch);
 
   lines.push("");
   lines.push(ph.hColor);
-  if (doc.dynamicColor) lines.push(ph.dynamic(platform));
+  if (doc.dynamicColor) lines.push(ph.dynamic);
   lines.push(ph.colorIntro(pal.label, !!doc.dynamicColor, th));
   if (th.bothModes) {
     const light = paletteOf(doc.paletteKey, doc.customPalette, { ...th, dark: false });
@@ -1849,13 +1831,13 @@ export function buildPrompt(doc: Doc, widths: Record<string, number>, onlyFrameI
 
   lines.push("");
   lines.push(ph.hGeneral);
-  for (const s of GENERAL[lang]) lines.push(`- ${typeof s === "function" ? s(platform) : s}`);
+  for (const s of GENERAL[lang]) lines.push(`- ${s}`);
   /* the author's own choices come last, in the order they are offered */
   const chosen = promptOptionsOf(doc);
   for (const key of PROMPT_OPTIONS) {
     if (!chosen.includes(key)) continue;
     const line = PROMPT_OPTION_TEXT[lang][key].line;
-    lines.push(`- ${typeof line === "function" ? line(platform) : line}`);
+    lines.push(`- ${line}`);
   }
   return lines.join("\n");
 }

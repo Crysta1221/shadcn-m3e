@@ -50,8 +50,6 @@ import {
   clamp,
   connectSpecOf,
   Doc,
-  isPlatform,
-  Platform,
   Frame,
   Place,
   FramePreset,
@@ -66,7 +64,6 @@ import {
   carryItemSize,
   matchRunSize,
   runSizePatch,
-  defaultPlatformOf,
   GAP,
   Group,
   groupBounds,
@@ -500,7 +497,6 @@ export default function Editor({ initialLang, onReady }: { initialLang: Lang; on
   /** the prompt's full-screen cover is up: the panel's own band steps aside while it is */
   const [promptCoverUp, setPromptCoverUp] = useState(false);
   /** the author's explicit target; null follows the screens (web once a desktop screen exists) */
-  const [platform, setPlatform] = useState<Platform | null>(null);
   /** a project file waiting for the author to confirm replacing the canvas */
   const [pendingImport, setPendingImport] = useState<Doc | null>(null);
   const [shareOpen, setShareOpen] = useState(false);
@@ -754,8 +750,6 @@ export default function Editor({ initialLang, onReady }: { initialLang: Lang; on
     else if (reset) setPromptEdit(undefined);
     if (Array.isArray(doc.promptOptions)) setPromptOptions(doc.promptOptions);
     else if (reset) setPromptOptions(undefined);
-    if (isPlatform(doc.platform)) setPlatform(doc.platform);
-    else if (reset) setPlatform(null);
   };
 
   useEffect(() => {
@@ -886,10 +880,10 @@ export default function Editor({ initialLang, onReady }: { initialLang: Lang; on
     try {
       localStorage.setItem(
         DOC_KEY,
-        JSON.stringify({ groups, frames, paletteKey, frame, title, brief, promptEdit, promptOptions, platform: platform ?? undefined, customPalette: customPalette ?? undefined, dynamicColor, theme }),
+        JSON.stringify({ groups, frames, paletteKey, frame, title, brief, promptEdit, promptOptions, customPalette: customPalette ?? undefined, dynamicColor, theme }),
       );
     } catch {}
-  }, [editAccess, groups, frames, paletteKey, frame, title, brief, promptEdit, promptOptions, platform, customPalette, dynamicColor, theme]);
+  }, [editAccess, groups, frames, paletteKey, frame, title, brief, promptEdit, promptOptions, customPalette, dynamicColor, theme]);
 
   useEffect(() => {
     if (!loadedRef.current) return;
@@ -2813,8 +2807,6 @@ export default function Editor({ initialLang, onReady }: { initialLang: Lang; on
     /* the screens to the right move over, parts take the sizes the new screen calls for,
      * and the screen is laid out again by the tidy rules */
     const laid = carryFrame(groupsRef.current, current, next, frames, widthsRef.current);
-    /* a target the author never picked follows the screens */
-    if (platform === defaultPlatformOf(frames, frameRef.current)) setPlatform(null);
     snapshot();
     tidyRef.current = null;
     setEasing(true);
@@ -3378,8 +3370,8 @@ export default function Editor({ initialLang, onReady }: { initialLang: Lang; on
   }, [setGap]);
   const selectedSet = useMemo(() => new Set(selectedIds), [selectedIds]);
   const doc: Doc = useMemo(
-    () => ({ groups, frames, paletteKey, frame, title, brief, promptEdit, promptOptions, platform: platform ?? undefined, customPalette: customPalette ?? undefined, dynamicColor, theme }),
-    [groups, frames, paletteKey, frame, title, brief, promptEdit, promptOptions, platform, customPalette, dynamicColor, theme],
+    () => ({ groups, frames, paletteKey, frame, title, brief, promptEdit, promptOptions, customPalette: customPalette ?? undefined, dynamicColor, theme }),
+    [groups, frames, paletteKey, frame, title, brief, promptEdit, promptOptions, customPalette, dynamicColor, theme],
   );
   /** the same document, for callbacks that were created on an earlier render */
   const docRef = useRef(doc);
@@ -4727,7 +4719,6 @@ export default function Editor({ initialLang, onReady }: { initialLang: Lang; on
                     if (patch.brief !== undefined) setBrief(patch.brief);
                     if ("promptEdit" in patch) setPromptEdit(patch.promptEdit);
                     if ("promptOptions" in patch) setPromptOptions(patch.promptOptions);
-                    if ("platform" in patch) setPlatform(isPlatform(patch.platform) ? patch.platform : null);
                   }}
                 />
               )}

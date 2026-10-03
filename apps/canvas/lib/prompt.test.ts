@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it } from "vitest";
 
 import { Lang, setGlobalLang } from "./i18n";
 import { buildPrompt } from "./prompt";
-import { BACK_TARGET, DEFAULT_THEME, Doc, Item, Platform, defaultTabs, makeItem, paletteOf } from "./tokens";
+import { BACK_TARGET, DEFAULT_THEME, Doc, Item, defaultTabs, makeItem, paletteOf } from "./tokens";
 
 const LANGS: Lang[] = ["ja", "en", "zh", "ko"];
 
@@ -14,17 +14,18 @@ const SECTIONS: Record<Lang, string[]> = {
   ko: ["## 색상", "## 모양, 글꼴 및 모션", "## 화면 구성", "## 동작 및 화면 전환", "## 부품별 스타일", "## 전체 지침"],
 };
 
-const PLATFORM_LINE: Record<Lang, Record<Platform, string>> = {
-  ja: { android: "実装先は Android（ネイティブアプリ）です。", web: "実装先は Web（ブラウザで動くアプリ）です。" },
-  en: { android: "Build it for Android, as a native app.", web: "Build it for the web, as an app that runs in the browser." },
-  zh: { android: "实现目标是 Android（原生应用）。", web: "实现目标是 Web（在浏览器中运行的应用）。" },
-  ko: { android: "Android 네이티브 앱으로 구현한다.", web: "브라우저에서 실행되는 웹 앱으로 구현한다." },
+/* The prompt always targets the web, with shadcn M3E already installed. */
+const PLATFORM_LINE: Record<Lang, string> = {
+  ja: "実装先は Web（ブラウザで動くアプリ）です。UI は shadcn M3E（@m3e レジストリの shadcn コンポーネント）で作ります。導入済みなので、これらのコンポーネントを import して使い、独自に作り直さないでください。",
+  en: "Build it for the web, as an app that runs in the browser. Build the UI with shadcn M3E (the shadcn components of the @m3e registry). It is already installed: import and use those components instead of recreating them.",
+  zh: "实现目标是 Web（在浏览器中运行的应用）。UI 使用 shadcn M3E（@m3e 注册表中的 shadcn 组件）构建。它已经安装好了：直接导入使用这些组件，不要自行重做。",
+  ko: "브라우저에서 실행되는 웹 앱으로 구현한다. UI는 shadcn M3E(@m3e 레지스트리의 shadcn 컴포넌트)로 만든다. 이미 설치되어 있으므로 이 컴포넌트를 import해서 사용하고 다시 만들지 않는다.",
 };
 
 /* One phone screen with a top app bar, a connected pair of buttons (one with a
  * tap action) and a navigation bar. makeItem / defaultTabs fill in the defaults;
  * module-level language is set first so those defaults follow the test. */
-function fixture(platform: Platform = "android", extraItems: Item[] = []): Doc {
+function fixture(extraItems: Item[] = []): Doc {
   const bar: Item = { ...makeItem("topAppBar"), id: "bar", label: "Home" };
   const save: Item = { ...makeItem("button"), id: "save", label: "Save", action: { to: BACK_TARGET, transition: "fade" } };
   const cancel: Item = { ...makeItem("button"), id: "cancel", label: "Cancel", variant: "text" };
@@ -38,7 +39,6 @@ function fixture(platform: Platform = "android", extraItems: Item[] = []): Doc {
     frames: [{ id: "f-home", name: "Home", x: 0, y: 0 }],
     paletteKey: "purple",
     frame: "phone",
-    platform,
     title: "Notes",
     brief: "",
   };
@@ -46,9 +46,9 @@ function fixture(platform: Platform = "android", extraItems: Item[] = []): Doc {
 
 /* Set the module-level language for the fixture helpers, then build explicitly
  * in that language — nothing is left to ambient state. */
-function build(lang: Lang, platform: Platform = "android", extraItems: Item[] = []) {
+function build(lang: Lang, extraItems: Item[] = []) {
   setGlobalLang(lang);
-  return buildPrompt(fixture(platform, extraItems), {}, undefined, lang);
+  return buildPrompt(fixture(extraItems), {}, undefined, lang);
 }
 
 const lines = (prompt: string) => prompt.split("\n");
@@ -180,9 +180,8 @@ describe("navigation rail expansion", () => {
     const before = structuredClone(doc);
     const prompt = buildPrompt(doc, {}, undefined, lang);
     const layout = prompt.slice(prompt.indexOf(SECTIONS[lang][2]), prompt.indexOf(SECTIONS[lang][4]));
-    expect(layout).toContain("WideNavigationRail");
+    expect(layout).toMatch(/NavigationRail[,、，]/);
     expect(layout).toContain("96dp");
-    expect(layout).not.toContain("ModalWideNavigationRail");
     expect(layout).not.toContain("220dp");
     expect(doc).toEqual(before);
   });
@@ -192,10 +191,10 @@ describe("navigation rail expansion", () => {
     const collapsedText = { ja: "折りたたみ状態", en: "NavigationRail, collapsed,", zh: "折叠状态", ko: "접힌 상태" }[lang];
     const modalText = { ja: "モーダル型：展開時", en: "modal overlay:", zh: "模态覆盖：", ko: "모달 오버레이:" }[lang];
     const nonModalText = { ja: "非モーダル型：現在", en: "non-modal layout:", zh: "非模态布局：", ko: "비모달 레이아웃:" }[lang];
-    for (const platform of ["android", "web"] as const) {
+    {
       for (const railExpanded of [false, true]) {
         for (const railModal of [false, true]) {
-          const doc = fixture(platform);
+          const doc = fixture();
           doc.groups = [{ id: "rail", x: 0, y: 0, axis: "x", items: [
             { ...makeItem("navRail"), railExpanded, railModal, selected: 1, tabs: [{ icon: "home", label: "Home" }, { icon: "star", label: "Saved" }] },
           ] }];
@@ -210,7 +209,7 @@ describe("navigation rail expansion", () => {
           expect(layout).toContain(railModal ? modalText : nonModalText);
           expect(layout).not.toContain(railModal ? nonModalText : modalText);
           expect(layout).toContain(`${railExpanded ? 220 : 96}dp`);
-          expect(layout).toContain(railModal ? "ModalWideNavigationRail" : "WideNavigationRail");
+          expect(layout).toContain("NavigationRail");
           expect(layout).toContain({ ja: "「Saved」が選択状態", en: '"Saved" is selected', zh: "“Saved”为选中状态", ko: '"Saved" 선택됨' }[lang]);
           const styles = styleBullets(prompt, lang).join("\n");
           expect(styles).toContain("220dp");
@@ -233,7 +232,7 @@ describe("navigation rail expansion", () => {
       { ...makeItem("navRail"), railExpanded: undefined, railModal: undefined },
     ] }];
     const legacy = buildPrompt(doc, {}, undefined, lang);
-    expect(legacy).not.toContain("WideNavigationRail");
+    expect(legacy).not.toMatch(/NavigationRail[,、，]/);
     expect(styleBullets(legacy, lang).join("\n")).toContain("80dp");
     expect(styleBullets(legacy, lang).join("\n")).not.toContain("220dp");
     doc.groups.push({ id: "expanded", x: 200, y: 0, axis: "x", items: [{ ...makeItem("navRail"), railExpanded: true }] });
@@ -249,7 +248,7 @@ describe("navigation rail expansion", () => {
     ] }];
     const prompt = buildPrompt(doc, {}, undefined, lang);
     const layout = prompt.slice(prompt.indexOf(SECTIONS[lang][2]), prompt.indexOf(SECTIONS[lang][4]));
-    expect(layout).toContain("ModalWideNavigationRail");
+    expect(layout).toMatch(/NavigationRail[,、，]/);
     expect(layout).toContain("96dp");
     expect(layout).not.toContain("220dp");
     expect(styleBullets(prompt, lang).join("\n")).toContain("220dp");
@@ -264,23 +263,23 @@ describe("buildPrompt structure", () => {
     expect(headings(build(lang))).toEqual(SECTIONS[lang]);
   });
 
-  it.each(LANGS)("names the requested platform on the intro lines in %s", (lang) => {
-    const android = lines(build(lang, "android"));
-    const web = lines(build(lang, "web"));
-    expect(android[2]).toBe(PLATFORM_LINE[lang].android);
-    expect(web[2]).toBe(PLATFORM_LINE[lang].web);
+  it.each(LANGS)("targets the web with shadcn M3E on the intro lines in %s", (lang) => {
+    expect(lines(build(lang))[2]).toBe(PLATFORM_LINE[lang]);
   });
 
-  it("names Android when the doc picks no platform", () => {
-    setGlobalLang("en");
-    const { platform, ...doc } = fixture();
-    expect(lines(buildPrompt(doc, {}, undefined, "en"))[2]).toBe(PLATFORM_LINE.en.android);
+  it.each(LANGS)("never mentions Android or Compose in %s", (lang) => {
+    const rail = { ...makeItem("navRail"), railExpanded: true, railModal: true };
+    const sheet = makeItem("bottomSheet");
+    const carousel = makeItem("carousel");
+    const doc = { ...fixture([rail, sheet, carousel]), dynamicColor: true };
+    const prompt = buildPrompt(doc, {}, undefined, lang);
+    expect(prompt).not.toMatch(/Android|Compose|Jetpack|APK|Room|DataStore|Material Web/);
   });
 
   it.each(LANGS)("writes one style note per part kind in use in %s", (lang) => {
     expect(styleBullets(build(lang), lang)).toHaveLength(3); // topAppBar, button, bottomNav
     const chip: Item = { ...makeItem("chip"), id: "chip" };
-    expect(styleBullets(build(lang, "android", [chip]), lang)).toHaveLength(4);
+    expect(styleBullets(build(lang, [chip]), lang)).toHaveLength(4);
   });
 
   it.each(LANGS)("quotes labels with %s punctuation", (lang) => {
@@ -349,7 +348,7 @@ describe("buildPrompt for the camera, map and dropdown parts", () => {
 describe("scrollable tab rows in the prompt", () => {
   const withTabs = (n: number): Item => ({ ...makeItem("tabs"), id: "tabs", tabs: Array.from({ length: n }, (_, i) => ({ label: `Tab ${i + 1}`, icon: "" })) });
   const doc = (n: number): Doc => ({
-    title: "T", brief: "", paletteKey: "purple", frame: "phone", platform: "web",
+    title: "T", brief: "", paletteKey: "purple", frame: "phone",
     frames: [{ id: "f", name: "Home", x: 0, y: 0 }],
     groups: [{ id: "g", x: 0, y: 100, axis: "x", items: [withTabs(n)] }],
   });
@@ -369,10 +368,10 @@ describe("bottom sheet", () => {
     doc.groups = [{ id: "sheet", x: 0, y: 500, axis: "x", items: [{ ...makeItem("bottomSheet"), radiusTop: 16 }] }];
     const prompt = buildPrompt(doc, {}, undefined, lang);
     const words = {
-      ja: ["ボトムシート（上部にドラッグハンドル", "上の角丸 16dp", "ModalBottomSheet"],
+      ja: ["ボトムシート（上部にドラッグハンドル", "上の角丸 16dp"],
       en: ["bottom sheet with a drag handle at the top", "16dp top corners", "modal bottom sheets"],
-      zh: ["底部面板（顶部带拖动条", "上方圆角 16dp", "ModalBottomSheet"],
-      ko: ["하단 시트(위쪽 드래그 핸들 포함", "위 모서리 16dp", "ModalBottomSheet"],
+      zh: ["底部面板（顶部带拖动条", "上方圆角 16dp"],
+      ko: ["하단 시트(위쪽 드래그 핸들 포함", "위 모서리 16dp"],
     }[lang];
     for (const w of words) expect(prompt).toContain(w);
   });

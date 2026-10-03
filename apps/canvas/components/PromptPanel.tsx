@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { buildCode } from "@/lib/codegen";
 import { PromptMark, buildPrompt, promptMarks } from "@/lib/prompt";
-import { Doc, Palette, Platform, defaultPlatformOf } from "@/lib/tokens";
+import { Doc, Palette } from "@/lib/tokens";
 import { Icon } from "./M3Node";
 import { Field, IconBtn, Segmented } from "./ui";
 import { t, useLang } from "@/lib/i18n";
@@ -442,22 +442,9 @@ export function PromptPanel({
     setLit(i);
     setJump((n) => n + 1);
   };
-  const platform = (
-    <Segmented<Platform>
-      options={[
-        { key: "android", icon: "android", label: "Android", title: t("targetAndroid", lang) },
-        { key: "web", icon: "language", label: "Web", title: t("targetWeb", lang) },
-      ]}
-      value={doc.platform ?? defaultPlatformOf(doc.frames, doc.frame)}
-      onChange={(platform) => onDoc({ platform })}
-      p={p}
-      height={40}
-    />
-  );
-
   return (
     <>
-      {/* the target stands above the box, which starts under the panel's fade band */}
+      {/* the mode switch stands above the box, which starts under the panel's fade band */}
       <div ref={panel} style={{ display: "flex", flexDirection: "column", height: "100%", padding: `${PANEL_PAD_TOP}px 12px 12px`, gap: 10 }}>
         <Segmented<"prompt" | "code">
           options={[
@@ -469,7 +456,6 @@ export function PromptPanel({
           p={p}
           height={40}
         />
-        {mode === "prompt" && platform}
         {mode === "prompt" ? (
           <PromptBox
             text={text}
@@ -535,29 +521,16 @@ export function PromptPanel({
         >
           {/* Everything inside is laid out at its final size from the first frame, so no words
               reflow. The left columns hang off the surface's left edge and travel with it, so the
-              target and the fields slide in from where they stood in the panel; the text box hangs
+              fields slide in from where they stood in the panel; the text box hangs
               off the right edge, where the panel's box already is, and only grows taller and
               wider under the surface. Its buttons sit in the same corner throughout. */}
-          {/* the target travels between its two places -- the panel's top and the column's -- and
-              never fades: it is the one thing on both sides of the change */}
-          <div
-            style={{
-              position: "absolute",
-              left: grown ? 20 : 12,
-              width: grown ? 300 : from.width - 24,
-              top: grown ? 40 : PANEL_PAD_TOP,
-              transition: `left ${COVER_MS}ms ${COVER_EASE}, top ${COVER_MS}ms ${COVER_EASE}, width ${COVER_MS}ms ${COVER_EASE}`,
-            }}
-          >
-            {platform}
-          </div>
           <div
             className="no-scrollbar"
             style={{
               position: "absolute",
               left: 20,
               width: 300,
-              top: grown ? 40 + 40 + 10 : PANEL_PAD_TOP + 40 + 10,
+              top: grown ? 40 : PANEL_PAD_TOP + 40 + 10,
               bottom: 12,
               display: "flex",
               flexDirection: "column",

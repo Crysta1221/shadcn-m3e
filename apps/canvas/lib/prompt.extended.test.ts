@@ -1,5 +1,5 @@
 /**
- * lib/prompt.ts — prompt generation per language/platform.
+ * lib/prompt.ts — prompt generation per language.
  *
  * Locks in:
  *  - buildPrompt picks the right language strings (ja / en / zh)
@@ -9,7 +9,7 @@
  *  - Japanese / Chinese quotes are used per language
  *  - bothModes emits BOTH light and dark palette sections
  *  - dynamicColor flag changes the prompt text
- *  - platform='web' affects the platform line and adds web style notes
+ *  - the prompt targets the web with shadcn M3E and uses the browser style notes
  *  - effectivePrompt returns the author's edit when present, buildPrompt otherwise
  *  - onlyFrameId restricts output to one screen
  *  - empty doc still produces a valid prompt (freeform / empty message)
@@ -72,7 +72,6 @@ function baseDoc(overrides: Partial<Doc> = {}): Doc {
     paletteKey,
     customPalette: palette,
     frame: "phone",
-    platform: "android",
     groups: [],
     frames: [phoneFrame],
     ...overrides,
@@ -193,25 +192,20 @@ describe("buildPrompt — items are named in language", () => {
   });
 });
 
-describe("buildPrompt — platform switch", () => {
-  it("Android platform mentions Android / Material", () => {
-    const doc = baseDoc({ platform: "android" });
-    const out = buildPrompt(doc, widths, undefined, "en");
-    expect(out).toMatch(/Android|Material 3|Compose/i);
+describe("buildPrompt — web with shadcn M3E", () => {
+  it("targets the web and the installed shadcn M3E components", () => {
+    const out = buildPrompt(baseDoc(), widths, undefined, "en");
+    expect(out).toMatch(/web/i);
+    expect(out).toContain("shadcn M3E");
+    expect(out).toContain("@/components/m3e/*");
+    expect(out).not.toMatch(/Android|Compose|Jetpack|APK/);
   });
 
-  it("Web platform mentions web / HTML / CSS", () => {
-    const doc = baseDoc({ platform: "web" });
-    const out = buildPrompt(doc, widths, undefined, "en");
-    expect(out).toMatch(/web|HTML|CSS|responsive/i);
-  });
-
-  it("Web platform emits web style notes when a kind has one", () => {
-    // STYLE_NOTES_WEB.en only covers topAppBar/bottomNav — a button has no
-    // web note, so use a top app bar and assert its actual note text.
+  it("emits the browser style notes for the bars", () => {
+    // STYLE_NOTES_WEB.en only covers topAppBar/bottomNav, so use a top app bar
+    // and assert its actual note text.
     const item: Item = { id: "t1", kind: "topAppBar", label: "Title", icon: null, variant: "filled" };
     const doc = baseDoc({
-      platform: "web",
       groups: [{ id: "g", x: 100, y: 100, axis: "x", items: [item] }],
     });
     const out = buildPrompt(doc, widths, undefined, "en");
