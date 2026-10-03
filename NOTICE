@@ -30,15 +30,21 @@ lnkiai/m3e-canvas - MIT License
 
 @material/material-color-utilities - Apache License 2.0
   https://github.com/material-foundation/material-color-utilities
-  Dynamic color schemes (src/lib/m3e/color.ts).
+  Dynamic color schemes (packages/m3e/src/lib/color.ts).
 
 shadcn/ui - MIT License
   https://github.com/shadcn-ui/ui
   The component APIs this library restyles, and the originals kept in
-  src/components/ui.
+  packages/m3e/reference/ui.
+
+m3e-canvas (lnkiai) - MIT License
+  https://github.com/lnkiai/m3e-canvas
+  Included as a git subtree in apps/canvas (the Playground). Its own LICENSE
+  and NOTICE (Apache-2.0 notices for the loading indicator and Google's
+  shape data) are kept in that directory.
 
 Material Symbols (Google) - Apache License 2.0, via Iconify
-  The bundled icon glyphs (src/components/m3e/icon-data*.ts).
+  The bundled icon glyphs (packages/m3e/src/components/icon-data*.ts).
 
 Roboto Flex and JetBrains Mono - SIL Open Font License 1.1, via Fontsource
 

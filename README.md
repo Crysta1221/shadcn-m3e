@@ -51,6 +51,7 @@ A bun workspace.
 | `packages/m3e/scripts`        | Scripts for tokens, the registry and icons                  |
 | `apps/docs`                   | The documentation site; it also serves the registry         |
 | `apps/docs/public/r`          | Generated registry output (not tracked by git)              |
+| `apps/canvas`                 | The Playground (a subtree of lnkiai/m3e-canvas)             |
 
 Development conventions are described in [AGENTS.md](AGENTS.md).
 
