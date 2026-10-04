@@ -2,6 +2,8 @@ import type { CSSProperties } from "react";
 import { FAB_MENU_TABS, KIND_TEXT, Lang, NAV_TABS, SPLIT_MENU_TABS, TAB_LABELS, getLang, t, SELECT_OPTIONS } from "./i18n";
 import { Contrast, isLightColor, schemeFromSeed } from "./color";
 import { partBySlug } from "../parts/registry";
+import { axisValue, axisWrite, resizeOf } from "../parts/resize";
+import { roleOf } from "../parts/role";
 
 /* ---------- geometry ---------- */
 export const H = 56; // M3 medium button height (dp)
@@ -150,8 +152,11 @@ export const RAIL_GAP = 12;
 /** M3 Expressive navigation rail tokens; the 80dp rail above is kept for saved sketches. */
 export const RAIL_COLLAPSED_W = 96;
 export const RAIL_EXPANDED_W = 220;
-export const isWideRail = (it: Item) => it.railExpanded !== undefined || it.railModal === true;
-export const railWidth = (it: Item) => it.railExpanded ? RAIL_EXPANDED_W : isWideRail(it) ? RAIL_COLLAPSED_W : RAIL_W;
+/* the M3E rail's collapsed width is 96 (80 when narrow): a component rail is the wide kind
+ * unless it is the narrow one */
+export const isWideRail = (it: Item) => (it.kind === "component" ? it.props?.narrow !== true : it.railExpanded !== undefined || it.railModal === true);
+export const railWidth = (it: Item) =>
+  it.kind === "component" ? (it.props?.expanded ? RAIL_EXPANDED_W : it.props?.narrow ? RAIL_W : RAIL_COLLAPSED_W) : it.railExpanded ? RAIL_EXPANDED_W : isWideRail(it) ? RAIL_COLLAPSED_W : RAIL_W;
 /** Modal expansion overlays the body, retaining only the collapsed rail's layout slot. */
 export const railLayoutWidth = (it: Item) => it.railModal ? RAIL_COLLAPSED_W : railWidth(it);
 /** Runtime-only expansion edge: copied by item edits, never included in JSON. */
@@ -2188,6 +2193,13 @@ export const FULL_WIDTH: Kind[] = ["topAppBar", "bottomNav", "tabs", "carousel"]
 
 /** a part no taller than the screen it is placed on: a box or a rail sized to a phone shrinks to a shorter screen */
 export function fitHeight(it: Item, screenH: number): Item {
+  if (it.kind === "component") {
+    /* a real component's height is its `height` prop */
+    const ax = resizeOf(partBySlug(it.component), it.props)?.height;
+    if (!ax) return it;
+    const cur = axisValue(ax, it.props);
+    return cur > screenH ? { ...it, props: { ...it.props, [ax.key]: axisWrite(ax, screenH) } } : it;
+  }
   const spec = KIND_SPEC[it.kind];
   if (!spec.size2 && it.kind !== "navRail") return it;
   const h = it.size2 ?? spec.h;
@@ -2200,6 +2212,28 @@ export function fitHeight(it: Item, screenH: number): Item {
  *  size, since its height follows its width. Nothing ends up wider than the new
  *  content area. */
 export function carryItemSize(it: Item, from: { w: number; h: number }, to: { w: number; h: number }): Item {
+  if (it.kind === "component") {
+    /* a real component's measures are its props: a bar's width follows the screen the same
+     * way, a rail's height follows it the way a rail's does */
+    const ax = resizeOf(partBySlug(it.component), it.props);
+    const role = roleOf(it);
+    const props = { ...it.props };
+    let changed = false;
+    if (ax?.width) {
+      const cur = axisValue(ax.width, it.props);
+      const wide = role === "top" || role === "bottom" || role === "fullWidth";
+      if (wide ? cur === from.w || cur > to.w : cur === from.w || cur === contentWidth(from.w) || cur === halfWidth(from.w) || cur > to.w) {
+        const v = cur === contentWidth(from.w) && !wide ? contentWidth(to.w) : cur === halfWidth(from.w) && !wide ? halfWidth(to.w) : to.w;
+        props[ax.width.key] = axisWrite(ax.width, v);
+        changed = true;
+      }
+    }
+    if (ax?.height && role === "rail" && axisValue(ax.height, it.props) === from.h) {
+      props[ax.height.key] = axisWrite(ax.height, to.h);
+      changed = true;
+    }
+    return changed ? { ...it, props } : it;
+  }
   const spec = KIND_SPEC[it.kind];
   const patch: Partial<Item> = {};
   const keepsShape = it.kind === "card" || it.kind === "image" || it.kind === "camera" || it.kind === "map";

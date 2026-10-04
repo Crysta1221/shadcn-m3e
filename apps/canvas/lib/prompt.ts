@@ -1,5 +1,7 @@
 import { partBySlug, treeOf } from "../parts/registry";
 import { labelOfPart } from "../parts/resize";
+import { nameOf } from "../parts/labels";
+import { roleOf } from "../parts/role";
 import { inlineNode } from "../parts/print";
 import { KIND_TEXT, Lang, SWIPE_TEXT, TRANSITION_TEXT, getLang } from "./i18n";
 import { constrainModalRails } from "./rail";
@@ -65,6 +67,16 @@ const VARIANT_TEXT: Record<Lang, Record<Variant, string>> = {
 };
 
 const hasText = (s?: string | null) => !!s && s.trim().length > 0;
+
+/** what a part is called in the prompt: its kind's noun, or the component's own name */
+const nounOf = (it: Item, lang: Lang): string => {
+  if (it.kind !== "component") return KIND_TEXT[lang][it.kind]?.noun ?? it.kind;
+  const def = it.component ? partBySlug(it.component) : undefined;
+  return def ? nameOf(def, lang) : it.component || "component";
+};
+
+/** the text a part leads with: a legacy label, or the component's first text prop */
+const leadTextOf = (it: Item): string => (it.kind === "component" ? labelOfPart(it.component ? partBySlug(it.component) : undefined, it.props) : it.label);
 /** a card's image area in words: what fills it (a picture or the placeholder with its icon),
  *  where it sits (top, a full-height side column, or the whole background) and its stated size */
 function cardImage(it: Item, lang: Lang): string {
@@ -678,7 +690,7 @@ function boxCorners(it: Item, lang: Lang): string {
 function componentText(it: Item, lang: Lang): string {
   const def = partBySlug(it.component);
   if (!def) return it.label || "component";
-  const lead = { ja: `shadcn M3E の ${def.name}`, en: `the shadcn M3E ${def.name}`, zh: `shadcn M3E 的 ${def.name}`, ko: `shadcn M3E의 ${def.name}` }[lang];
+  const lead = { ja: `shadcn M3E の ${nameOf(def, lang)}`, en: `the shadcn M3E ${nameOf(def, lang)}`, zh: `shadcn M3E 的 ${nameOf(def, lang)}`, ko: `shadcn M3E의 ${nameOf(def, lang)}` }[lang];
   const called = labelOfPart(def, it.props);
   return `${lead}${called ? ` "${called}"` : ""}: \`${inlineNode(treeOf(def, it.props))}\``;
 }
@@ -733,12 +745,13 @@ function groupText(g: Group, lang: Lang): string {
 /** short name for a run when it is referred to again (as a container or a neighbour) */
 function groupName(g: Group, lang: Lang): string {
   const it = g.items[0];
-  const noun = KIND_TEXT[lang][it.kind]?.noun ?? it.kind;
+  const noun = nounOf(it, lang);
   const q = quote(lang);
   if (g.items.length > 1) return lang === "en" ? `the ${noun} group` : lang === "zh" ? `${noun}组` : lang === "ko" ? `${noun} 그룹` : `${noun}のグループ`;
   if (it.kind === "box") return lang === "en" ? "the box" : lang === "zh" ? "容器框" : lang === "ko" ? "상자" : "ボックス";
   if (it.kind === "bottomSheet") return lang === "en" ? "the bottom sheet" : lang === "zh" ? "底部面板" : lang === "ko" ? "하단 시트" : "ボトムシート";
-  if (hasText(it.label) && it.kind !== "text") return lang === "en" ? `the ${q(it.label)} ${noun}` : `${q(it.label)}${lang === "ko" ? " " : ""}${noun}`;
+  const called = leadTextOf(it);
+  if (hasText(called) && it.kind !== "text") return lang === "en" ? `the ${q(called)} ${noun}` : `${q(called)}${lang === "ko" ? " " : ""}${noun}`;
   return lang === "en" ? `the ${noun}` : noun;
 }
 
@@ -793,8 +806,9 @@ function notes(g: Group, frames: Frame[], lang: Lang): string[] {
   const out: string[] = [];
   const q = quote(lang);
   for (const it of g.items) {
-    const noun = KIND_TEXT[lang][it.kind]?.noun ?? it.kind;
-    const name = hasText(it.label) && it.kind !== "text" ? (lang === "en" ? `The ${q(it.label)} ${noun}` : `${q(it.label)}${lang === "ko" ? " " : ""}${noun}`) : lang === "en" ? `The ${noun}` : hasText(it.label) ? (lang === "ja" ? `テキスト${q(it.label)}` : lang === "zh" ? `文本${q(it.label)}` : `텍스트 ${q(it.label)}`) : noun;
+    const noun = nounOf(it, lang);
+    const called = leadTextOf(it);
+    const name = hasText(called) && it.kind !== "text" ? (lang === "en" ? `The ${q(called)} ${noun}` : `${q(called)}${lang === "ko" ? " " : ""}${noun}`) : lang === "en" ? `The ${noun}` : hasText(called) ? (lang === "ja" ? `テキスト${q(called)}` : lang === "zh" ? `文本${q(called)}` : `텍스트 ${q(called)}`) : noun;
     const parts: string[] = [];
     if (it.action) {
       const a = actionText(it.action, frames, lang);
@@ -888,7 +902,8 @@ function layoutTree(groups: Group[], widths: Record<string, number>): LNode[] {
     let parent: LNode | null = null;
     for (let j = 0; j < i; j++) {
       const c = nodes[j];
-      if (c.g.items[0].kind === "topAppBar" || c.g.items[0].kind === "bottomNav") continue;
+      /* the screen's own bars are never containers: what sits on them is on top of them */
+      if (c.g.items[0].kind === "topAppBar" || c.g.items[0].kind === "bottomNav" || c.g.items[0].component === "app-bar" || c.g.items[0].component === "navigation-bar") continue;
       if (contains(c.bb, n.bb) && area(c.bb) > area(n.bb) && (!parent || area(c.bb) < area(parent.bb))) parent = c;
     }
     (parent ? parent.children : roots).push(n);
@@ -976,23 +991,24 @@ function rowText(row: LNode[], where: string, lang: Lang, within: Rect): string 
   return `${where}, in one row from left to right: ${descs.join(", ")} (keep them on the same line, vertically centered; never stack or wrap them${stretch}).`;
 }
 
-/** kinds whose side-by-side rows can read as one grid */
-const GRID_KINDS: Kind[] = ["card", "image"];
+/** families whose side-by-side rows can read as one grid; a real card is the card it stands for */
+const gridFamily = (it: Item) => (it.kind === "component" ? `c:${it.component}` : it.kind);
+const GRID_FAMILIES = new Set(["card", "image", "c:card"]);
 /** the farthest two column edges or cell widths may be apart and still count as one grid */
 const GRID_SNAP = 6;
 
 type Grid = { rows: LNode[][]; cols: number; colGap: number; rowGap: number };
 
 /** Rows starting at `from` that line up as a grid: single cards (or single images) of one
- *  kind, at least two rows of at least two cells, every row with the same column count
+ *  family, at least two rows of at least two cells, every row with the same column count
  *  except a shorter last one, columns sharing their left edges and all cells one width.
  *  Anything with parts on top of it is left to the row-by-row description. */
 function gridAt(rows: LNode[][], from: number): Grid | null {
   const first = rows[from];
   if (first.length < 2) return null;
-  const kind = first[0].g.items[0].kind;
-  if (!GRID_KINDS.includes(kind)) return null;
-  const cell = (n: LNode) => n.g.items.length === 1 && n.g.items[0].kind === kind && !n.children.length;
+  const family = gridFamily(first[0].g.items[0]);
+  if (!GRID_FAMILIES.has(family)) return null;
+  const cell = (n: LNode) => n.g.items.length === 1 && gridFamily(n.g.items[0]) === family && !n.children.length;
   const width = first[0].bb.r - first[0].bb.l;
   const fits = (row: LNode[]) =>
     row.length <= first.length &&
@@ -1018,8 +1034,7 @@ function gridAt(rows: LNode[][], from: number): Grid | null {
 /** the grid phrase: how many columns, the gaps, then every cell in reading order */
 function gridText(grid: Grid, where: string, lang: Lang): string {
   const cells = grid.rows.flat();
-  const kind = cells[0].g.items[0].kind;
-  const noun = KIND_TEXT[lang][kind]?.noun ?? kind;
+  const noun = nounOf(cells[0].g.items[0], lang);
   const n = cells.length;
   const c = grid.cols;
   const list = cells.map((x, i) => `(${i + 1}) ${groupText(x.g, lang)}`).join(lang === "en" || lang === "ko" ? "; " : "；");
@@ -1099,7 +1114,7 @@ function describeScreen(lines: string[], groups: Group[], frameRect: Rect | null
   if (!groups.length) return;
   /* a navigation rail runs the full height, so it is written first, on its own; the
    * rest of the screen is then read beside it in rows as usual */
-  const rails = groups.filter((g) => g.items.length === 1 && g.items[0].kind === "navRail");
+  const rails = groups.filter((g) => g.items.length === 1 && roleOf(g.items[0]) === "rail");
   for (const g of rails) lines.push(`- ${RAIL_LEAD[lang]}${itemText(g.items[0], lang)}${lang === "ja" || lang === "zh" ? "。" : "."}`);
   const rest = rails.length ? groups.filter((g) => !rails.includes(g)) : groups;
   if (!rest.length) return;

@@ -7,6 +7,7 @@ export const textInputs: PartDef[] = [
     name: "Text field",
     category: "Text inputs",
     icon: "text_fields",
+    role: "listLike",
     w: 280,
     h: 56,
     props: [
@@ -40,6 +41,7 @@ export const textInputs: PartDef[] = [
     name: "Input",
     category: "Text inputs",
     icon: "edit_note",
+    role: "listLike",
     w: 280,
     h: 56,
     props: [
@@ -69,6 +71,7 @@ export const textInputs: PartDef[] = [
     name: "Textarea",
     category: "Text inputs",
     icon: "notes",
+    role: "listLike",
     w: 280,
     h: 96,
     props: [
@@ -195,6 +198,7 @@ export const textInputs: PartDef[] = [
     name: "Label",
     category: "Text inputs",
     icon: "sell",
+    role: "label",
     w: 120,
     h: 24,
     props: [

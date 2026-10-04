@@ -9,6 +9,7 @@ export const containment: PartDef[] = [
     name: "Card",
     category: "Containment",
     icon: "credit_card",
+    role: "listLike",
     w: 280,
     h: 120,
     props: [
@@ -31,6 +32,7 @@ export const containment: PartDef[] = [
     name: "List item",
     category: "Containment",
     icon: "list_alt",
+    role: "listLike",
     w: 280,
     h: 64,
     props: [
@@ -53,6 +55,7 @@ export const containment: PartDef[] = [
     name: "Dialog",
     category: "Containment",
     icon: "web_asset",
+    role: "overlay",
     w: 360,
     h: 232,
     props: [
@@ -116,6 +119,7 @@ export const containment: PartDef[] = [
     name: "Alert dialog",
     category: "Containment",
     icon: "report",
+    role: "overlay",
     w: 320,
     h: 200,
     props: [
@@ -151,6 +155,7 @@ export const containment: PartDef[] = [
     name: "Sheet",
     category: "Containment",
     icon: "side_navigation",
+    role: "overlay",
     w: 300,
     h: 480,
     props: [
@@ -218,6 +223,7 @@ export const containment: PartDef[] = [
     name: "Drawer",
     category: "Containment",
     icon: "vertical_align_bottom",
+    role: "bottom",
     w: 412,
     h: 200,
     props: [
@@ -350,6 +356,7 @@ export const containment: PartDef[] = [
     name: "Separator",
     category: "Containment",
     icon: "horizontal_rule",
+    role: "listLike",
     w: 280,
     h: 1,
     props: [

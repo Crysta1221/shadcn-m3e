@@ -1,4 +1,5 @@
-import { CONTENT_W, FULL_WIDTH, Frame, Group, Item, KIND_SPEC, Kind, PHONE_MARGIN, RAIL_COLLAPSED_W, railExpansionSide, railWidth, railLayoutWidth, canJoin, isPhoneFrame, scaleR, carryItemSize, connectSpecOf, frameOfGroup, frameRect, frameSizeOf, groupBounds, layoutOf, isExpanded } from "./tokens";
+import { CONTENT_W, Frame, Group, Item, KIND_SPEC, Kind, PHONE_MARGIN, RAIL_COLLAPSED_W, railExpansionSide, railWidth, railLayoutWidth, canJoin, isPhoneFrame, scaleR, carryItemSize, connectSpecOf, frameOfGroup, frameRect, frameSizeOf, groupBounds, layoutOf, isExpanded } from "./tokens";
+import { fullWidth, roleOf } from "../parts/role";
 
 /* Rule-based layout for one screen. Nothing here is guessed by a model.
  *
@@ -47,7 +48,11 @@ const APART_GAP_Y = JOIN_GAP_Y + 8;
 const LIST_KINDS = new Set(["listItem", "textField", "select", "checkbox", "radio", "switch", "chip", "divider", "card"]);
 
 /** one movable unit: a group plus everything nested inside or overlapping it */
-type Unit = { ids: string[]; bb: Rect; kind: Kind; checked?: boolean; /** the first part, for family checks */ probe: Item };
+type Unit = { ids: string[]; bb: Rect; kind: Kind; checked?: boolean; /** the family rows of one kind tighten against */ family: string; /** the first part, for family and role checks */ probe: Item };
+
+/** the family a part belongs to: its kind, or the component it is — two of a kind stack tight.
+ *  A separator is the divider it stands for, so old and new parts still tighten against it. */
+const familyOf = (it: Item) => (it.kind === "component" ? (it.component === "separator" ? "divider" : `c:${it.component}`) : it.kind);
 
 const overlap = (a: Rect, b: Rect) => Math.min(a.r, b.r) > Math.max(a.l, b.l) && Math.min(a.b, b.b) > Math.max(a.t, b.t);
 const union = (a: Rect, b: Rect): Rect => ({ l: Math.min(a.l, b.l), t: Math.min(a.t, b.t), r: Math.max(a.r, b.r), b: Math.max(a.b, b.b) });
@@ -113,7 +118,7 @@ const area = (r: Rect) => Math.max(0, r.r - r.l) * Math.max(0, r.b - r.t);
 /** Groups that touch each other stay together, so a badge on an icon or parts on a box move as one.
  *  Bars, FABs and dialogs never join a cluster: they have their own place and are often drawn over content. */
 function clusters(groups: Group[], widths: Record<string, number>): Unit[] {
-  const units: Unit[] = groups.map((g) => ({ ids: [g.id], bb: groupBounds(g, widths), kind: g.items[0].kind, checked: g.items[0].checked, probe: g.items[0] }));
+  const units: Unit[] = groups.map((g) => ({ ids: [g.id], bb: groupBounds(g, widths), kind: g.items[0].kind, checked: g.items[0].checked, family: familyOf(g.items[0]), probe: g.items[0] }));
   for (;;) {
     let merged = false;
     outer: for (let i = 0; i < units.length; i++) {
@@ -155,17 +160,21 @@ function rowsOf(units: Unit[]): Unit[][] {
   return out;
 }
 
-const isRail = (u: { kind: Kind }) => u.kind === "navRail";
-const isTop = (u: { kind: Kind }) => u.kind === "topAppBar" || u.kind === "tabs";
-const isBottomBar = (u: { kind: Kind }) => u.kind === "bottomNav" || u.kind === "bottomSheet";
+const role = (u: Unit) => roleOf(u.probe);
+const isRail = (u: Unit) => role(u) === "rail";
+const isTop = (u: Unit) => role(u) === "top";
+const isBottomBar = (u: Unit) => role(u) === "bottom";
 /** the group holds one of the bars Tidy pins to a screen's edge; lining parts up leaves it there */
-export const holdsEdgeBar = (g: Group) => g.items.some((it) => isTop(it) || isBottomBar(it) || isRail(it));
-const isFloatingBottom = (u: Unit) => u.kind === "toolbar" || u.kind === "snackbar";
-const isFab = (u: Unit) => u.kind === "fab" || u.kind === "extendedFab" || u.kind === "fabMenu";
-const isOverlay = (u: Unit) => u.kind === "dialog";
+export const holdsEdgeBar = (g: Group) => g.items.some((it) => { const r = roleOf(it); return r === "top" || r === "bottom" || r === "rail"; });
+const isFloatingBottom = (u: Unit) => role(u) === "floatingBottom";
+const isFab = (u: Unit) => role(u) === "fab";
+const isOverlay = (u: Unit) => role(u) === "overlay";
 /** a line of text, and the small controls that pair with one across a row */
-const isLabel = (u: Unit) => u.kind === "text";
-const isControl = (u: Unit) => u.kind === "switch" || u.kind === "checkbox" || u.kind === "radio" || u.kind === "iconButton";
+const isLabel = (u: Unit) => role(u) === "label";
+const isControl = (u: Unit) => role(u) === "control";
+/* rows of one list-like family (list items, fields, chips, dividers, the small controls)
+ * stack tighter than the row gap */
+const isListLike = (u: Unit) => role(u) === "listLike" || role(u) === "control";
 const isAnchored = (u: Unit) => isRail(u) || isTop(u) || isBottomBar(u) || isFloatingBottom(u) || isFab(u) || isOverlay(u);
 
 /** where a unit sits horizontally, so tidying keeps a right-aligned part on the right.
@@ -186,11 +195,11 @@ function gapBefore(prev: Unit[] | null, row: Unit[]): number {
   if (!prev) return 0;
   /* two stacked runs of one family were left separate on purpose: keep them beyond the joining distance */
   if (prev.length === 1 && row.length === 1 && canJoin(prev[0].probe, row[0].probe) && connectSpecOf(prev[0].probe)?.axis === "y") return APART_GAP_Y;
-  const pk = prev.length === 1 ? prev[0].kind : null;
-  const k = row.length === 1 ? row[0].kind : null;
-  if (pk === "text") return TIGHT_GAP;
-  if (pk === "divider" || k === "divider") return TIGHT_GAP;
-  if (pk && k && pk === k && LIST_KINDS.has(k)) return TIGHT_GAP;
+  const pu = prev.length === 1 ? prev[0] : null;
+  const ku = row.length === 1 ? row[0] : null;
+  if (pu && role(pu) === "label") return TIGHT_GAP;
+  if (pu && (pu.family === "divider" || ku?.family === "divider")) return TIGHT_GAP;
+  if (pu && ku && pu.family === ku.family && (LIST_KINDS.has(ku.family) || isListLike(ku))) return TIGHT_GAP;
   return ROW_GAP;
 }
 
@@ -202,7 +211,7 @@ export function pullInto(g: Group, frame: Frame, widths: Record<string, number>)
   let dx = bb.r > fr.r ? Math.max(fr.l - bb.l, fr.r - bb.r) : bb.l < fr.l ? fr.l - bb.l : 0;
   const dy = bb.b > fr.b ? Math.max(fr.t - bb.t, fr.b - bb.b) : bb.t < fr.t ? fr.t - bb.t : 0;
   /* a bar as wide as the screen sits on its left edge; a narrower one keeps its place */
-  if (g.items.length === 1 && FULL_WIDTH.includes(g.items[0].kind) && bb.r - bb.l >= fr.r - fr.l) dx = fr.l - bb.l;
+  if (g.items.length === 1 && fullWidth(g.items[0]) && bb.r - bb.l >= fr.r - fr.l) dx = fr.l - bb.l;
   return dx || dy ? { ...g, x: g.x + Math.round(dx), y: g.y + Math.round(dy) } : g;
 }
 
@@ -224,25 +233,33 @@ export function carryFrame(groups: Group[], frame: Frame, to: Frame, frames: Fra
    * inside a hand-made group is part of that group's drawing. Other standalone rails keep their kind. */
   const expanded = isExpanded(after.w);
   const mine = groups.filter((g) => owner.get(g.id) === frame.id);
-  const standsAlone = (g: Group, kind: Kind) => g.items.length === 1 && g.items[0].kind === kind;
-  const navGroup = mine.find((g) => standsAlone(g, "bottomNav") || standsAlone(g, "navRail"));
+  /* the pair that swaps: the legacy kinds and the components standing in for them */
+  const isNavBar = (it: Item) => it.kind === "bottomNav" || it.component === "navigation-bar";
+  const isNavRail = (it: Item) => it.kind === "navRail" || it.component === "navigation-rail";
+  const navGroup = mine.find((g) => g.items.length === 1 && (isNavBar(g.items[0]) || isNavRail(g.items[0])));
   const swapNav = (g: Group, it: Item): Item => {
     if (g !== navGroup) return it;
-    if (expanded && it.kind === "bottomNav") return { ...it, kind: "navRail", railExpanded: false, size: undefined, size2: after.h, radiusTop: it.radiusBottom, radiusBottom: it.radiusTop };
-    if (!expanded && it.kind === "navRail") {
+    if (expanded && isNavBar(it)) {
+      if (it.kind === "component")
+        return { ...it, component: "navigation-rail", props: { items: it.props?.items, selected: it.props?.selected, height: after.h } };
+      return { ...it, kind: "navRail", railExpanded: false, size: undefined, size2: after.h, radiusTop: it.radiusBottom, radiusBottom: it.radiusTop };
+    }
+    if (!expanded && isNavRail(it)) {
+      if (it.kind === "component")
+        return { ...it, component: "navigation-bar", props: { items: it.props?.items, selected: it.props?.selected, width: after.w } };
       const { railExpanded: _expanded, railModal: _modal, [railExpansionSide]: _side, ...bar } = it;
       return { ...bar, kind: "bottomNav", size: after.w, size2: undefined, radiusTop: it.radiusBottom, radiusBottom: it.radiusTop };
     }
     return it;
   };
   /* a rail keeps the side it stood on; one that grows out of a bar starts on the left */
-  const side = navGroup && standsAlone(navGroup, "navRail") ? railSide(navGroup, frame, widths) : "left";
+  const side = navGroup && isNavRail(navGroup.items[0]) ? railSide(navGroup, frame, widths) : "left";
   const railSlots = (swap: boolean) => mine.reduce((slot, g) => {
     if (g.items.length !== 1) return slot;
     const item = swap ? swapNav(g, g.items[0]) : g.items[0];
-    if (item.kind !== "navRail") return slot;
+    if (!isNavRail(item)) return slot;
     const w = railLayoutWidth(item);
-    const right = g.items[0].kind === "navRail" && railSide(g, frame, widths) === "right";
+    const right = isNavRail(g.items[0]) && railSide(g, frame, widths) === "right";
     return { total: slot.total + w, left: slot.left + (right ? 0 : w) };
   }, { total: 0, left: 0 });
   const beforeSlots = railSlots(false);
@@ -254,9 +271,9 @@ export function carryFrame(groups: Group[], frame: Frame, to: Frame, frames: Fra
   const resized = groups.map((g) => {
     const o = owner.get(g.id);
     if (o === frame.id) {
-      const isRail = g === navGroup && expanded;
-      const items = g.items.map((it) => swapNav(g, carryItemSize(it, isRail ? from : fromBody, isRail ? after : toBody)));
-      const x = isRail ? (side === "right" ? to.x + after.w - railWidth(items[0]) : to.x) : g.x + afterSlots.left - beforeSlots.left;
+      const toRail = g === navGroup && expanded;
+      const items = g.items.map((it) => swapNav(g, carryItemSize(it, toRail ? from : fromBody, toRail ? after : toBody)));
+      const x = toRail ? (side === "right" ? to.x + after.w - railWidth(items[0]) : to.x) : g.x + afterSlots.left - beforeSlots.left;
       return pullInto({ ...g, x, items }, to, widths);
     }
     const dx = o ? moved.get(o) : undefined;
@@ -272,7 +289,8 @@ export function railSide(g: Group, frame: Frame, widths: Record<string, number>)
   const placed = g.items.length === 1 ? layoutOf(g, widths)[0] : undefined;
   const bb = placed ? { l: placed.x, r: placed.x + placed.w } : groupBounds(g, widths);
   const side = item[railExpansionSide];
-  if (g.items.length === 1 && item.railExpanded && side) {
+  const expandedItem = item.kind === "component" ? item.props?.expanded === true : item.railExpanded;
+  if (g.items.length === 1 && expandedItem && side) {
     const middle = side === "right" ? bb.r - RAIL_COLLAPSED_W / 2 : bb.l + RAIL_COLLAPSED_W / 2;
     return middle > (fr.l + fr.r) / 2 ? "right" : "left";
   }
@@ -282,7 +300,7 @@ export function railSide(g: Group, frame: Frame, widths: Record<string, number>)
 /** where a bar dropped on a screen goes: the screen's width less its rails, starting after a rail on the left */
 export function barSlotOf(groups: Group[], frame: Frame, frames: Frame[], widths: Record<string, number>): { x: number; w: number } {
   const { w } = frameSizeOf(frame);
-  const rails = groups.filter((g) => frameOfGroup(g, frames, widths)?.id === frame.id && g.items.length === 1 && g.items[0].kind === "navRail");
+  const rails = groups.filter((g) => frameOfGroup(g, frames, widths)?.id === frame.id && g.items.length === 1 && roleOf(g.items[0]) === "rail");
   const left = rails.filter((g) => railSide(g, frame, widths) === "left").reduce((sum, g) => sum + railLayoutWidth(g.items[0]), 0);
   return { x: frame.x + left, w: w - rails.reduce((sum, g) => sum + railLayoutWidth(g.items[0]), 0) };
 }
@@ -519,7 +537,7 @@ export function tidyFrame(groups: Group[], frame: Frame, frames: Frame[], widths
     const inner = frameW - PHONE_MARGIN * 2;
     /* a part that spans the screen -- a carousel, a bar laid in the flow -- is edge to edge, and
      * the margin is not its to keep, whatever else shares its line */
-    const isFull = (u: Unit) => FULL_WIDTH.includes(u.kind) && u.bb.r - u.bb.l >= frameW - 1;
+    const isFull = (u: Unit) => fullWidth(u.probe) && u.bb.r - u.bb.l >= frameW - 1;
     for (const u of row) if (isFull(u)) target.set(u, { l: fr.l, t: yy });
     row = row.filter((u) => !isFull(u));
     if (row.length === 0) return;

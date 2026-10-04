@@ -7,6 +7,7 @@ export const selection: PartDef[] = [
     name: "Switch",
     category: "Selection",
     icon: "toggle_on",
+    role: "control",
     w: 140,
     h: 32,
     props: [
@@ -28,6 +29,7 @@ export const selection: PartDef[] = [
     name: "Checkbox",
     category: "Selection",
     icon: "check_box",
+    role: "control",
     w: 140,
     h: 24,
     props: [
@@ -55,6 +57,7 @@ export const selection: PartDef[] = [
     name: "Radio group",
     category: "Selection",
     icon: "radio_button_checked",
+    role: "listLike",
     w: 140,
     h: 104,
     props: [
@@ -107,6 +110,7 @@ export const selection: PartDef[] = [
     name: "Select",
     category: "Selection",
     icon: "arrow_drop_down_circle",
+    role: "listLike",
     w: 224,
     h: 56,
     props: [
@@ -138,6 +142,7 @@ export const selection: PartDef[] = [
     name: "Native select",
     category: "Selection",
     icon: "list",
+    role: "listLike",
     w: 224,
     h: 56,
     props: [
@@ -166,6 +171,7 @@ export const selection: PartDef[] = [
     name: "Combobox",
     category: "Selection",
     icon: "manage_search",
+    role: "listLike",
     w: 256,
     h: 56,
     props: [

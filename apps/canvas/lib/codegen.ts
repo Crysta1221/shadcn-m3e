@@ -29,7 +29,6 @@ import {
   paletteOf,
   sizeOf,
   topBarHeightOf,
-  FULL_WIDTH,
   GAP,
   STATUS_BAR_H,
   MENU_TARGET,
@@ -41,6 +40,7 @@ import { EXTERNAL } from "../parts/externals";
 import { FILE_OF } from "../parts/files.generated";
 import { inlineNode, itemOfFile, namesIn } from "../parts/print";
 import { partBySlug, treeOf } from "../parts/registry";
+import { fullWidth, roleOf } from "../parts/role";
 
 export const REGISTRY_URL = "https://shadcn-m3e.crystaworld.dev/r/{name}.json";
 
@@ -378,10 +378,10 @@ function screenBody(frame: Frame, runs: Group[], c: Ctx, widths: Record<string, 
     const left = Math.round(at.x - frame.x);
     const body = run.items.map((it) => jsx(it, c, widths));
     /* a part that spans the screen keeps to its edges; the bars stay pinned to the top or the bottom */
-    if (run.items.length === 1 && FULL_WIDTH.includes(first.kind)) {
-      const bar = first.kind === "topAppBar" || first.kind === "bottomNav";
-      const bottom = bar && top + sizeOf(first, widths).h > h - 1;
-      const pinnedTop = first.kind === "topAppBar" && top <= STATUS_BAR_H;
+    if (run.items.length === 1 && fullWidth(first)) {
+      const r = roleOf(first);
+      const bottom = r === "bottom" && top + sizeOf(first, widths).h > h - 1;
+      const pinnedTop = r === "top" && top <= STATUS_BAR_H;
       const anchor = bottom ? "bottom-0" : pinnedTop ? "top-0" : `top-[${top}px]`;
       out.push(`<div className="absolute inset-x-0 ${anchor}">${body[0]}</div>`);
       continue;

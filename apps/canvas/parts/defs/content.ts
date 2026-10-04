@@ -100,6 +100,7 @@ export const content: PartDef[] = [
     name: "Carousel (Embla)",
     category: "Content",
     icon: "view_carousel",
+    role: "fullWidth",
     w: 320,
     h: 200,
     props: [
@@ -139,6 +140,7 @@ export const content: PartDef[] = [
     name: "Expressive carousel",
     category: "Content",
     icon: "view_carousel",
+    role: "fullWidth",
     w: 420,
     h: 180,
     props: [

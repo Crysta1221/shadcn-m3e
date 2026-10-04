@@ -18,9 +18,13 @@ export function constrainModalRails(groups: Group[]): Group[] {
 
 export const modalRailOf = (group: Group) => group.items.length === 1 && group.items[0].kind === "navRail" && group.items[0].railModal && group.items[0].railExpanded ? group.items[0] : undefined;
 
+const isRailItem = (it: Item) => it.kind === "navRail" || it.component === "navigation-rail";
+/** the expanded flag, where the part keeps it: a rail prop on a real component */
+const expandedOf = (it: Item) => (it.kind === "component" ? it.props?.expanded === true : it.railExpanded === true);
+
 /** Change a rail without tidying the screen or losing hand-placed vertical positions. */
 export function updateRail(groups: Group[], frames: Frame[], widths: Record<string, number>, id: string, patch: Partial<Item>): Group[] {
-  const target = groups.find((g) => g.items.some((it) => it.id === id && it.kind === "navRail"));
+  const target = groups.find((g) => g.items.some((it) => it.id === id && isRailItem(it)));
   if (!target) return groups;
   const item = target.items.find((it) => it.id === id)!;
   const updated = { ...item, ...patch };
@@ -30,9 +34,9 @@ export function updateRail(groups: Group[], frames: Frame[], widths: Record<stri
   const standalone = target.items.length === 1;
   const right = standalone && frame && railSide(target, frame, widths) === "right";
   const x = right ? target.x + railWidth(item) - railWidth(updated) : target.x;
-  if (standalone && frame && !item.railExpanded && updated.railExpanded) {
+  if (standalone && frame && !expandedOf(item) && expandedOf(updated)) {
     updated[railExpansionSide] = right ? "right" : "left";
-  } else if (!updated.railExpanded) {
+  } else if (!expandedOf(updated)) {
     delete updated[railExpansionSide];
   }
   const next = groups.map((g) => g === target ? {
@@ -51,7 +55,7 @@ export function updateRail(groups: Group[], frames: Frame[], widths: Record<stri
   const { h } = frameSizeOf(frame);
   const owners = new Set(groups.filter((g) => frameOfGroup(g, frames, widths)?.id === frame.id).map((g) => g.id));
   return next.map((g) => {
-    if (!owners.has(g.id) || g.locked || g.items.some((it) => it.kind === "navRail")) return g;
+    if (!owners.has(g.id) || g.locked || g.items.some(isRailItem)) return g;
     return {
       ...g,
       x: g.x + after.x - before.x,

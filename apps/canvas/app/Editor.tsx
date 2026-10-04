@@ -101,7 +101,6 @@ import {
   TRANSITIONS,
   uid,
   uniformRadii,
-  FULL_WIDTH,
   fitHeight,
   railExpansionSide,
   CONTENT_W,
@@ -134,7 +133,8 @@ import { ThemeContext, ensureFontLoaded, ensureLangFontLoaded } from "@/lib/them
 import { PartThemeContext, PartThemeStyle, type PartTheme } from "@/parts/theme";
 import { partBySlug, translateComponentProps } from "@/parts/registry";
 import { FIT_OVERLAY } from "@/parts/contained";
-import { axisStep, axisValue, axisWrite, isFabPart, resizeOf, type PartAxis } from "@/parts/resize";
+import { axisStep, axisValue, axisWrite, resizeOf, type PartAxis } from "@/parts/resize";
+import { fullWidth, roleOf } from "@/parts/role";
 import { BottomSheet, MobileActionBar, MobileInspector, MobileLang, MobileSettings } from "@/components/Mobile";
 import { ConfirmDialog, IconBtn, Segmented } from "@/components/ui";
 import { Lang, LangContext, SEED_TEXT, getLang, setGlobalLang, t, translateDefaultFrameName, translateDefaultText } from "@/lib/i18n";
@@ -1392,7 +1392,7 @@ export default function Editor({ initialLang, onReady }: { initialLang: Lang; on
       return cx >= r.l && cx <= r.r && cy >= r.t && cy <= r.b;
     });
     const slot = targetFrame ? barSlotOf(groupsRef.current, targetFrame, framesRef.current, widthsRef.current) : null;
-    const isBar = FULL_WIDTH.includes(item.kind);
+    const isBar = fullWidth(item);
     const placedItem = targetFrame && slot ? (isBar ? carryItemSize(item, { w: PHONE_W, h: PHONE_H }, { w: slot.w, h: frameSizeOf(targetFrame).h }) : fitHeight(item, frameSizeOf(targetFrame).h)) : item;
     const origin = targetFrame ?? { x: 0, y: 0 };
     const settle = (axis: "x" | "y", pos: number) => (held(axis) ? Math.round(pos) : onGrid(pos, origin[axis]));
@@ -2121,7 +2121,7 @@ export default function Editor({ initialLang, onReady }: { initialLang: Lang; on
     if (g.items.length !== 1) return none;
     /* a FAB is the part in the corner of a screen: it grows and shrinks out of that corner,
      * whatever the corner happens to be, rather than out of its top left */
-    if (isFab(before.kind) || isFab(after.kind) || isFabPart(before.component) || isFabPart(after.component)) {
+    if (roleOf(before) === "fab" || roleOf(after) === "fab") {
       const a = sizeOf(before, widthsRef.current);
       const b = sizeOf(after, widthsRef.current);
       /* the corner to keep, put right again once a part as wide as its label has been measured */
@@ -2158,18 +2158,23 @@ export default function Editor({ initialLang, onReady }: { initialLang: Lang; on
       showToast(lockedGroupMsg());
       return;
     }
-    /* a rail state change resizes it too, so it counts as a resize for the reflow below */
-    const resizes = "size" in patch || "size2" in patch || "railExpanded" in patch || "railModal" in patch;
-    snapshotFor(id + ":" + Object.keys(patch).join(","));
-    if ("size" in patch || "size2" in patch) markSizeEdit(id);
     /* the shift is worked out here, once, from the groups as they stand: the updater below may
      * be run more than once and must not be the one to remember a FAB's corner */
     const home = groupsRef.current.find((g) => g.items.some((it) => it.id === id));
     const was = home?.items.find((it) => it.id === id);
+    /* a rail state change resizes it too, so it counts as a resize for the reflow below;
+     * a real rail keeps that state in its `expanded`/`narrow` props */
+    const railProps =
+      was?.component === "navigation-rail" &&
+      "props" in patch &&
+      (patch.props?.expanded !== was.props?.expanded || patch.props?.narrow !== was.props?.narrow);
+    const resizes = "size" in patch || "size2" in patch || "railExpanded" in patch || "railModal" in patch || !!railProps;
+    snapshotFor(id + ":" + Object.keys(patch).join(","));
+    if ("size" in patch || "size2" in patch) markSizeEdit(id);
     const shift = resizes && home && was ? resizeShift(home, was, { ...was, ...patch }) : { dx: 0, dy: 0 };
     if (shift.dx || shift.dy) instantRef.current.add(home!.id);
     setGroups((prev) =>
-      "railExpanded" in patch || "railModal" in patch ? updateRail(prev, framesRef.current, widthsRef.current, id, patch) : prev.map((g) => {
+      "railExpanded" in patch || "railModal" in patch || railProps ? updateRail(prev, framesRef.current, widthsRef.current, id, patch) : prev.map((g) => {
         const idx = g.items.findIndex((it) => it.id === id);
         if (idx < 0) return g;
         const next = { ...g.items[idx], ...patch };
@@ -3662,7 +3667,7 @@ export default function Editor({ initialLang, onReady }: { initialLang: Lang; on
      * and nothing else. Nothing has to be kept in step, because nothing else moves. */
     /* the corner is the button's own, menu or no menu: the entries rise out of it and the
      * button itself never moves */
-    const corner = g.items.length === 1 && isFab(g.items[0].kind) ? sizeOf(g.items[0], widths) : null;
+    const corner = g.items.length === 1 && roleOf(g.items[0]) === "fab" ? sizeOf(g.items[0], widths) : null;
     /* a split button's menu drops below the button or rises above it, whichever its screen has
      * room for; a rising one hangs the run from its own bottom, so the button never moves */
     const menuPart = g.items.length === 1 && g.items[0].id === menuId && splitOpens(g.items[0]) ? g.items[0] : null;

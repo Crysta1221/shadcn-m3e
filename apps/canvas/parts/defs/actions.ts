@@ -49,6 +49,7 @@ export const actions: PartDef[] = [
     name: "FAB",
     category: "Actions",
     icon: "add_circle",
+    role: "fab",
     w: 56,
     h: 56,
     props: [
@@ -77,6 +78,7 @@ export const actions: PartDef[] = [
     name: "Chip",
     category: "Actions",
     icon: "label",
+    role: "listLike",
     w: 80,
     h: 32,
     props: [
@@ -243,6 +245,7 @@ export const actions: PartDef[] = [
     name: "FAB menu",
     category: "Actions",
     icon: "menu_open",
+    role: "fab",
     w: 56,
     h: 56,
     props: [

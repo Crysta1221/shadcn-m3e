@@ -39,6 +39,10 @@ export type P = {
   list: (key: string) => ListItem[];
 };
 
+/** the part's place on a screen: a bar pinned to an edge, a corner FAB, a centered overlay.
+ *  Tidy pins it and the prompt describes it by this, the same role a legacy kind plays. */
+export type PartRole = "top" | "bottom" | "floatingBottom" | "fab" | "overlay" | "rail" | "label" | "control" | "listLike" | "fullWidth";
+
 export type PartDef = {
   /** the docs page of the component: /components/<slug> */
   slug: string;
@@ -50,6 +54,8 @@ export type PartDef = {
   category: string;
   /** Material Symbols name, for the palette tile */
   icon: string;
+  /** the role it plays on a screen, fixed or read off the props; none flows with the body rows */
+  role?: PartRole | ((p: P) => PartRole | undefined);
   /** the size it takes on the canvas until it has been measured */
   w: number;
   h: number;

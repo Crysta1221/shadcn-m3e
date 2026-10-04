@@ -93,5 +93,4 @@ export function labelOfPart(def: PartDef | undefined, values: PropValues | undef
   return "";
 }
 
-/** the corner-anchored FAB: it grows out of the corner of the screen it sits in */
-export const isFabPart = (slug: string | undefined) => slug === "fab" || slug === "fab-menu";
+

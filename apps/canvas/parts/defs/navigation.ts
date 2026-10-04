@@ -26,6 +26,7 @@ export const navigation: PartDef[] = [
     name: "Navigation bar",
     category: "Navigation",
     icon: "bottom_navigation",
+    role: "bottom",
     w: 412,
     h: 64,
     props: [
@@ -46,6 +47,7 @@ export const navigation: PartDef[] = [
     name: "App bar",
     category: "Navigation",
     icon: "web_asset",
+    role: "top",
     w: 412,
     h: 64,
     props: [
@@ -75,6 +77,7 @@ export const navigation: PartDef[] = [
     name: "Tabs",
     category: "Navigation",
     icon: "tab",
+    role: "top",
     w: 360,
     h: 48,
     props: [
@@ -95,6 +98,7 @@ export const navigation: PartDef[] = [
     name: "Navigation rail",
     category: "Navigation",
     icon: "view_sidebar",
+    role: "rail",
     w: 96,
     h: 400,
     props: [
@@ -123,6 +127,8 @@ export const navigation: PartDef[] = [
     name: "Toolbar",
     category: "Navigation",
     icon: "build",
+    /* a floating toolbar hovers over the content, a docked one is a bottom bar */
+    role: (p) => (p.s("kind") === "floating" ? "floatingBottom" : "bottom"),
     w: 280,
     h: 64,
     props: [

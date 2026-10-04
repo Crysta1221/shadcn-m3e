@@ -35,6 +35,7 @@ import {
   DESKTOP_H,
   NAV_BAR_H,
   PHONE_MARGIN,
+  fitHeight,
   makeItem,
 } from "./tokens";
 
@@ -327,5 +328,86 @@ describe("integration with makeItem", () => {
     const out = tidyFrame([g], phoneFrame, [phoneFrame], widths)!;
     expect(out).toHaveLength(1);
     expect(out[0].items[0].id).toBe(it.id);
+  });
+});
+
+/* ---------- real component parts, placed by their role ---------- */
+
+const comp = (id: string, slug: string, props: Record<string, unknown> = {}): Item => ({ ...makeItem("component", slug), id, props });
+
+describe("component parts (role-driven)", () => {
+  it("pins a navigation-bar component to the bottom of the screen", () => {
+    const g = group("g1", 100, 100, [comp("nb", "navigation-bar")]);
+    const out = tidyFrame([g], phoneFrame, [phoneFrame], widths)!;
+    const nav = out.find((x) => x.items[0].component === "navigation-bar")!;
+    expect([nav.x, nav.y]).toEqual([0, PHONE_H - 64]);
+  });
+
+  it("pins an app-bar component to the top of the screen", () => {
+    const g = group("g1", 0, 500, [comp("ab", "app-bar")]);
+    const out = tidyFrame([g], phoneFrame, [phoneFrame], widths)!;
+    const bar = out.find((x) => x.items[0].component === "app-bar")!;
+    expect([bar.x, bar.y]).toEqual([0, 0]);
+  });
+
+  it("places a fab component at the bottom-right corner", () => {
+    const g = group("g1", 0, 0, [comp("f", "fab")]);
+    const out = tidyFrame([g], phoneFrame, [phoneFrame], widths)!;
+    const f0 = out.find((x) => x.items[0].component === "fab")!;
+    expect([f0.x, f0.y]).toEqual([PHONE_W - PHONE_MARGIN - 56, PHONE_H - PHONE_MARGIN - 56]);
+  });
+
+  it("centers a dialog component on the screen", () => {
+    const g = group("g1", 0, 0, [comp("d", "dialog")]);
+    const out = tidyFrame([g], phoneFrame, [phoneFrame], widths)!;
+    const d = out.find((x) => x.items[0].component === "dialog")!;
+    expect(d.x).toBe(Math.round((PHONE_W - 360) / 2));
+    expect(d.y).toBe(Math.round((PHONE_H - 232) / 2));
+  });
+
+  it("sits a navigation-rail component on the left edge and reserves its slot", () => {
+    const g = group("r", 4, 8, [comp("r", "navigation-rail")]);
+    const out = tidyFrame([g], phoneFrame, [phoneFrame], widths)!;
+    const rail = out.find((x) => x.items[0].component === "navigation-rail")!;
+    expect([rail.x, rail.y]).toEqual([0, 0]);
+    const slot = barSlotOf(out, phoneFrame, [phoneFrame], widths);
+    expect(slot).toEqual({ x: 96, w: PHONE_W - 96 });
+  });
+
+  it("carries a navigation-bar's width prop to a wider screen", () => {
+    const desk: Frame = { id: "d", name: "D", x: 400, y: 0, w: DESKTOP_W, h: DESKTOP_H };
+    const nb = group("nb", 0, PHONE_H - 64, [comp("nb", "navigation-bar", { width: PHONE_W })]);
+    const res = carryFrame([nb], phoneFrame, desk, [phoneFrame, desk], widths);
+    const moved = res.groups.find((g) => g.id === "nb")!;
+    /* expanded screens swap the bar for a rail; the prop becomes the rail's height */
+    expect(moved.items[0].component).toBe("navigation-rail");
+    expect(moved.items[0].props?.height).toBe(DESKTOP_H);
+  });
+
+  it("swaps a stand-alone navigation-bar for a rail on desktop and back", () => {
+    const desk: Frame = { id: "d", name: "D", x: 0, y: 0, w: DESKTOP_W, h: DESKTOP_H };
+    const nb = group("nb", 0, PHONE_H - 64, [comp("nb", "navigation-bar", { width: PHONE_W })]);
+    const wide = carryFrame([nb], phoneFrame, desk, [phoneFrame, desk], widths).groups;
+    expect(wide[0].items[0].component).toBe("navigation-rail");
+    const phone: Frame = { id: "p", name: "P", x: 0, y: 0 };
+    const back = carryFrame(wide, desk, phone, [desk, phone], widths).groups;
+    expect(back[0].items[0].component).toBe("navigation-bar");
+    expect(back[0].items[0].props?.width).toBe(PHONE_W);
+  });
+
+  it("carries an app-bar's width prop to a wider screen", () => {
+    const desk: Frame = { id: "d", name: "D", x: 400, y: 0, w: DESKTOP_W, h: DESKTOP_H };
+    const ab = group("ab", 0, 0, [comp("ab", "app-bar", { width: PHONE_W })]);
+    const res = carryFrame([ab], phoneFrame, desk, [phoneFrame, desk], widths);
+    const moved = res.groups.find((g) => g.id === "ab")!;
+    expect(moved.items[0].component).toBe("app-bar");
+    expect(moved.items[0].props?.width).toBe(DESKTOP_W);
+  });
+
+  it("shrinks a rail component's height prop to a shorter screen", () => {
+    const rail = comp("r", "navigation-rail", { height: PHONE_H });
+    expect(fitHeight(rail, 320).props?.height).toBe(320);
+    /* a rail that already fits keeps its height */
+    expect(fitHeight(rail, PHONE_H).props?.height).toBe(PHONE_H);
   });
 });

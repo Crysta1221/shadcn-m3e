@@ -177,6 +177,7 @@ export const communication: PartDef[] = [
     name: "Snackbar",
     category: "Communication",
     icon: "chat_bubble",
+    role: "floatingBottom",
     w: 120,
     h: 40,
     props: [
@@ -224,6 +225,7 @@ export const communication: PartDef[] = [
     name: "Alert",
     category: "Communication",
     icon: "warning",
+    role: "listLike",
     w: 360,
     h: 72,
     props: [
