@@ -69,6 +69,8 @@ import {
 } from "@/lib/tokens";
 import { Icon, M3Node, Ripples, contentColor, menuShutMs, rippleSize } from "./M3Node";
 import { PartView } from "./PartView";
+import { partBySlug } from "@/parts/registry";
+import { actionSlotsOf } from "@/lib/tokens";
 import type { Ripple } from "./M3Node";
 import { IconBtn } from "./ui";
 import { t, useLang } from "@/lib/i18n";
@@ -150,6 +152,9 @@ const screenVariants: Variants = {
 
 /** kinds whose on/off state flips when tapped in the preview */
 const TOGGLES = ["switch", "checkbox", "chip"] as const;
+/* the slugs that play the legacy destination bars' part: a tap on their destination is shared
+ *  with the bar of the same entries on every other screen, under the legacy key */
+const LEGACY_NAV: Record<string, string> = { "navigation-bar": "bottomNav", "navigation-rail": "navRail", tabs: "tabs" };
 /** parts that change under a tap rather than going anywhere: a switch, a toggle button, and a
  *  FAB with a menu, which opens where it stands */
 const flips = (it: Item) => (TOGGLES as readonly string[]).includes(it.kind) || !!it.toggle || hasMenu(it);
@@ -189,16 +194,20 @@ function sameShapes(a: Shape[], b: Shape[]): boolean {
 
 /** A part in the preview: a ripple spreads out of the point touched while the pointer is on it,
  *  then it fires its action on release, like a real widget. */
-/** A real shadcn M3E component in the preview: it works. A part the author sent somewhere is
- *  covered by a button that goes there instead, since a tap on it means that. */
-function LivePart({ item, widths, onTap }: { item: Item; widths: Record<string, number>; onTap?: () => void }) {
+/** A real shadcn M3E component in the preview: it works. A press lands where it was aimed --
+ *  on a place the part marked `data-tap` (a destination, a menu item) it fires that slot's
+ *  action; anywhere else it is the part's own tap. */
+function LivePart({ item, widths, screen, onTap, onSlot }: { item: Item; widths: Record<string, number>; screen?: { w: number; h: number }; onTap?: () => void; onSlot?: (slot: string) => void }) {
   const size = sizeOf(item, widths);
+  const click = (e: React.MouseEvent<HTMLDivElement>) => {
+    const slot = (e.target as Element).closest?.("[data-tap]")?.getAttribute("data-tap");
+    if (slot != null) onSlot?.(slot);
+    else onTap?.();
+    e.preventDefault();
+  };
   return (
-    <div style={{ position: "relative", display: "flex", flex: "0 0 auto", width: size.w, height: size.h }}>
-      <PartView item={item} live={!onTap} />
-      {onTap && (
-        <button type="button" aria-label={item.label} onClick={onTap} style={{ position: "absolute", inset: 0, border: "none", padding: 0, background: "transparent", cursor: "pointer" }} />
-      )}
+    <div onClick={onTap || onSlot ? click : undefined} style={{ position: "relative", display: "flex", flex: "0 0 auto", width: size.w, height: size.h }}>
+      <PartView item={item} live screen={screen} />
     </div>
   );
 }
@@ -970,8 +979,55 @@ function Screen({
                   }
                 : undefined;
             const slotActions = it.actions;
+            /* a real component says which prop is its chosen entry (`selectKey`): a tap moves it.
+             *  Destination bars share the choice across screens under the same key the legacy
+             *  bars use, so a bottomNav and a navigation-bar with the same entries light alike */
+            const compDef = it.kind === "component" ? partBySlug(it.component) : undefined;
+            const selectKey = compDef?.selectKey;
+            const compNavKey = compDef && selectKey && LEGACY_NAV[compDef.slug] ? `nav:${LEGACY_NAV[compDef.slug]}:${actionSlotsOf(it).map((s) => s.label).join("|")}` : "";
+            if (selectKey) {
+              const live = compNavKey
+                ? values[compNavKey] !== undefined && values[compNavKey] >= 0
+                  ? values[compNavKey]
+                  : it.props?.[selectKey] === undefined
+                    ? values[`${compNavKey}:opened:${frame.id}`]
+                    : undefined
+                : values[it.id] !== undefined && values[it.id] >= 0
+                  ? values[it.id]
+                  : undefined;
+              if (live !== undefined) shown = { ...shown, props: { ...shown.props, [selectKey]: live } };
+            }
+            /* a rail the visitor expanded stays expanded while the screen is up */
+            const railExpanded = it.kind === "component" && values[`${it.id}:expanded`] !== undefined ? values[`${it.id}:expanded`] !== 0 : undefined;
+            if (railExpanded !== undefined) shown = { ...shown, props: { ...shown.props, expanded: railExpanded } };
             const node = it.kind === "component" ? (
-              <LivePart key={it.id} item={shown} widths={widths} onTap={tap} />
+              <LivePart
+                key={it.id}
+                item={shown}
+                widths={widths}
+                screen={frameSizeOf(frame)}
+                onTap={tap}
+                onSlot={
+                  slotActions || selectKey || compDef?.slug === "navigation-rail"
+                    ? (slot) => {
+                        /* the menu button on a rail flips it open and shut */
+                        if (slot === "rail") {
+                          onValue(`${it.id}:expanded`, shown.props?.expanded === true ? 0 : 1);
+                          return;
+                        }
+                        const a = slotActions?.[slot];
+                        /* a tapped destination lights up where it opens nothing; where it opens a
+                           screen, that screen's bar shows the destination its author chose, or the
+                           tapped one when the author chose none */
+                        if (selectKey && slot.startsWith("tab:")) {
+                          onValue(compNavKey || it.id, a ? -1 : Number(slot.slice(4)));
+                          if (a && compNavKey) onValue(`${compNavKey}:opened:${a.to}`, Number(slot.slice(4)));
+                        }
+                        if (a) onAction(a);
+                      }
+                    : undefined
+                }
+              />
             ) : (
               <Tappable
                 key={it.id}

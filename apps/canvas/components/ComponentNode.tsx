@@ -1,6 +1,7 @@
 "use client";
 
 import { Item, Palette, sizeOf } from "@/lib/tokens";
+import type { Screen } from "@/parts/types";
 import { PartView } from "./PartView";
 
 /** A part that is a real shadcn M3E component: the canvas gives it the box it measured, a ring
@@ -15,6 +16,7 @@ export function ComponentNode({
   instant,
   interactive = true,
   onPointerDown,
+  screen,
 }: {
   item: Item;
   palette: Palette;
@@ -25,6 +27,8 @@ export function ComponentNode({
   instant?: boolean;
   interactive?: boolean;
   onPointerDown?: (e: React.PointerEvent) => void;
+  /** the frame the part is on: an open overlay's box is no larger than it */
+  screen?: Screen;
 }) {
   const size = sizeOf(item, widths);
   return (
@@ -47,7 +51,7 @@ export function ComponentNode({
         transition: instant ? "outline-color 120ms" : "outline-color 120ms, transform 160ms cubic-bezier(0.2, 0, 0, 1)",
       }}
     >
-      <PartView item={item} />
+      <PartView item={item} screen={screen} />
     </div>
   );
 }

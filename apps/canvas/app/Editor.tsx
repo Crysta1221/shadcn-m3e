@@ -930,11 +930,22 @@ export default function Editor({ initialLang, onReady }: { initialLang: Lang; on
    *  its own label is only measured after it is drawn, so the corner is put right once the
    *  measuring pass knows how wide it came out. */
   const fabAnchor = useRef<{ id: string; right: number; bottom: number } | null>(null);
+  /** a screen that changed size and is waiting for its parts' new measures before it is
+   *  laid out again — an overlay's size only settles once it has been drawn in its new box */
+  const retidyRef = useRef<string | null>(null);
   useLayoutEffect(() => {
     const next: Record<string, number> = {};
     measureEls.current.forEach((el, id) => {
       /* a part that fits its overlay is the overlay's size, not the box it floats in */
-      const box = (el.querySelector<HTMLElement>(FIT_OVERLAY) ?? el).getBoundingClientRect();
+      const ov = el.querySelector<HTMLElement>(FIT_OVERLAY);
+      /* the overlay mounts through a portal a beat after the box does: until it is there,
+       * the box's own size would be mistaken for the part's, so keep the last known size */
+      if (!ov && el.querySelector("[data-fit]") && widthsRef.current[id] !== undefined) {
+        next[id] = widthsRef.current[id];
+        next[`${id}:h`] = widthsRef.current[`${id}:h`] ?? next[`${id}:h`];
+        return;
+      }
+      const box = (ov ?? el).getBoundingClientRect();
       next[id] = Math.ceil(box.width);
       /* a real component has a height of its own to measure too */
       if (el.dataset.kind === "component") next[`${id}:h`] = Math.ceil(box.height);
@@ -944,6 +955,31 @@ export default function Editor({ initialLang, onReady }: { initialLang: Lang; on
       keys.length !== Object.keys(widthsRef.current).length ||
       keys.some((k) => widthsRef.current[k] !== next[k]);
     if (changed) setWidths(next);
+    /* the screens to lay out again: one whose preset just changed (`retidyRef`), and any
+     * screen holding an overlay whose measured size moved under it — an overlay centers
+     * itself, so a size that changed since the last tidy leaves it off center */
+    const retidy = new Set<string>();
+    if (retidyRef.current) retidy.add(retidyRef.current);
+    retidyRef.current = null;
+    if (changed)
+      for (const g of groupsRef.current) {
+        if (!g.items.some((it) => roleOf(it) === "overlay" && (next[it.id] !== widthsRef.current[it.id] || next[`${it.id}:h`] !== widthsRef.current[`${it.id}:h`]))) continue;
+        const fid = frameOfGroup(g, framesRef.current, next)?.id;
+        if (fid) retidy.add(fid);
+      }
+    /* `next` holds the sizes the parts just came out at; the change is instant — after a preset
+     * change the screen is still easing to its new size, so the correction is part of the move */
+    let laid = groupsRef.current;
+    let moved = false;
+    for (const fid of retidy) {
+      const fr = framesRef.current.find((f) => f.id === fid);
+      const tidied = fr ? tidyFrame(laid, fr, framesRef.current, next) : null;
+      if (tidied) {
+        laid = tidied;
+        moved = true;
+      }
+    }
+    if (moved) setGroups(laid);
     const anchor = fabAnchor.current;
     if (!anchor) return;
     const g = groupsRef.current.find((x) => x.items.some((it) => it.id === anchor.id));
@@ -2835,6 +2871,10 @@ export default function Editor({ initialLang, onReady }: { initialLang: Lang; on
     tidyRef.current = null;
     setEasing(true);
     window.setTimeout(() => setEasing(false), SETTLE_MS + 40);
+    /* overlays drawn open (a dialog's box is the screen it floats in) are laid out here with
+     * their old measures; they are re-measured against the new screen size in the measuring
+     * pass, and the screen is laid out once more with the sizes that came out */
+    retidyRef.current = id;
     setFrames(laid.frames);
     setGroups(laid.groups);
   };
@@ -3086,6 +3126,7 @@ export default function Editor({ initialLang, onReady }: { initialLang: Lang; on
                   palette={p}
                   radii={corners.get(pl.item.id)}
                   style={MEASURED.includes(pl.item.kind) ? undefined : { width: pl.w, height: pl.h }}
+                  screen={{ w, h }}
                 />
               </div>
             )))(freeRadii(g, widths))
@@ -3119,6 +3160,7 @@ export default function Editor({ initialLang, onReady }: { initialLang: Lang; on
                   palette={p}
                   radii={radii}
                   style={MEASURED.includes(it.kind) ? undefined : { width: sizeOf(it, widths).w, height: sizeOf(it, widths).h }}
+                  screen={{ w, h }}
                 />
               );
             })}
@@ -3511,6 +3553,20 @@ export default function Editor({ initialLang, onReady }: { initialLang: Lang; on
     return m;
   }, [groups, frames, frame, widths]);
 
+  /** the size of the screen each part sits on, by part: an overlay drawn open never gets a
+   *  virtual viewport bigger than the real one it is on */
+  const screenByItem = useMemo(() => {
+    const m = new Map<string, { w: number; h: number }>();
+    for (const g of groups) {
+      const fid = frameOf.get(g.id);
+      const f = fid ? frames.find((x) => x.id === fid) : undefined;
+      if (!f) continue;
+      const s = frameSizeOf(f);
+      for (const it of g.items) m.set(it.id, s);
+    }
+    return m;
+  }, [groups, frameOf, frames]);
+
   /** the screen whose layers the panel lists: the selection's, else the chosen one */
   const layersFrame = useMemo(() => {
     if (frame !== "phone") return null;
@@ -3581,7 +3637,7 @@ export default function Editor({ initialLang, onReady }: { initialLang: Lang; on
     setGroups((gs) => gs.map((x) => (x.id === groupId ? { ...x, items, pos } : x)));
   };
 
-  const renderGroup = (g: Group, ox: number, oy: number) => {
+  const renderGroup = (g: Group, ox: number, oy: number, screen?: { w: number; h: number }) => {
     const modalRail = modalRailOf(g);
     if (g.free) {
       const instantG = instantRef.current.has(g.id);
@@ -3617,6 +3673,7 @@ export default function Editor({ initialLang, onReady }: { initialLang: Lang; on
                 inRun={runIds.has(pl.item.id)}
                 interactive={!handMode}
                 onPointerDown={(e) => onItemPointerDown(e, g, pl.index, pl.item)}
+                screen={screen}
               />
             </div>
           ))}
@@ -3767,6 +3824,7 @@ export default function Editor({ initialLang, onReady }: { initialLang: Lang; on
               instant={widthDragId === c.item.id || sizeEditId === c.item.id}
               interactive={!handMode}
               onPointerDown={(e) => onItemPointerDown(e, g, c.index, c.item)}
+              screen={screen}
             />
           );
         })}
@@ -3858,7 +3916,7 @@ export default function Editor({ initialLang, onReady }: { initialLang: Lang; on
                       : "none",
                 }}
               >
-                <MeasuredContent item={it} p={p} />
+                <MeasuredContent item={it} p={p} screen={screenByItem.get(it.id)} />
               </div>
             ))}
         </div>
@@ -4229,7 +4287,7 @@ export default function Editor({ initialLang, onReady }: { initialLang: Lang; on
                         >
                           {groups
                             .filter((g) => frameOf.get(g.id) === f.id)
-                            .map((g) => renderGroup(g, f.x, f.y))}
+                            .map((g) => renderGroup(g, f.x, f.y, frameSizeOf(f)))}
                           {groups.some((g) => frameOf.get(g.id) === f.id && modalRailOf(g)) && (
                             <div aria-hidden style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.32)", pointerEvents: "none", zIndex: 1 }} />
                           )}

@@ -6,6 +6,7 @@ import { useIcons } from "@/parts/icons";
 import { PartSurface } from "@/parts/theme";
 import { appearanceOf } from "@/parts/appearance";
 import { partBySlug, viewOf } from "@/parts/registry";
+import type { Screen } from "@/parts/types";
 import { renderNode } from "@/parts/render";
 import type { PNode } from "@/parts/node";
 
@@ -14,9 +15,9 @@ const NOTHING: PNode = { type: "span" };
 /** A part drawn as the real shadcn M3E component it stands for. On the canvas it is inert: a press
  *  belongs to the part (to select and drag it), not to the button inside it. In the preview
  *  (`live`) it works. */
-export function PartView({ item, live = false }: { item: Item; live?: boolean }) {
+export function PartView({ item, live = false, screen }: { item: Item; live?: boolean; /** the frame the part is on: an open overlay's box is no larger than it */ screen?: Screen }) {
   const def = partBySlug(item.component);
-  const tree = useMemo(() => (def ? viewOf(def, item.props, appearanceOf(item)) : null), [def, item.props, item.fill, item.textColor, item.corners]);
+  const tree = useMemo(() => (def ? viewOf(def, item.props, appearanceOf(item), screen, live) : null), [def, item.props, item.fill, item.textColor, item.corners, screen?.w, screen?.h, live]);
   useIcons(tree ?? NOTHING);
   if (!tree) return <span style={{ color: "#B3261E", fontSize: 12 }}>Unknown part {item.component}</span>;
   return (

@@ -51,7 +51,7 @@ import { CardStage } from "./CardStage";
 import { arcPath, wavePath } from "./Loading";
 import { Icon } from "./M3Node";
 import { AiHooks } from "./Inspector";
-import { AlignBox, CornerRows, EdgeCornerRows, EntryList, FillRun, IconRow, IconStrip, ListStyleRun, NoTriggerNote, NoteSection, PartHeader, PartTabs, PlaceFn, StyleRun, Tab, TriggerSection, WidthRows, hasTrigger } from "./PartPanel";
+import { AlignBox, CornerRows, EdgeCornerRows, EntryList, FillRun, IconRow, IconStrip, ListStyleRun, NoTriggerNote, NoteSection, PartHeader, PartTabs, PlaceFn, SlotStrip, StyleRun, Tab, TriggerSection, WidthRows, hasTrigger } from "./PartPanel";
 import { t, useLang } from "@/lib/i18n";
 
 /* One panel for every part that is not a button. It wears the button's chrome -- the title row,
@@ -221,26 +221,6 @@ function CardStrip({ item, selected, onSelect, p }: { item: Item; selected: numb
       height={44}
       tight
       label={t("cards", lang)}
-    />
-  );
-}
-
-/** the places a bar can be tapped, as one connected run: the icons at its ends, or the entries
- *  along it, each cell the icon the place shows and a mark when a tap has been sent from it */
-function SlotStrip({ item, selected, onSelect, p }: { item: Item; selected: string; onSelect: (k: string) => void; p: Palette }) {
-  const lang = useLang();
-  const slots = actionSlotsOf(item);
-  /* a tab's words are too long for a cell: the cell carries its number and the words are the hover text */
-  const numbered = item.kind === "tabs";
-  return (
-    <Segmented<string>
-      options={slots.map((s, i) => ({ key: s.key, icon: s.value ?? undefined, label: s.value ? undefined : numbered ? `${i + 1}` : s.label, title: s.label, dot: !!item.actions?.[s.key] }))}
-      value={selected}
-      onChange={onSelect}
-      p={p}
-      height={40}
-      tight={slots.length > 4}
-      label={t("tapTo", lang)}
     />
   );
 }

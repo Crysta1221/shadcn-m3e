@@ -41,6 +41,15 @@ export type P = {
   list: (key: string) => ListItem[];
 };
 
+/** the screen a part is drawn on, when it is on one: the frame's size. Anything a part draws
+ *  that would fill or be bounded by a real screen is bounded by this instead. */
+export type Screen = { w: number; h: number };
+
+/** a place inside a part a tap can be sent from: a destination, a menu item, an icon at a bar's
+ *  end. `key` is what the item's `actions` map stores under ("tab:2", "icon"); the nodes that
+ *  answer to it carry `data-tap` so the preview can tell the places of one part apart. */
+export type PartSlot = { key: string; label: string; icon?: string };
+
 /** the part's place on a screen: a bar pinned to an edge, a corner FAB, a centered overlay.
  *  Tidy pins it and the prompt describes it by this, the same role a legacy kind plays. */
 export type PartRole = "top" | "bottom" | "floatingBottom" | "fab" | "overlay" | "rail" | "label" | "control" | "listLike" | "fullWidth";
@@ -66,10 +75,16 @@ export type PartDef = {
    *  they are painted onto the node(s) named by `target` (the tree's root when left out).
    *  `radius` is the corner radius the component already has, the seed the corner editor starts from. */
   appearance?: { target?: string | string[]; radius?: number };
+  /** the places inside the part a tap can be sent from, for the panel's slot strip and the
+   *  preview's `data-tap` delegation */
+  slots?: (p: P) => PartSlot[];
+  /** the prop that remembers which entry is chosen; a tap moves it in the preview, and the
+   *  destination bars that share their entries share the choice across screens too */
+  selectKey?: string;
   /** the JSX the part stands for */
   tree: (p: P) => PNode;
   /** what the canvas draws instead of `tree`, for a part whose open look is not `tree` made to start open */
-  view?: (p: P) => PNode;
+  view?: (p: P, screen?: Screen) => PNode;
   /** A part that opens something (a dialog, a menu, a popover) is drawn open on the canvas, inside
    *  a box of this size, so it looks the way it does in use. The code it prints is `tree`, closed. */
   open?: {

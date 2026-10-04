@@ -1,7 +1,7 @@
 import type { CSSProperties } from "react";
 import { FAB_MENU_TABS, KIND_TEXT, Lang, NAV_TABS, SPLIT_MENU_TABS, TAB_LABELS, getLang, t, SELECT_OPTIONS } from "./i18n";
 import { Contrast, isLightColor, schemeFromSeed } from "./color";
-import { partBySlug } from "../parts/registry";
+import { partBySlug, reader } from "../parts/registry";
 import { axisValue, axisWrite, resizeOf } from "../parts/resize";
 import { roleOf } from "../parts/role";
 
@@ -1958,6 +1958,13 @@ export const TRANSITIONS: { key: Transition; label: string; icon: string }[] = [
 
 /** slots on a bar that can each carry their own tap action */
 export function actionSlotsOf(it: Item): IconSlot[] {
+  /* a real component names its own places: each node it marks `data-tap` answers to one */
+  if (it.kind === "component") {
+    const def = partBySlug(it.component);
+    if (!def?.slots) return [];
+    const p = reader(def, it.props);
+    return def.slots(p).map((s) => ({ key: s.key, label: s.label, value: s.icon ?? null }));
+  }
   if (it.kind === "topAppBar" || it.kind === "searchBar" || it.kind === "bottomNav" || it.kind === "navRail" || it.kind === "toolbar") return iconSlotsOf(it).filter((s) => !!s.value);
   /* the entries of a menu, whichever FAB opens it */
   if (it.kind === "fabMenu" || opensMenu(it)) return (it.tabs ?? []).map((t, i) => ({ key: `tab:${i}`, label: t.label || `${i + 1}`, value: t.icon || null }));

@@ -367,6 +367,10 @@ export const COMMON_LABELS: Record<string, Labels> = {
   "Search view": { ja: "検索ビュー", zh: "搜索视图", ko: "검색 뷰" },
   "Search bar": { ja: "検索バー", zh: "搜索栏", ko: "검색 바" },
   "Toggle buttons": { ja: "トグルボタン", zh: "切换按钮", ko: "토글 버튼" },
+  "Toggle button": { ja: "トグルボタン", zh: "切换按钮", ko: "토글 버튼" },
+  "Icon when on": { ja: "オンのときのアイコン", zh: "开启时的图标", ko: "켰을 때 아이콘" },
+  "Label when on": { ja: "オンのときのラベル", zh: "开启时的标签", ko: "켰을 때 라벨" },
+  "Menu button": { ja: "メニューボタン", zh: "菜单按钮", ko: "메뉴 버튼" },
 };
 
 /** seed text a fresh part carries, by the English default */

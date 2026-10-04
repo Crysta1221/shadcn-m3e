@@ -90,7 +90,7 @@ function DialogContent({
           "group/dialog fixed z-50 flex motion-dialog flex-col text-body-medium text-on-surface-variant outline-none",
           fullscreen
             ? "inset-0 bg-surface-container-high"
-            : "top-1/2 left-1/2 max-h-[calc(100%-3rem)] w-full max-w-[min(calc(100%-3rem),560px)] min-w-[280px] -translate-x-1/2 -translate-y-1/2 gap-4 rounded-2xl bg-surface-container-high p-6 shadow-elevation-3 sm:max-w-md",
+            : "top-1/2 left-1/2 max-h-[calc(100%-3rem)] w-full max-w-[min(calc(100%-3rem),560px,28rem)] min-w-[280px] -translate-x-1/2 -translate-y-1/2 gap-4 rounded-2xl bg-surface-container-high p-6 shadow-elevation-3",
           className
         )}
         {...props}

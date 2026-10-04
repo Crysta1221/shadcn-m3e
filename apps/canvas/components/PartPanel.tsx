@@ -36,6 +36,7 @@ import {
   reorderTabsPatch,
   scaleR,
   sizeOf,
+  actionSlotsOf,
   variantStyle,
 } from "@/lib/tokens";
 import { Lang } from "@/lib/i18n";
@@ -44,6 +45,7 @@ import { IconPicker } from "./IconPicker";
 import { CornerIcon, Field, IconBtn, RUN_CELL, Section, Segmented, Select, SelectOption, Slider, Toggle } from "./ui";
 import { AiHooks, variantsOf } from "./Inspector";
 import { LinkStage, TapStage } from "./TapStage";
+import { partBySlug } from "@/parts/registry";
 import { COLOR_TOKEN_TEXT, KIND_TEXT, TEXT_TOKEN_TEXT, t, useLang } from "@/lib/i18n";
 
 /* The chrome every part's panel wears: the title row with its menu, the two tabs, the grid that
@@ -383,6 +385,8 @@ export function actionOptionsOf(item: Item, frame: Frame | null, frames: Frame[]
     /* a FAB opens a menu where another part would flip its own look */
     ...(isFab(item.kind) ? [{ key: MENU_TARGET, label: t("fabMenuAction", lang), icon: "menu_open" }] : []),
     ...(TOGGLEABLE.includes(item.kind) && !isFab(item.kind) ? [{ key: "toggle", label: t("toggleTitle", lang), icon: "swap_horiz" }] : []),
+    /* a part that can flip (its def carries the `toggle` prop) swaps looks rather than going anywhere */
+    ...(item.kind === "component" && partBySlug(item.component)?.props.some((d) => d.key === "toggle") ? [{ key: "toggle", label: t("toggleTitle", lang), icon: "swap_horiz" }] : []),
     { key: BACK_TARGET, label: t("back", lang), icon: "arrow_back" },
     { key: LINK_TARGET, label: t("openLink", lang), icon: "open_in_new" },
     ...[...frames]
@@ -390,6 +394,26 @@ export function actionOptionsOf(item: Item, frame: Frame | null, frames: Frame[]
       .filter((f) => f.id !== frame?.id)
       .map((f) => ({ key: f.id, label: f.name || t("screen", lang), icon: isPhoneFrame(f) ? "smartphone" : "desktop_windows" })),
   ];
+}
+
+/** the places a bar can be tapped, as one connected run: the icons at its ends, or the entries
+ *  along it, each cell the icon the place shows and a mark when a tap has been sent from it */
+export function SlotStrip({ item, selected, onSelect, p }: { item: Item; selected: string; onSelect: (k: string) => void; p: Palette }) {
+  const lang = useLang();
+  const slots = actionSlotsOf(item);
+  /* a tab's words are too long for a cell: the cell carries its number and the words are the hover text */
+  const numbered = item.kind === "tabs" || item.component === "tabs";
+  return (
+    <Segmented<string>
+      options={slots.map((s, i) => ({ key: s.key, icon: s.value ?? undefined, label: s.value ? undefined : numbered ? `${i + 1}` : s.label, title: s.label, dot: !!item.actions?.[s.key] }))}
+      value={selected}
+      onChange={onSelect}
+      p={p}
+      height={40}
+      tight={slots.length > 4}
+      label={t("tapTo", lang)}
+    />
+  );
 }
 
 /** where a tap goes, with the map or the browser window under it. Parts that cannot be tapped
@@ -418,6 +442,10 @@ export function TriggerSection({
   head?: React.ReactNode;
 }) {
   const lang = useLang();
+  /* a part whose def has a `toggle` prop flips instead of going anywhere: the "toggle" choice is
+   *  that prop, shown where the destination would be */
+  const toggleable = !slot && item.kind === "component" && partBySlug(item.component)?.props.some((d) => d.key === "toggle");
+  const toggles = toggleable && item.props?.toggle === true;
   const action = slot ? item.actions?.[slot] : item.action;
   const set = (next: Action | undefined) => {
     if (!slot) {
@@ -431,6 +459,12 @@ export function TriggerSection({
   };
   const isLink = action?.to === LINK_TARGET;
   const pick = (k: string) => {
+    if (toggleable && k === "toggle") {
+      onChange({ props: { ...item.props, toggle: true }, action: undefined });
+      return;
+    }
+    /* choosing a destination leaves a flip part's toggle off */
+    if (toggleable && item.props?.toggle) onChange({ props: { ...item.props, toggle: false } });
     if (k === LINK_TARGET) {
       set({ to: LINK_TARGET, transition: "none", url: action?.url });
       return;
@@ -442,7 +476,7 @@ export function TriggerSection({
     <Section id="part-action" icon="ads_click" title={t("tapTo", lang)} p={p}>
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
         {head}
-        <Select options={actionOptionsOf(item, frame, allFrames, lang)} value={action?.to ?? "none"} onChange={pick} p={p} label={t("tapTo", lang)} />
+        <Select options={actionOptionsOf(item, frame, allFrames, lang)} value={toggles ? "toggle" : (action?.to ?? "none")} onChange={pick} p={p} label={t("tapTo", lang)} />
         {isLink ? (
           <LinkStage self={frame} selfRect={selfRect} action={action} onChange={set} p={p} />
         ) : (

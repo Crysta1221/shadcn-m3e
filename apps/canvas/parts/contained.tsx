@@ -21,7 +21,7 @@ export const FIT_OVERLAY = `[data-fit] :is([data-slot$="-popup"], [data-slot$="-
  *  the editor's pass (`FIT_OVERLAY`), so the outline, the selection and the drags are all about
  *  the dialog itself, not about a box it happens to float in. The scrim that would show around
  *  the shifted box is hidden (globals.css `[data-fit] [data-slot$="-overlay"]`). */
-export function Contained({ width, height, ax = "start", ay = "start", fit = false, children }: { width?: number; height?: number; ax?: Place; ay?: Place; fit?: boolean; children?: ReactNode }) {
+export function Contained({ width, height, ax = "start", ay = "start", fit = false, live = false, children }: { width?: number; height?: number; ax?: Place; ay?: Place; fit?: boolean; /** the preview's box: the overlay is opened by its trigger, so it must not be clipped */ live?: boolean; children?: ReactNode }) {
   const [box, setBox] = useState<HTMLDivElement | null>(null);
   const [shift, setShift] = useState<{ x: number; y: number } | null>(null);
   useLayoutEffect(() => {
@@ -60,8 +60,9 @@ export function Contained({ width, height, ax = "start", ay = "start", fit = fal
         position: "relative",
         transform: "translateZ(0)",
         /* the box may hang past the part's frame where the viewport it pretends to be is
-         * larger than the overlay; nothing paints there but the (hidden) scrim */
-        overflow: fit ? "visible" : "hidden",
+         * larger than the overlay; nothing paints there but the (hidden) scrim. In the live
+         * preview the overlay opens and closes on its own and must not be clipped either */
+        overflow: fit || live ? "visible" : "hidden",
         left: moved ? -shift!.x : undefined,
         top: moved ? -shift!.y : undefined,
         width,

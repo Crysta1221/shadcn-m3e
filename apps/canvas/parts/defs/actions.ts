@@ -1,5 +1,5 @@
 import { h, ic, raw, wrap } from "../node";
-import type { PartDef } from "../types";
+import type { ListItem, P, PartDef, PartSlot, PropDef } from "../types";
 
 const VARIANTS = ["filled", "tonal", "elevated", "outlined", "text"];
 const SIZES = [
@@ -9,6 +9,60 @@ const SIZES = [
   { value: "lg", label: "L · 96" },
   { value: "xl", label: "XL · 136" },
 ];
+
+/** every entry of a list prop is a place a tap can be sent from: `tab:0`, `tab:1`, … */
+const listSlots = (items: ListItem[]): PartSlot[] => items.map((it, i) => ({ key: `tab:${i}`, label: it.label || `${i + 1}`, icon: it.icon }));
+
+/** the props a tappable "toggle" button carries: marked as a toggle, plus what it looks like on */
+const TOGGLE_PROPS: PropDef[] = [
+  { key: "toggle", label: "Toggle button", kind: "bool", default: false },
+  { key: "onIcon", label: "Icon when on", kind: "icon", default: "", when: (p: P) => p.b("toggle") },
+  { key: "onLabel", label: "Label when on", kind: "text", default: "", when: (p: P) => p.b("toggle") },
+];
+
+/* the toggle the button prints as: a real `Toggle` with its on-look props, variant and size
+ *  mapped onto the toggle's own scale (a text button is the standard, containerless toggle;
+ *  XL buttons share the largest toggle) */
+const TOGGLE_VARIANT: Record<string, string | undefined> = { filled: "filled", tonal: "tonal", elevated: "elevated", outlined: "outline", text: undefined };
+const TOGGLE_SIZE: Record<string, string> = { xs: "xs", sm: "sm", md: "md", lg: "lg", xl: "lg" };
+
+/** the button part's tree: a `Button` normally, a `Toggle` when it flips on tap */
+function buttonTree(p: P) {
+  const label = p.s("label");
+  const icon = p.s("icon");
+  const iconOnly = !label && !!icon;
+  if (p.b("toggle")) {
+    const onIcon = p.s("onIcon");
+    const onLabel = p.s("onLabel");
+    /* the on-look swaps as a whole, so a half-set look repeats the half it keeps */
+    return h(
+      "Toggle",
+      {
+        variant: TOGGLE_VARIANT[p.s("variant")],
+        size: TOGGLE_SIZE[p.s("size")] ?? "sm",
+        shape: p.s("shape") === "square" ? "square" : undefined,
+        disabled: p.b("disabled") || undefined,
+        selectedIcon: onIcon ? ic(onIcon, { fill: "auto" }) : onLabel && icon ? ic(icon, { fill: "auto" }) : undefined,
+        selectedLabel: onLabel || (onIcon && label ? label : undefined),
+        "aria-label": iconOnly && !onIcon ? icon : undefined,
+      },
+      icon && ic(icon, { fill: "auto" }),
+      label,
+    );
+  }
+  return h(
+    "Button",
+    {
+      variant: p.s("variant"),
+      size: iconOnly ? `icon-${p.s("size")}` : p.s("size"),
+      shape: p.s("shape") === "square" ? "square" : undefined,
+      disabled: p.b("disabled") || undefined,
+      "aria-label": iconOnly ? icon : undefined,
+    },
+    icon && ic(icon),
+    label,
+  );
+}
 
 export const actions: PartDef[] = [
   {
@@ -25,24 +79,9 @@ export const actions: PartDef[] = [
       { key: "size", label: "Size", kind: "enum", default: "sm", options: SIZES },
       { key: "shape", label: "Shape", kind: "enum", default: "round", options: ["round", "square"] },
       { key: "disabled", label: "Disabled", kind: "bool", default: false },
+      ...TOGGLE_PROPS,
     ],
-    tree: (p) => {
-      const label = p.s("label");
-      const icon = p.s("icon");
-      const iconOnly = !label && !!icon;
-      return h(
-        "Button",
-        {
-          variant: p.s("variant"),
-          size: iconOnly ? `icon-${p.s("size")}` : p.s("size"),
-          shape: p.s("shape") === "square" ? "square" : undefined,
-          disabled: p.b("disabled") || undefined,
-          "aria-label": iconOnly ? icon : undefined,
-        },
-        icon && ic(icon),
-        label,
-      );
-    },
+    tree: (p) => buttonTree(p),
   },
   {
     slug: "fab",
@@ -63,14 +102,23 @@ export const actions: PartDef[] = [
         default: "primary-container",
         options: ["primary-container", "secondary-container", "tertiary-container", "primary", "secondary", "tertiary", "surface"],
       },
+      ...TOGGLE_PROPS,
     ],
     tree: (p) => {
       const color = p.s("color");
       const size = p.s("size");
       const label = p.s("label");
       const common = { color: color === "primary-container" ? undefined : color, size: size === "default" ? undefined : size };
-      if (label) return h("ExtendedFab", { ...common, icon: p.s("icon") ? ic(p.s("icon")) : undefined }, label);
-      return h("Fab", { ...common, "aria-label": p.s("icon") || "Action" }, ic(p.s("icon") || "add"));
+      /* a FAB that flips on tap keeps its look but swaps what it shows (add ↔ close,
+       * play ↔ pause); the on-state fills its icon even when it stays the same */
+      const toggle = p.b("toggle")
+        ? {
+            selectedIcon: p.s("onIcon") || p.s("icon") ? ic(p.s("onIcon") || p.s("icon"), { fill: "auto" }) : undefined,
+            selectedLabel: p.s("onLabel") || label || undefined,
+          }
+        : undefined;
+      if (label) return h("ExtendedFab", { ...common, icon: p.s("icon") ? ic(p.s("icon")) : undefined, ...toggle }, label);
+      return h("Fab", { ...common, "aria-label": p.s("icon") || "Action", selectedIcon: toggle?.selectedIcon }, ic(p.s("icon") || "add"));
     },
   },
   {
@@ -144,6 +192,8 @@ export const actions: PartDef[] = [
       { key: "size", label: "Size", kind: "enum", default: "default", options: ["xs", "sm", "default", "md"] },
       { key: "multiple", label: "Multiple", kind: "bool", default: false },
     ],
+    slots: (p) => listSlots(p.list("items")),
+    selectKey: "selected",
     tree: (p) => {
       const items = p.list("items");
       const value = (it: { label: string; icon?: string }, i: number) => it.label || it.icon || `item-${i + 1}`;
@@ -156,7 +206,7 @@ export const actions: PartDef[] = [
           multiple: p.b("multiple") || undefined,
           defaultValue: items.length ? [value(items[Math.min(p.n("selected"), items.length - 1)], Math.min(p.n("selected"), items.length - 1))] : undefined,
         },
-        ...items.map((it, i) => h("ToggleGroupItem", { value: value(it, i), "aria-label": it.label ? undefined : it.icon || value(it, i) }, !!it.icon && ic(it.icon, { size: 20, fill: "auto" }), it.label)),
+        ...items.map((it, i) => h("ToggleGroupItem", { value: value(it, i), "aria-label": it.label ? undefined : it.icon || value(it, i), "data-tap": `tab:${i}` }, !!it.icon && ic(it.icon, { size: 20, fill: "auto" }), it.label)),
       );
     },
   },
@@ -186,15 +236,16 @@ export const actions: PartDef[] = [
       { key: "buttonVariant", label: "Button variant", kind: "enum", default: "tonal", options: VARIANTS },
       { key: "size", label: "Size", kind: "enum", default: "sm", options: SIZES },
     ],
+    slots: (p) => listSlots(p.list("items")),
     tree: (p) =>
       h(
         "ButtonGroup",
         { variant: p.s("variant") === "standard" ? "standard" : undefined, orientation: p.s("orientation") === "vertical" ? "vertical" : undefined },
-        ...p.list("items").map((it) => {
+        ...p.list("items").map((it, i) => {
           const iconOnly = !it.label && !!it.icon;
           return h(
             "Button",
-            { variant: p.s("buttonVariant"), size: iconOnly ? `icon-${p.s("size")}` : p.s("size"), "aria-label": iconOnly ? it.icon : undefined },
+            { variant: p.s("buttonVariant"), size: iconOnly ? `icon-${p.s("size")}` : p.s("size"), "aria-label": iconOnly ? it.icon : undefined, "data-tap": `tab:${i}` },
             !!it.icon && ic(it.icon),
             it.label,
           );
@@ -217,6 +268,7 @@ export const actions: PartDef[] = [
       { key: "menuItems", label: "Menu items", kind: "list", default: [{ label: "Duplicate" }, { label: "Share" }, { label: "Delete" }], min: 1, max: 6 },
     ],
     open: { box: (p) => ({ w: 220, h: 40 + 8 + p.list("menuItems").length * 44 + 16, ax: "end" }) },
+    slots: (p) => listSlots(p.list("menuItems")),
     tree: (p) => {
       const menu = p.b("menu");
       const items = p.list("menuItems");
@@ -236,7 +288,7 @@ export const actions: PartDef[] = [
         "DropdownMenu",
         null,
         split,
-        h("DropdownMenuContent", { align: "end", className: "w-48" }, ...items.map((it) => h("DropdownMenuItem", null, it.label))),
+        h("DropdownMenuContent", { align: "end", className: "w-48" }, ...items.map((it, i) => h("DropdownMenuItem", { "data-tap": `tab:${i}` }, it.label))),
       );
     },
   },
@@ -265,12 +317,13 @@ export const actions: PartDef[] = [
       { key: "icon", label: "Trigger icon", kind: "icon", default: "add" },
       { key: "open", label: "Open", kind: "bool", default: false },
     ],
+    slots: (p) => listSlots(p.list("items")),
     tree: (p) => {
       const items = p.list("items");
       const menu = h(
         "FabMenu",
         { defaultOpen: p.b("open") || undefined },
-        h("FabMenuContent", null, ...items.map((it) => h("FabMenuItem", { icon: it.icon ? ic(it.icon) : undefined }, it.label))),
+        h("FabMenuContent", null, ...items.map((it, i) => h("FabMenuItem", { icon: it.icon ? ic(it.icon) : undefined, "data-tap": `tab:${i}` }, it.label))),
         h("FabMenuTrigger", { icon: p.s("icon") && p.s("icon") !== "add" ? ic(p.s("icon")) : undefined }),
       );
       // the open items stack above the trigger without taking room, so the preview reserves it (56dp each, 4dp apart, 8dp from the FAB)

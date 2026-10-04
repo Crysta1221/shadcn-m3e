@@ -1,5 +1,6 @@
 import { Toggle as TogglePrimitive } from "@base-ui/react/toggle"
 import { cva, type VariantProps } from "class-variance-authority"
+import type { ReactNode } from "react"
 import { cn } from "@/lib/m3e/cn"
 
 import { Ripple } from "@/components/m3e/ripple"
@@ -55,8 +56,18 @@ function Toggle({
   size = "default",
   shape = "round",
   children,
+  selectedIcon,
+  selectedLabel,
   ...props
-}: TogglePrimitive.Props & VariantProps<typeof toggleVariants>) {
+}: TogglePrimitive.Props &
+  VariantProps<typeof toggleVariants> & {
+    /** shown instead of the icon while selected (play ↔ pause); icons of selected
+     *  toggles are already filled when you use `<Icon fill="auto" />` */
+    selectedIcon?: ReactNode
+    /** shown instead of the label while selected */
+    selectedLabel?: ReactNode
+  }) {
+  const swaps = selectedIcon !== undefined || selectedLabel !== undefined
   return (
     <TogglePrimitive
       data-slot="toggle"
@@ -64,7 +75,19 @@ function Toggle({
       {...props}
     >
       <Ripple />
-      {children}
+      {swaps ? (
+        <>
+          <span className="contents group-data-pressed/toggle:hidden">
+            {children}
+          </span>
+          <span className="hidden items-center gap-[inherit] group-data-pressed/toggle:inline-flex">
+            {selectedIcon}
+            {selectedLabel}
+          </span>
+        </>
+      ) : (
+        children
+      )}
     </TogglePrimitive>
   )
 }

@@ -9,7 +9,7 @@ import { pickers } from "./defs/pickers";
 import { selection } from "./defs/selection";
 import { textInputs } from "./defs/text-inputs";
 import { theming } from "./defs/theming";
-import type { ListItem, P, PartDef, PropDef, PropValues } from "./types";
+import type { ListItem, P, PartDef, PropDef, PropValues, Screen } from "./types";
 import { applyAppearance, type Appearance } from "./appearance";
 import { h, mapNodes, type PNode } from "./node";
 import { COMMON_TEXT, defaultTextOf, listTextOf } from "./labels";
@@ -98,17 +98,31 @@ function opened(node: PNode, open: NonNullable<PartDef["open"]>, first: { menu: 
   }
 }
 
+/** a drawn-open overlay is not modal (a click on the canvas must not be trapped); in the live
+ *  preview the same flag keeps a menu the visitor opens from capturing the screen */
+const modalOff = (n: PNode): PNode => (OVERLAY_ROOTS.has(n.type) ? { ...n, props: { ...n.props, modal: false } } : n);
+
 /** What the canvas draws for a part: its tree, and for a part that opens something, that thing
- *  drawn open inside a box (see `PartDef.open`). The code printed is always `treeOf`. */
-export function viewOf(def: PartDef, values?: PropValues, appearance?: Appearance): PNode {
+ *  drawn open inside a box (see `PartDef.open`). The code printed is always `treeOf`. `screen`
+ *  is the size of the frame the part sits on: the box stands in for a screen, so it is never
+ *  larger than the real one.
+ *
+ *  `live` is the preview: a part whose trigger is drawn opens and closes itself there, so its
+ *  tree stands unopened in the box that keeps its place (the overlay still opens inside the
+ *  box, spilling past it). A hidden-trigger overlay has nothing to open it with, so it stays
+ *  held open exactly as on the canvas. */
+export function viewOf(def: PartDef, values?: PropValues, appearance?: Appearance, screen?: Screen, live = false): PNode {
   const p = reader(def, values);
-  const tree = applyAppearance(def.view ? def.view(p) : def.tree(p), appearance, def.appearance?.target);
   const open = def.open;
+  const selfOpens = live && !!open && open.trigger !== "hide";
+  const tree = applyAppearance(def.view && !selfOpens ? def.view(p, screen) : def.tree(p), appearance, def.appearance?.target);
   if (!open) return tree;
   const { w, h: height, ax, ay } = open.box(p);
+  const box = { width: screen ? Math.min(w, screen.w) : w, height: screen ? Math.min(height, screen.h) : height, ax, ay };
+  if (selfOpens) return h("Contained", { ...box, live: true }, mapNodes(tree, modalOff));
   const first = { menu: true, nav: true };
   const renamed = open.rename ? mapNodes(tree, (n) => ({ ...n, type: open.rename!(n.type) })) : tree;
-  return h("Contained", { width: w, height, ax, ay, fit: open.fit || undefined }, mapNodes(renamed, (n) => opened(n, open, first)));
+  return h("Contained", { ...box, fit: open.fit || undefined }, mapNodes(renamed, (n) => opened(n, open, first)));
 }
 
 /** the default value of every prop */

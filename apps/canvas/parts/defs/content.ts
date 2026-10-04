@@ -114,6 +114,7 @@ export const content: PartDef[] = [
       { key: "width", label: "Width", kind: "number", default: 320, min: 160, max: 640, step: 4, unit: "px" },
       { key: "height", label: "Slide height", kind: "number", default: 200, min: 80, max: 400, step: 4, unit: "px" },
     ],
+    slots: (p) => Array.from({ length: px(p.n("count")) }, (_, i) => ({ key: `tab:${i}`, label: `${i + 1}` })),
     tree: (p) => {
       const vertical = p.s("orientation") === "vertical";
       return h(
@@ -128,7 +129,7 @@ export const content: PartDef[] = [
               null,
               h(
                 "div",
-                { className: `flex items-center justify-center rounded-2xl text-headline-large ${TONES[i % 3]}`, style: { height: px(p.n("height")) } },
+                { className: `flex items-center justify-center rounded-2xl text-headline-large ${TONES[i % 3]}`, style: { height: px(p.n("height")) }, "data-tap": `tab:${i}` },
                 String(i + 1),
               ),
             ),
@@ -161,11 +162,12 @@ export const content: PartDef[] = [
       { key: "height", label: "Height", kind: "number", default: 180, min: 100, max: 320, step: 4, unit: "px" },
       { key: "width", label: "Width", kind: "number", default: 420, min: 240, max: 800, step: 4, unit: "px" },
     ],
+    slots: (p) => p.list("slides").map((s, i) => ({ key: `tab:${i}`, label: s.label || `${i + 1}` })),
     tree: (p) =>
       h(
         "ExpressiveCarousel",
         { variant: p.s("variant"), height: px(p.n("height")), style: { width: px(p.n("width")) } },
-        ...p.list("slides").map((s, i) => h("CarouselSlide", { className: TONES[i % 3] }, h("span", { className: "text-title-large" }, s.label))),
+        ...p.list("slides").map((s, i) => h("CarouselSlide", { className: TONES[i % 3], "data-tap": `tab:${i}` }, h("span", { className: "text-title-large" }, s.label))),
       ),
   },
   {

@@ -1,5 +1,5 @@
 import { appearanceOf } from "../parts/appearance";
-import { imageKeys, partBySlug, treeOf } from "../parts/registry";
+import { imageKeys, partBySlug, reader, treeOf } from "../parts/registry";
 import { labelOfPart } from "../parts/resize";
 import { nameOf } from "../parts/labels";
 import { roleOf } from "../parts/role";
@@ -58,6 +58,7 @@ import {
   carouselCardsOf,
   TOP_BAR_SIZES,
   topBarHeightOf,
+  actionSlotsOf,
 } from "./tokens";
 
 const VARIANT_TEXT: Record<Lang, Record<Variant, string>> = {
@@ -786,7 +787,28 @@ function actionText(a: Action, frames: Frame[], lang: Lang): string | null {
   return `opens the ${name} screen${a.transition !== "none" ? ` with ${tr}` : ""}`;
 }
 
+/** slugs whose tab:N slots are menu entries rather than destinations */
+const MENU_PARTS = new Set(["context-menu", "dropdown-menu", "menubar", "split-button", "fab-menu"]);
+
 function slotName(it: Item, slot: string, lang: Lang): string {
+  if (it.kind === "component") {
+    const s = actionSlotsOf(it).find((x) => x.key === slot);
+    const q = quote(lang);
+    /* slots that carry no destination label name their button instead */
+    if (slot === "icon" || slot === "icon2" || slot === "menu" || slot === "rail") {
+      const named = s?.label && s.label !== "Menu" && s.label !== "More" ? ` ${q(s.label)}` : "";
+      if (lang === "ja") return `${slot === "icon2" ? "右" : "左"}の${named ? `${named} ` : ""}アイコンボタン`;
+      if (lang === "zh") return `${slot === "icon2" ? "右侧" : "左侧"}的${named ? `${named} ` : ""}图标按钮`;
+      if (lang === "ko") return `${slot === "icon2" ? "오른쪽" : "왼쪽"}${named ? ` ${named}` : ""} 아이콘 버튼`;
+      return `the${named ? ` ${s?.label}` : ""} icon button on the ${slot === "icon2" ? "right" : "left"}`;
+    }
+    const label = s?.label ? q(s.label) : slot.startsWith("tab:") ? `#${Number(slot.slice(4)) + 1}` : slot;
+    const menu = MENU_PARTS.has(it.component ?? "");
+    if (lang === "ja") return `${label}の${menu ? "メニュー項目" : "項目"}`;
+    if (lang === "zh") return `${label}${menu ? "菜单项" : "项"}`;
+    if (lang === "ko") return `${label} ${menu ? "메뉴 항목" : "항목"}`;
+    return `the ${label} ${menu ? "menu item" : "destination"}`;
+  }
   if (slot.startsWith("tab:")) {
     const i = Number(slot.slice(4));
     const tab = it.tabs?.[i];
@@ -826,12 +848,18 @@ function notes(g: Group, frames: Frame[], lang: Lang): string[] {
       if (lang === "en") out.push(`Tapping ${s} of ${name.replace(/^The /, "the ")} ${a}.`);
       else parts.push(lang === "ja" ? `${s}をタップすると${a}` : lang === "zh" ? `点击${s}后${a}` : `${s}을 탭하면 ${a}`);
     }
-    if (it.toggle) {
+    /* a component part toggles through props: toggle + the on* look */
+    const def = it.kind === "component" && it.component ? partBySlug(it.component) : undefined;
+    const rd = def?.props.some((d) => d.key === "toggle") ? reader(def, it.props) : undefined;
+    const toggleLook =
+      it.toggle ?? (rd?.b("toggle") ? { label: rd.s("onLabel") || undefined, icon: rd.s("onIcon") || undefined, variant: undefined } : undefined);
+    if (toggleLook) {
       const vt = VARIANT_TEXT[lang];
-      const icon = it.toggle.icon; // undefined = same as off, null = no icon
-      const variant = it.toggle.variant;
+      const icon = toggleLook.icon; // undefined = same as off, null = no icon
+      const variant = toggleLook.variant;
       const changes: string[] = [];
-      const label = it.toggle.label !== undefined && it.toggle.label !== it.label ? it.toggle.label : undefined;
+      const off = rd?.s("label") ?? it.label;
+      const label = toggleLook.label !== undefined && toggleLook.label !== off ? toggleLook.label : undefined;
       if (lang === "ja") {
         if (label !== undefined) changes.push(`ラベルが${qj(label)}に変わる`);
         if (icon) changes.push(`アイコンが ${icon} に変わる`);

@@ -7,8 +7,11 @@ const ITEMS: ListItem[] = [
   { label: "Rename", icon: "edit" },
 ];
 
-/** an item row: its icon (when it has one) and its label */
-const rows = (items: ListItem[], item: string): PNode[] => items.map((it) => h(item, null, it.icon ? ic(it.icon) : null, it.label));
+/** an item row: its icon (when it has one) and its label, marked so a tap on it can be told apart */
+const rows = (items: ListItem[], item: string): PNode[] => items.map((it, i) => h(item, { "data-tap": `tab:${i}` }, it.icon ? ic(it.icon) : null, it.label));
+
+/** every item of a menu is a place a tap can be sent from */
+const menuSlots = (items: ListItem[]) => items.map((it, i) => ({ key: `tab:${i}`, label: it.label || `${i + 1}`, icon: it.icon }));
 
 export const menus: PartDef[] = [
   {
@@ -26,6 +29,7 @@ export const menus: PartDef[] = [
     ],
     // the canvas draws the closed menu (the trigger); the content is part of the code
     open: { box: (p) => ({ w: 260, h: 40 + 8 + (p.list("items").length + (p.s("destructive") ? 1 : 0)) * 44 + 28 }) },
+    slots: (p) => [...menuSlots(p.list("items")), ...(p.s("destructive") ? [{ key: `tab:${p.list("items").length}`, label: p.s("destructive"), icon: "delete" }] : [])],
     tree: (p) =>
       h(
         "DropdownMenu",
@@ -36,7 +40,7 @@ export const menus: PartDef[] = [
           { className: "w-56" },
           ...rows(p.list("items"), "DropdownMenuItem"),
           p.s("destructive") ? h("DropdownMenuSeparator") : null,
-          p.s("destructive") ? h("DropdownMenuItem", { variant: "destructive" }, ic("delete"), p.s("destructive")) : null,
+          p.s("destructive") ? h("DropdownMenuItem", { variant: "destructive", "data-tap": `tab:${p.list("items").length}` }, ic("delete"), p.s("destructive")) : null,
         ),
       ),
   },
@@ -66,6 +70,7 @@ export const menus: PartDef[] = [
       { key: "height", label: "Height", kind: "number", default: 128, min: 64, max: 480, step: 4, unit: "px" },
     ],
     open: { box: (p) => ({ w: Math.max(p.n("width"), 200), h: p.n("height") + 8 + p.list("items").length * 44 + 16 }), rename: (type) => type.replace(/^ContextMenu/, "DropdownMenu") },
+    slots: (p) => menuSlots(p.list("items")),
     tree: (p) =>
       h(
         "ContextMenu",
@@ -105,6 +110,7 @@ export const menus: PartDef[] = [
       },
     ],
     open: { box: (p) => ({ w: Math.max(260, p.list("menus").length * 90), h: 48 + 8 + p.list("items").length * 44 + 16 }) },
+    slots: (p) => menuSlots(p.list("items")),
     tree: (p) =>
       h(
         "Menubar",

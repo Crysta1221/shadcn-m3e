@@ -30,7 +30,13 @@ function attr(name: string, v: PValue): string | null {
   return `${name}={${expr(v)}}`;
 }
 
-const attrs = (node: PNode) => Object.entries(node.props ?? {}).map(([k, v]) => attr(k, v)).filter((a): a is string => a !== null);
+/* `data-tap` is the canvas's own mark for a tappable place inside a part; the printed code has
+ *  no use for it */
+const attrs = (node: PNode) =>
+  Object.entries(node.props ?? {})
+    .filter(([k]) => k !== "data-tap")
+    .map(([k, v]) => attr(k, v))
+    .filter((a): a is string => a !== null);
 
 /** the whole node on one line */
 export function inlineNode(node: PNode): string {

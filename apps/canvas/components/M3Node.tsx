@@ -69,6 +69,7 @@ import {
 import { CircularProgress, LinearProgress, LoadingIndicator } from "./Loading";
 import { ComponentNode } from "./ComponentNode";
 import { PartView } from "./PartView";
+import type { Screen } from "@/parts/types";
 import { CarouselBody, DatePickerBody, TimePickerBody } from "./Pickers";
 import { t, useLang } from "@/lib/i18n";
 import { useTheme } from "@/lib/theme";
@@ -628,8 +629,8 @@ function RadioContent({ item, p }: { item: Item; p: Palette }) {
 }
 
 /** Content for kinds that size to their text; rendered again offscreen to measure. */
-export function MeasuredContent({ item, p }: { item: Item; p: Palette }) {
-  if (item.kind === "component") return <PartView item={item} />;
+export function MeasuredContent({ item, p, screen }: { item: Item; p: Palette; screen?: Screen }) {
+  if (item.kind === "component") return <PartView item={item} screen={screen} />;
   if (menuOpen(item)) return item.kind === "splitButton" ? <SplitMenuContent item={item} p={p} /> : <FabMenuContent item={item} p={p} />;
   switch (item.kind) {
     case "button":
@@ -878,14 +879,14 @@ function FabMenuContent({ item, p, shown = true }: { item: Item; p: Palette; sho
   );
 }
 
-function Body({ item, p, tabScroll, menuShown }: { item: Item; p: Palette; tabScroll?: number; menuShown?: boolean }) {
+function Body({ item, p, tabScroll, menuShown, screen }: { item: Item; p: Palette; tabScroll?: number; menuShown?: boolean; screen?: Screen }) {
   const lang = useLang();
   const w = useWeight();
   const hasLabel = item.label.trim().length > 0;
   const hasSupporting = !!item.supporting?.trim();
 
   if (menuOpen(item)) return item.kind === "splitButton" ? <SplitMenuContent item={item} p={p} shown={menuShown} /> : <FabMenuContent item={item} p={p} shown={menuShown} />;
-  if (MEASURED.includes(item.kind)) return <MeasuredContent item={item} p={p} />;
+  if (MEASURED.includes(item.kind)) return <MeasuredContent item={item} p={p} screen={screen} />;
 
   switch (item.kind) {
     case "bottomSheet":
@@ -1806,6 +1807,7 @@ function LegacyNode({
   instant,
   ripple,
   lit,
+  screen,
 }: {
   item: Item;
   palette: Palette;
@@ -1830,6 +1832,8 @@ function LegacyNode({
    *  as long as it is given, and goes out on its own once it is taken away. `at` is when the
    *  press began, so a light handed over mid-spread carries on rather than starting again. */
   lit?: { x: number; y: number; at?: number; grown?: boolean } | null;
+  /** the frame the part is on: an open overlay's box is no larger than it */
+  screen?: Screen;
 }) {
   const reducedMotion = useReducedMotion();
   const instantRail = reducedMotion && item.kind === "navRail" && isWideRail(item);
@@ -1929,7 +1933,7 @@ function LegacyNode({
       }}
     >
       <RippleCtx.Provider value={{ list: shown, color: contentColor(drawn, palette) }}>
-        <Body item={drawn} p={palette} tabScroll={tabScroll} menuShown={menu.open} />
+        <Body item={drawn} p={palette} tabScroll={tabScroll} menuShown={menu.open} screen={screen} />
         {/* a part drawn as one shape is lit through its own box; one made of several -- a split
             button -- carries the light inside each of them instead */}
         {(lights || !!carried) && item.kind !== "splitButton" && <RippleShape part={null} />}
@@ -1949,16 +1953,18 @@ export function M3Static({
   palette,
   radii,
   style,
+  screen,
 }: {
   item: Item;
   palette: Palette;
   radii?: Radii;
   style?: React.CSSProperties;
+  screen?: Screen;
 }) {
   if (item.kind === "component")
     return (
       <div style={{ display: "inline-flex", flex: "0 0 auto", ...style }}>
-        <PartView item={item} />
+        <PartView item={item} screen={screen} />
       </div>
     );
   const r = radii ?? baseRadii(item);

@@ -1,5 +1,5 @@
 import { h, ic, type PNode } from "../node";
-import type { P, PartDef } from "../types";
+import type { ListItem, P, PartDef, PartSlot } from "../types";
 
 const DESTINATIONS = [
   { label: "Home", icon: "home" },
@@ -8,15 +8,18 @@ const DESTINATIONS = [
   { label: "Settings", icon: "settings" },
 ];
 
+/** every entry of a list prop is a place a tap can be sent from: `tab:0`, `tab:1`, … */
+const listSlots = (items: ListItem[]): PartSlot[] => items.map((it, i) => ({ key: `tab:${i}`, label: it.label || `${i + 1}`, icon: it.icon }));
+
 /** the search bar or view; `open` draws a view with its results showing */
 function searchTree(p: P, open: boolean): PNode {
-  const trailing = p.s("trailing") ? ic(p.s("trailing")) : undefined;
+  const trailing = p.s("trailing") ? ic(p.s("trailing"), { "data-tap": "icon" }) : undefined;
   const style = { width: Math.round(p.n("width")) };
   if (p.s("kind") === "bar") return h("SearchBar", { placeholder: p.s("placeholder") || undefined, trailing, style });
   return h(
     "SearchView",
     { placeholder: p.s("placeholder") || undefined, trailing, size: p.s("size") === "sm" ? "sm" : undefined, style, open: open || undefined },
-    ...p.list("results").map((r) => h("SearchResult", { icon: r.icon || undefined }, r.label)),
+    ...p.list("results").map((r, i) => h("SearchResult", { icon: r.icon || undefined, "data-tap": `tab:${i}` }, r.label)),
   );
 }
 
@@ -35,11 +38,13 @@ export const navigation: PartDef[] = [
       { key: "tall", label: "Tall", kind: "bool", default: false },
       { key: "width", label: "Width", kind: "number", default: 412, min: 240, max: 1280, step: 4, unit: "px" },
     ],
+    slots: (p) => listSlots(p.list("items")),
+    selectKey: "selected",
     tree: (p) =>
       h(
         "NavigationBar",
         { height: p.b("tall") ? "tall" : undefined, style: { width: Math.round(p.n("width")) } },
-        ...p.list("items").map((it, i) => h("NavigationBarItem", { icon: it.icon || "circle", label: it.label, active: i === p.n("selected") || undefined })),
+        ...p.list("items").map((it, i) => h("NavigationBarItem", { icon: it.icon || "circle", label: it.label, active: i === p.n("selected") || undefined, "data-tap": `tab:${i}` })),
       ),
   },
   {
@@ -59,14 +64,18 @@ export const navigation: PartDef[] = [
       { key: "centered", label: "Centered (small)", kind: "bool", default: false },
       { key: "width", label: "Width", kind: "number", default: 412, min: 240, max: 1280, step: 4, unit: "px" },
     ],
+    slots: (p) => [
+      ...(p.s("leading") ? [{ key: "icon", label: "Leading icon", icon: p.s("leading") }] : []),
+      ...(p.s("trailing") ? [{ key: "icon2", label: "Trailing icon", icon: p.s("trailing") }] : []),
+    ],
     tree: (p) => {
-      const slot = (name: string, aria: string) => (name ? h("Button", { variant: "text", size: "icon", "aria-label": aria }, ic(name)) : undefined);
+      const slot = (name: string, aria: string, key: string) => (name ? h("Button", { variant: "text", size: "icon", "aria-label": aria, "data-tap": key }, ic(name)) : undefined);
       return h("AppBar", {
         size: p.s("size"),
         title: p.s("title"),
         subtitle: p.s("subtitle") || undefined,
-        leading: slot(p.s("leading"), "Navigate"),
-        trailing: slot(p.s("trailing"), "More"),
+        leading: slot(p.s("leading"), "Navigate", "icon"),
+        trailing: slot(p.s("trailing"), "More", "icon2"),
         centered: p.b("centered") || undefined,
         style: { width: Math.round(p.n("width")) },
       });
@@ -86,11 +95,13 @@ export const navigation: PartDef[] = [
       { key: "variant", label: "Variant", kind: "enum", default: "primary", options: ["primary", "secondary", "segmented"] },
       { key: "width", label: "Width", kind: "number", default: 360, min: 160, max: 1280, step: 4, unit: "px" },
     ],
+    slots: (p) => listSlots(p.list("items")),
+    selectKey: "selected",
     tree: (p) =>
       h(
         "Tabs",
         { defaultValue: `tab-${Math.min(p.n("selected"), p.list("items").length - 1) + 1}`, style: { width: Math.round(p.n("width")) } },
-        h("TabsList", { variant: p.s("variant") }, ...p.list("items").map((it, i) => h("TabsTrigger", { value: `tab-${i + 1}` }, it.label))),
+        h("TabsList", { variant: p.s("variant") }, ...p.list("items").map((it, i) => h("TabsTrigger", { value: `tab-${i + 1}`, "data-tap": `tab:${i}` }, it.label))),
       ),
   },
   {
@@ -106,19 +117,24 @@ export const navigation: PartDef[] = [
       { key: "selected", label: "Selected", kind: "number", default: 0, min: 0, max: 6, step: 1 },
       { key: "expanded", label: "Expanded", kind: "bool", default: false },
       { key: "narrow", label: "Narrow (80dp)", kind: "bool", default: false },
+      { key: "menu", label: "Menu button", kind: "bool", default: true },
       { key: "fab", label: "Compose button", kind: "bool", default: true },
       { key: "height", label: "Height", kind: "number", default: 400, min: 240, max: 800, step: 8, unit: "px" },
     ],
+    slots: (p) => listSlots(p.list("items")),
+    selectKey: "selected",
     tree: (p) => {
       const expanded = p.b("expanded");
-      const header = p.b("fab")
-        ? h("NavigationRailHeader", null, expanded ? h("ExtendedFab", { icon: ic("edit") }, "Compose") : h("Fab", { "aria-label": "Compose" }, ic("edit")))
-        : null;
+      /* the menu button expands the rail (M3E's own affordance); `data-tap` lets the preview's
+       *  press on it flip the rail too */
+      const menu = p.b("menu") ? h("Button", { variant: "text", size: "icon", "aria-label": expanded ? "Collapse" : "Expand", "data-tap": "rail" }, ic("menu")) : null;
+      const fab = p.b("fab") ? (expanded ? h("ExtendedFab", { icon: ic("edit") }, "Compose") : h("Fab", { "aria-label": "Compose" }, ic("edit"))) : null;
+      const header = menu || fab ? h("NavigationRailHeader", null, menu, fab) : null;
       return h(
         "NavigationRail",
         { expanded: expanded || undefined, narrow: (!expanded && p.b("narrow")) || undefined, style: { height: Math.round(p.n("height")) } },
         header,
-        ...p.list("items").map((it, i) => h("NavigationRailItem", { icon: it.icon || "circle", label: it.label, active: i === p.n("selected") || undefined })),
+        ...p.list("items").map((it, i) => h("NavigationRailItem", { icon: it.icon || "circle", label: it.label, active: i === p.n("selected") || undefined, "data-tap": `tab:${i}` })),
       );
     },
   },
@@ -152,12 +168,13 @@ export const navigation: PartDef[] = [
       { key: "toggles", label: "Toggle buttons", kind: "bool", default: false },
       { key: "width", label: "Width (docked)", kind: "number", default: 412, min: 240, max: 1280, step: 4, unit: "px" },
     ],
+    slots: (p) => listSlots(p.list("items")),
     tree: (p) => {
       const items = p.list("items").map((it, i): PNode => {
         const icon = ic(it.icon || "circle");
         return p.b("toggles")
-          ? h("Toggle", { "aria-label": it.label, defaultPressed: i === 0 || undefined }, icon)
-          : h("Button", { variant: "text", size: "icon", "aria-label": it.label }, icon);
+          ? h("Toggle", { "aria-label": it.label, defaultPressed: i === 0 || undefined, "data-tap": `tab:${i}` }, icon)
+          : h("Button", { variant: "text", size: "icon", "aria-label": it.label, "data-tap": `tab:${i}` }, icon);
       });
       if (p.s("kind") === "docked") return h("DockedToolbar", { style: { width: Math.round(p.n("width")) } }, ...items);
       return h(
@@ -297,6 +314,8 @@ export const navigation: PartDef[] = [
       { key: "width", label: "Width", kind: "number", default: 288, min: 200, max: 400, step: 4, unit: "px" },
       { key: "height", label: "Height", kind: "number", default: 400, min: 200, max: 800, step: 8, unit: "px" },
     ],
+    slots: (p) => listSlots(p.list("items")),
+    selectKey: "selected",
     // collapsible="none" is the static sidebar (no fixed container, no sheet); the provider is boxed so nothing escapes
     tree: (p) => {
       const width = Math.round(p.n("width"));
@@ -322,7 +341,7 @@ export const navigation: PartDef[] = [
                   return h(
                     "SidebarMenuItem",
                     null,
-                    h("SidebarMenuButton", { isActive: active || undefined, size: size === "default" ? undefined : size }, it.icon ? ic(it.icon, active ? { fill: true } : undefined) : null, it.label),
+                    h("SidebarMenuButton", { isActive: active || undefined, size: size === "default" ? undefined : size, "data-tap": `tab:${i}` }, it.icon ? ic(it.icon, active ? { fill: true } : undefined) : null, it.label),
                   );
                 }),
               ),
@@ -361,6 +380,7 @@ export const navigation: PartDef[] = [
     ],
     // the results hang off the bar when it is open, so the canvas draws it open in a box that has room for them
     open: { box: (p) => ({ w: p.n("width"), h: p.s("kind") === "bar" ? 56 : 56 + 8 + Math.max(p.list("results").length, 1) * 56 + 16 }) },
+    slots: (p) => [...(p.s("trailing") ? [{ key: "icon", label: "Trailing icon", icon: p.s("trailing") }] : []), ...(p.s("kind") === "view" ? listSlots(p.list("results")) : [])],
     view: (p) => searchTree(p, true),
     tree: (p) => searchTree(p, false),
   },
@@ -389,6 +409,7 @@ export const navigation: PartDef[] = [
       },
       { key: "width", label: "Width", kind: "number", default: 384, min: 240, max: 640, step: 4, unit: "px" },
     ],
+    slots: (p) => listSlots(p.list("items")),
     tree: (p) =>
       h(
         "Command",
@@ -398,7 +419,7 @@ export const navigation: PartDef[] = [
           "CommandList",
           null,
           h("CommandEmpty", null, "No results found."),
-          h("CommandGroup", { heading: p.s("heading") || undefined }, ...p.list("items").map((it) => h("CommandItem", null, it.icon ? ic(it.icon) : null, it.label))),
+          h("CommandGroup", { heading: p.s("heading") || undefined }, ...p.list("items").map((it, i) => h("CommandItem", { "data-tap": `tab:${i}` }, it.icon ? ic(it.icon) : null, it.label))),
         ),
       ),
   },

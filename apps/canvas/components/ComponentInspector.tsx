@@ -1,14 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { Frame, Item, NavTab, PHONE_W, Palette, frameSizeOf } from "@/lib/tokens";
+import { Frame, Item, NavTab, PHONE_W, Palette, actionSlotsOf, frameSizeOf } from "@/lib/tokens";
 import { t, useLang, type Lang } from "@/lib/i18n";
 import { partBySlug, reader } from "@/parts/registry";
 import { choiceLabelOf, labelOf, nameOf } from "@/parts/labels";
 import { dpOf } from "@/parts/resize";
 import type { ListItem, PropDef } from "@/parts/types";
 import { AiHooks } from "./Inspector";
-import { AlignBox, AppearanceCorners, EntryList, FillRun, IconRow, NoteSection, PartHeader, PartTabs, PlaceFn, Tab, TextRun, TriggerSection, WidthRows } from "./PartPanel";
+import { AlignBox, AppearanceCorners, EntryList, FillRun, IconRow, NoteSection, PartHeader, PartTabs, PlaceFn, SlotStrip, Tab, TextRun, TriggerSection, WidthRows } from "./PartPanel";
 import { Field, ImageRow, NamedSizes, PanelShell, Section, Segmented, Select, Slider, Toggle } from "./ui";
 
 /* The panel of a part that is a real shadcn M3E component. It is built from the part's own prop
@@ -158,8 +158,11 @@ export function ComponentInspector({
 }) {
   const lang = useLang();
   const [tab, setTab] = useState<Tab>("design");
+  const [slot, setSlot] = useState("");
   const def = partBySlug(item.component);
   if (!def) return null;
+  const slots = actionSlotsOf(item);
+  const slotKey = slots.some((s) => s.key === slot) ? slot : (slots[0]?.key ?? "");
 
   return (
     <PanelShell
@@ -192,7 +195,11 @@ export function ComponentInspector({
       )}
       {tab === "behavior" && (
         <div role="tabpanel" id="part-panel-behavior" aria-labelledby="part-tab-behavior">
-          <TriggerSection item={item} frame={frame} allFrames={allFrames} selfRect={selfRect} onChange={onChange} p={p} />
+          {slots.length > 0 ? (
+            <TriggerSection item={item} frame={frame} allFrames={allFrames} selfRect={selfRect} onChange={onChange} p={p} slot={slotKey} head={<SlotStrip item={item} selected={slotKey} onSelect={setSlot} p={p} />} />
+          ) : (
+            <TriggerSection item={item} frame={frame} allFrames={allFrames} selfRect={selfRect} onChange={onChange} p={p} />
+          )}
           <NoteSection item={item} ai={ai} onChange={onChange} p={p} />
         </div>
       )}

@@ -55,7 +55,40 @@ const extendedFabSizes = {
 } as const
 
 type FabProps = Omit<ButtonPrimitive.Props, "color"> &
-  VariantProps<typeof fabVariants>
+  VariantProps<typeof fabVariants> & {
+    /** the icon while the fab is on; giving it (or `selectedLabel`) makes the fab a
+     *  toggle that flips on tap, like a play / pause button */
+    selectedIcon?: React.ReactNode
+    /** the label while on (extended fab) */
+    selectedLabel?: React.ReactNode
+    /** controlled on state */
+    selected?: boolean
+    defaultSelected?: boolean
+    onSelectedChange?: (selected: boolean) => void
+  }
+
+/* a fab with an on-look flips between its two faces on tap: uncontrolled via
+ * `defaultSelected`, or driven from outside through `selected`/`onSelectedChange` */
+function useFabSelected({
+  selected,
+  defaultSelected,
+  onSelectedChange,
+  toggles,
+}: {
+  selected?: boolean
+  defaultSelected?: boolean
+  onSelectedChange?: (selected: boolean) => void
+  toggles: boolean
+}) {
+  const [inner, setInner] = React.useState(!!defaultSelected)
+  const on = selected ?? inner
+  const flip = () => {
+    if (!toggles) return
+    if (selected === undefined) setInner(!on)
+    onSelectedChange?.(!on)
+  }
+  return { on: toggles && on, flip }
+}
 
 function Fab({
   className,
@@ -63,16 +96,33 @@ function Fab({
   size,
   lowered,
   children,
+  selectedIcon,
+  selected,
+  defaultSelected,
+  onSelectedChange,
+  onClick,
   ...props
 }: FabProps) {
+  const { on, flip } = useFabSelected({
+    selected,
+    defaultSelected,
+    onSelectedChange,
+    toggles: selectedIcon !== undefined,
+  })
   return (
     <ButtonPrimitive
       data-slot="fab"
+      aria-pressed={selectedIcon !== undefined ? on : undefined}
+      data-selected={on || undefined}
       className={cn(fabVariants({ color, size, lowered }), className)}
+      onClick={(e) => {
+        onClick?.(e)
+        if (!e.defaultPrevented) flip()
+      }}
       {...props}
     >
       <Ripple />
-      {children}
+      {on && selectedIcon ? selectedIcon : children}
     </ButtonPrimitive>
   )
 }
@@ -92,29 +142,53 @@ function ExtendedFab({
   icon,
   collapsed,
   children,
+  selectedIcon,
+  selectedLabel,
+  selected,
+  defaultSelected,
+  onSelectedChange,
+  onClick,
   ...props
 }: ExtendedFabProps) {
+  const { on, flip } = useFabSelected({
+    selected,
+    defaultSelected,
+    onSelectedChange,
+    toggles: selectedIcon !== undefined || selectedLabel !== undefined,
+  })
   return (
     <ButtonPrimitive
       data-slot="extended-fab"
       data-collapsed={collapsed || undefined}
+      aria-pressed={
+        selectedIcon !== undefined || selectedLabel !== undefined
+          ? on
+          : undefined
+      }
+      data-selected={on || undefined}
       className={cn(
         fabVariants({ color, lowered, size: null }),
         extendedFabSizes[size ?? "default"],
         "data-collapsed:aspect-square data-collapsed:gap-0 data-collapsed:px-0",
         className
       )}
+      onClick={(e) => {
+        onClick?.(e)
+        if (!e.defaultPrevented) flip()
+      }}
       {...props}
     >
       <Ripple />
-      {icon}
+      {on && selectedIcon ? selectedIcon : icon}
       <span
         className={cn(
           "grid transition-[grid-template-columns,opacity] duration-(--md-sys-motion-spring-default-spatial-duration) ease-spatial-default",
           collapsed ? "grid-cols-[0fr] opacity-0" : "grid-cols-[1fr]"
         )}
       >
-        <span className="overflow-hidden">{children}</span>
+        <span className="overflow-hidden">
+          {on && selectedLabel !== undefined ? selectedLabel : children}
+        </span>
       </span>
     </ButtonPrimitive>
   )

@@ -1,5 +1,5 @@
 import { h, ic } from "../node";
-import { around, type PartDef } from "../types";
+import { around, type P, type PartDef } from "../types";
 
 const BUTTON_VARIANTS = ["filled", "tonal", "elevated", "outlined", "text"];
 
@@ -201,27 +201,10 @@ export const containment: PartDef[] = [
       { key: "height", label: "Frame height", kind: "number", default: 320, min: 200, max: 560, step: 8, unit: "px" },
     ],
     appearance: { target: "SideSheet", radius: 16 },
-    tree: (p) => {
-      const width = Math.round(p.n("width"));
-      return h(
-        "div",
-        { className: "flex overflow-hidden rounded-lg border border-outline-variant", style: { width: width + 280, height: Math.round(p.n("height")) } },
-        h(
-          "div",
-          { className: "flex min-w-0 flex-1 flex-col items-start gap-3 p-6" },
-          h("h3", { className: "text-title-medium text-on-surface" }, "Inbox"),
-          h("p", { className: "text-body-medium text-on-surface-variant" }, "The list keeps its place; only its width changes."),
-        ),
-        h(
-          "SideSheet",
-          { side: p.s("side") === "right" ? undefined : p.s("side"), detached: p.b("detached") || undefined, width: width === 360 ? undefined : width },
-          // onClose is a handler the canvas cannot run, so the close button is a child of the header
-          h("SideSheetHeader", { title: p.s("title") }, p.b("closeButton") && h("Button", { variant: "ghost", size: "icon", "aria-label": "Close", className: "text-on-surface-variant" }, ic("close"))),
-          h("SideSheetContent", null, h("p", null, p.s("content"))),
-          p.b("footer") && h("SideSheetFooter", null, h("Button", null, "Apply"), h("Button", { variant: "outlined" }, "Cancel")),
-        ),
-      );
-    },
+    /* the box stands in for the app window the sheet docks to; on a screen it never outgrows
+     * the real one (the layout margins are 16dp on each side) */
+    view: (p, s) => sideSheetTree(p, Math.min(Math.round(p.n("width")) + 280, s ? Math.max(200, s.w - 32) : Number.POSITIVE_INFINITY)),
+    tree: (p) => sideSheetTree(p, Math.round(p.n("width")) + 280),
   },
   {
     slug: "drawer",
@@ -293,7 +276,7 @@ export const containment: PartDef[] = [
       { key: "description", label: "Description", kind: "text", default: "Google's open-source design system.", multiline: true },
       { key: "side", label: "Side", kind: "enum", default: "bottom", options: ["bottom", "top", "right", "left"] },
     ],
-    open: { box: (p) => around(p.s("side"), 280, 150, 90, 24) },
+    open: { box: (p) => around(p.s("side"), 288, 150, 90, 24) },
     tree: (p) =>
       h(
         "HoverCard",
@@ -440,3 +423,26 @@ export const containment: PartDef[] = [
     },
   },
 ];
+
+/** the side sheet's demo: the sheet docked in a stand-in app window `w` wide */
+const sideSheetTree = (p: P, w: number) => {
+  const width = Math.round(p.n("width"));
+  return h(
+    "div",
+    { className: "flex overflow-hidden rounded-lg border border-outline-variant", style: { width: w, height: Math.round(p.n("height")) } },
+    h(
+      "div",
+      { className: "flex min-w-0 flex-1 flex-col items-start gap-3 p-6" },
+      h("h3", { className: "text-title-medium text-on-surface" }, "Inbox"),
+      h("p", { className: "text-body-medium text-on-surface-variant" }, "The list keeps its place; only its width changes."),
+    ),
+    h(
+      "SideSheet",
+      { side: p.s("side") === "right" ? undefined : p.s("side"), detached: p.b("detached") || undefined, width: width === 360 ? undefined : width },
+      // onClose is a handler the canvas cannot run, so the close button is a child of the header
+      h("SideSheetHeader", { title: p.s("title") }, p.b("closeButton") && h("Button", { variant: "ghost", size: "icon", "aria-label": "Close", className: "text-on-surface-variant" }, ic("close"))),
+      h("SideSheetContent", null, h("p", null, p.s("content"))),
+      p.b("footer") && h("SideSheetFooter", null, h("Button", null, "Apply"), h("Button", { variant: "outlined" }, "Cancel")),
+    ),
+  );
+};
