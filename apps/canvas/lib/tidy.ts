@@ -39,8 +39,8 @@ const TIGHT_GAP = 8;
 /** horizontal distance between parts packed into one row */
 const ROW_ITEM_GAP = 8;
 /** the farthest two parts of one family may be apart and still be joined: side by side, and stacked */
-const JOIN_GAP_X = 24;
-const JOIN_GAP_Y = 48;
+export const JOIN_GAP_X = 24;
+export const JOIN_GAP_Y = 48;
 /** parts of one family the author kept apart stay clearly apart, beyond the joining distance */
 const APART_GAP_X = JOIN_GAP_X + 8;
 const APART_GAP_Y = JOIN_GAP_Y + 8;

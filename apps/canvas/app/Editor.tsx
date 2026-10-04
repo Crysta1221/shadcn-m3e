@@ -121,6 +121,7 @@ import { AiActionKey, AiPanel, aiErrorText } from "@/components/AiPanel";
 import { TidyState, PANEL_FADE_H } from "@/components/ui";
 import { AiSettings, DEFAULT_AI, hasKey, isSecureUrl, loadAiSettings, proposeBehavior, proposeDescription, pushHistory, saveAiSettings } from "@/lib/ai";
 import { barSlotOf, bodyRect, carryFrame, holdsEdgeBar, pullInto, tidyFrame } from "@/lib/tidy";
+import { combineButtons } from "@/lib/combine";
 import { constrainModalRails, modalRailOf, updateRail } from "@/lib/rail";
 import { isProject, readProject, saveProject } from "@/lib/project";
 import { hasShareHash, readShareHash } from "@/lib/share";
@@ -2902,6 +2903,18 @@ export default function Editor({ initialLang, onReady }: { initialLang: Lang; on
     setGroups(after);
   };
 
+  /** whether the screen in play has buttons side by side that can become one button group */
+  const canCombine = useMemo(() => !!tidyTarget && !!combineButtons(groups, tidyTarget, frames, widths), [tidyTarget, groups, frames, widths]);
+
+  /** joins neighbouring buttons into button groups; one undo step */
+  const combine = (f: Frame) => {
+    const after = combineButtons(groupsRef.current, f, framesRef.current, widthsRef.current);
+    if (!after) return;
+    snapshot();
+    tidyRef.current = null;
+    setGroups(after);
+    setSelectedIds([]);
+  };
 
   /** sets where Tidy puts a screen's body, then tidies it that way */
   const setPlace = (f: Frame, place: Place) => {
@@ -4761,6 +4774,8 @@ export default function Editor({ initialLang, onReady }: { initialLang: Lang; on
                   tidy={tidyState ?? "done"}
                   onTidy={() => tidy(selectedFrame)}
                   onPlace={(pl) => setPlace(selectedFrame, pl)}
+                  canCombine={canCombine && tidyTarget?.id === selectedFrame.id}
+                  onCombine={() => combine(selectedFrame)}
                   ai={{ ready: aiReady, reason: aiReason, busy: aiBusy && aiFrameId === selectedFrame.id, onRun: () => runAi("describe", selectedFrame), onCancel: cancelAi }}
                 />
               ) : rightTab === "edit" ? (

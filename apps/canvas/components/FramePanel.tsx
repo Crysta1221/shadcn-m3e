@@ -161,6 +161,8 @@ export function FrameInspector({
   tidy,
   onTidy,
   onPlace,
+  canCombine,
+  onCombine,
   ai,
   onSize,
 }: {
@@ -178,6 +180,9 @@ export function FrameInspector({
   onTidy: () => void;
   /** sets where Tidy puts the body of this screen, and tidies */
   onPlace: (place: Place) => void;
+  /** the screen has buttons side by side that can become one button group */
+  canCombine?: boolean;
+  onCombine?: () => void;
   ai: AiHooks;
   onSize: (preset: FramePreset) => void;
 }) {
@@ -280,6 +285,32 @@ export function FrameInspector({
             place={frame.place}
             onPlace={onPlace}
           />
+          {canCombine && onCombine && (
+            <button
+              onClick={onCombine}
+              className="m3-press"
+              style={{
+                width: "100%",
+                minHeight: 44,
+                marginTop: 8,
+                padding: "8px 16px",
+                borderRadius: 22,
+                border: "none",
+                background: p.secondaryContainer,
+                color: p.onSecondaryContainer,
+                fontSize: 13,
+                fontWeight: 600,
+                cursor: "pointer",
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 8,
+              }}
+            >
+              <Icon name="splitscreen" size={20} />
+              {t("combineButtons", lang)}
+            </button>
+          )}
         </Section>
       </div>
       <div
