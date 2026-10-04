@@ -423,3 +423,9 @@ input.m3-number {
   }
 }
 
+
+/* a `fit` Contained box is a virtual viewport the overlay floats in; the part is the overlay
+ * itself, so the scrim that would paint the viewport is not drawn */
+[data-fit] [data-slot$="-overlay"] {
+  display: none !important;
+}

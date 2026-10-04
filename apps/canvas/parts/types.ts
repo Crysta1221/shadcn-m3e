@@ -1,14 +1,27 @@
 import type { PNode, PValue } from "./node";
 
+/** the languages the editor speaks; kept in step with `Lang` in lib/i18n without importing it */
+export type PartLang = "ja" | "en" | "zh" | "ko";
+
+/** a label or a seed text in the editor's languages: `en` is the canonical `label`/`default` */
+export type Labels = Partial<Record<PartLang, string>>;
+
 /** a choice of an `enum` prop: the value the component takes, and what the panel calls it */
-export type Choice = string | { value: string; label: string };
+export type Choice = string | { value: string; label: string; labels?: Labels };
 
 /** one row of a `list` prop: a tab, a menu entry, a destination */
 export type ListItem = { label: string; icon?: string };
 
 /** One editable prop of a part. The panel builds its controls from these, and `tree` reads the values back. */
-export type PropDef = { key: string; label: string } & (
-  | { kind: "text"; default: string; multiline?: boolean }
+export type PropDef = {
+  key: string;
+  label: string;
+  /** what the panel calls the prop in each language; `label` stays the English one */
+  labels?: Labels;
+  /** the prop only exists when this holds for the current values (a basic dialog's icon, a full-screen one's size) */
+  when?: (p: P) => boolean;
+} & (
+  | { kind: "text"; default: string; multiline?: boolean; /** the seed in each language; `default` stays English */ defaults?: Labels }
   | { kind: "enum"; default: string; options: Choice[] }
   | { kind: "bool"; default: boolean }
   | { kind: "number"; default: number; min: number; max: number; step?: number; unit?: string }
@@ -31,6 +44,8 @@ export type PartDef = {
   slug: string;
   /** the name the docs and the palette give it */
   name: string;
+  /** the name in each language; `name` stays the docs' English one */
+  labels?: Labels;
   /** one of the docs' categories */
   category: string;
   /** Material Symbols name, for the palette tile */
@@ -49,7 +64,10 @@ export type PartDef = {
     box: (p: P) => { w: number; h: number; ax?: "start" | "end" | "center"; ay?: "start" | "end" | "center" };
     /** the trigger is drawn too (a menu hangs off its button) unless this is "hide" (a dialog stands alone) */
     trigger?: "show" | "hide";
-    /** props for the overlay's root while it is drawn open, over `defaultOpen` and `modal: false` */
+    /** the box hugs the overlay drawn inside it: it is measured and the part stands where the overlay is,
+     *  instead of the overlay floating inside a larger box. For parts whose trigger is hidden. */
+    fit?: boolean;
+    /** props for the overlay's root while it is drawn open, over `open: true` and `modal: false` */
     root?: Record<string, PValue>;
     /** the component to draw in place of another while the part is open (a context menu opens at the pointer, which a drawing has none of) */
     rename?: (type: string) => string;

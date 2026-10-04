@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { motion, useDragControls } from "motion/react";
 import { CONTRASTS, Contrast, FONTS, Item, KIND_SPEC, NavTab, PALETTES, Palette, SHAPES, ShapeScale, Theme, defaultTabsFor, iconSlotsOf, paletteIconOf, setIconSlot } from "@/lib/tokens";
 import { partBySlug } from "@/parts/registry";
+import { nameOf } from "@/parts/labels";
 import { ComponentProps } from "./ComponentInspector";
 import { ensureFontLoaded } from "@/lib/theme";
 import { KIND_TEXT, LANGS, Lang, t, useLang } from "@/lib/i18n";
@@ -353,12 +354,17 @@ function MobileComponentInspector({ item, palette: p, onChange, onDelete, onDupl
         <div style={{ width: 40, height: 40, borderRadius: 20, background: p.secondaryContainer, color: p.onSecondaryContainer, display: "grid", placeItems: "center" }}>
           <Icon name={paletteIconOf(item)} size={22} />
         </div>
-        <span style={{ fontSize: 16, fontWeight: 700, color: p.onSurface, flex: 1 }}>{def?.name ?? item.label}</span>
+        <span style={{ fontSize: 16, fontWeight: 700, color: p.onSurface, flex: 1 }}>{def ? nameOf(def, lang) : item.label}</span>
         <IconBtn icon="content_copy" p={p} onClick={onDuplicate} title={t("duplicate", lang)} size={44} />
         <IconBtn icon="delete" p={p} danger onClick={onDelete} title={t("delete", lang)} size={44} />
         <IconBtn icon="check" p={p} on onClick={onClose} title={t("done", lang)} size={44} />
       </div>
       <ComponentProps item={item} palette={p} onChange={onChange} />
+      <div style={{ marginTop: 14 }}>
+        <Row icon="bolt" label={t("behavior", lang)} p={p}>
+          <Field value={item.note ?? ""} onChange={(note) => onChange({ note })} placeholder={t("whatItDoes", lang)} p={p} icon="bolt" height={48} />
+        </Row>
+      </div>
     </div>
   );
 }

@@ -132,7 +132,9 @@ import { ColorPanel } from "@/components/ColorPanel";
 import { MotionPanel, ShapePanel, TypePanel } from "@/components/ThemePanel";
 import { ThemeContext, ensureFontLoaded, ensureLangFontLoaded } from "@/lib/theme";
 import { PartThemeContext, PartThemeStyle, type PartTheme } from "@/parts/theme";
-import { partBySlug } from "@/parts/registry";
+import { partBySlug, translateComponentProps } from "@/parts/registry";
+import { FIT_OVERLAY } from "@/parts/contained";
+import { axisStep, axisValue, axisWrite, isFabPart, resizeOf, type PartAxis } from "@/parts/resize";
 import { BottomSheet, MobileActionBar, MobileInspector, MobileLang, MobileSettings } from "@/components/Mobile";
 import { ConfirmDialog, IconBtn, Segmented } from "@/components/ui";
 import { Lang, LangContext, SEED_TEXT, getLang, setGlobalLang, t, translateDefaultFrameName, translateDefaultText } from "@/lib/i18n";
@@ -253,6 +255,10 @@ const ROUND = new Set<Kind>(["iconButton", "chip", "splitButton", "fab", "extend
 const BUTTON_LIKE = new Set<Kind>(["button", "iconButton", "chip", "splitButton", "fab", "extendedFab"]);
 /** these are held by their two ends; they have no height of their own to pull on */
 const WIDE = new Set<Kind>(["linearProgress", "slider", "listItem", "searchBar", "textField", "select", "switch", "divider", "topAppBar", "bottomNav", "tabs"]);
+/** the handles of a real component: pulled by whichever measures its props have */
+/** a part drawn open (a dialog, a menu) floats over the parts around it, whichever was added later */
+const drawnOpen = (g: Group) => g.items.some((it) => it.kind === "component" && !!partBySlug(it.component)?.open);
+const componentAxes = (it: Item) => (it.kind === "component" ? resizeOf(partBySlug(it.component), it.props) : null);
 const BAR_SIDES = ["left", "right"] as const;
 /** a carousel runs the width of the screen, a rail the height of it: only the other measure is pulled on */
 const TALL = new Set<Kind>(["carousel", "navRail"]);
@@ -271,6 +277,8 @@ function translateSnapshot(snap: Snapshot, lang: Lang): Snapshot {
         label: translateDefaultText(item.label, item.kind, "label", lang),
         ...(item.supporting !== undefined && { supporting: translateDefaultText(item.supporting, item.kind, "supporting", lang) }),
         ...(item.tabs && { tabs: item.tabs.map((tab) => ({ ...tab, label: translateDefaultText(tab.label, item.kind, "tab", lang) })) }),
+        /* a real component keeps its seed text in `props`; reseed it the way the label is */
+        ...(item.kind === "component" && { props: translateComponentProps(item.component, item.props, lang) }),
       })),
     })),
     frames: snap.frames.map((frame) => ({ ...frame, name: translateDefaultFrameName(frame.name, lang) })),
@@ -925,7 +933,8 @@ export default function Editor({ initialLang, onReady }: { initialLang: Lang; on
   useLayoutEffect(() => {
     const next: Record<string, number> = {};
     measureEls.current.forEach((el, id) => {
-      const box = el.getBoundingClientRect();
+      /* a part that fits its overlay is the overlay's size, not the box it floats in */
+      const box = (el.querySelector<HTMLElement>(FIT_OVERLAY) ?? el).getBoundingClientRect();
       next[id] = Math.ceil(box.width);
       /* a real component has a height of its own to measure too */
       if (el.dataset.kind === "component") next[`${id}:h`] = Math.ceil(box.height);
@@ -1468,6 +1477,8 @@ export default function Editor({ initialLang, onReady }: { initialLang: Lang; on
     tall: boolean;
     /** the part must stay at least as wide as it is tall */
     grows: boolean;
+    /** the prop a real component's handle writes */
+    key?: string;
     startX: number;
     startY: number;
     start0: number;
@@ -1487,6 +1498,13 @@ export default function Editor({ initialLang, onReady }: { initialLang: Lang; on
     /* a circle is pulled by a point on it: the drag reads along the diagonal and the one
      * measure it has -- its diameter -- follows, so it stays round the whole way */
     const round = CORNERS.includes(side);
+    const ax = componentAxes(item);
+    if (ax) {
+      /* a real component is pulled on the prop of its own: the size when it has only that */
+      const d = round ? ax.size : vertical ? ax.height : ax.width;
+      const startV = d ? axisValue(d, item.props) : 0;
+      return { vertical, round, tall: false, grows: false, startV, min: d?.min ?? startV, max: d?.max ?? startV, key: d?.key, axis: d };
+    }
     /* an extended FAB, a chip and a split button are as wide as their label makes them:
      * their one measure is height */
     const tall = item.kind === "extendedFab" || item.kind === "chip" || item.kind === "splitButton";
@@ -1524,11 +1542,16 @@ export default function Editor({ initialLang, onReady }: { initialLang: Lang; on
   };
   /** the patch a new measure is: the height for a part held top and bottom or as wide as its
    *  label, the width or diameter for the rest; a button set narrower than it is tall grows */
-  const sizePatch = (item: Item, d: { vertical: boolean; tall: boolean; grows: boolean }, v: number): Partial<Item> =>
-    d.vertical || d.tall ? { size2: v, ...(d.grows && item.size && item.size < v ? { size: v } : {}) } : { size: v };
-  /** a handle pulled by the keyboard: one 4dp step out or in, kept the way a panel change is */
+  const sizePatch = (item: Item, d: { vertical: boolean; tall: boolean; grows: boolean; key?: string; axis?: PartAxis }, v: number): Partial<Item> =>
+    item.kind === "component" ? (d.axis ? { props: { ...item.props, [d.axis.key]: axisWrite(d.axis, v) } } : {}) : d.vertical || d.tall ? { size2: v, ...(d.grows && item.size && item.size < v ? { size: v } : {}) } : { size: v };
+  /** a handle pulled by the keyboard: one step out or in, kept the way a panel change is */
   const nudgeSize = (g: Group, item: Item, side: HandleSide, dir: 1 | -1) => {
     const d = sizeDragSpec(item, side, frameOfGroup(g, framesRef.current, widthsRef.current) ?? null);
+    if (d.axis) {
+      const next = axisStep(d.axis, item.props, dir);
+      if (next !== undefined) patchSelected({ props: { ...item.props, [d.axis.key]: next } });
+      return;
+    }
     const v = clamp(Math.round(d.startV / 4) * 4 + dir * 4, d.min, d.max);
     if (v === d.startV) return;
     patchSelected(sizePatch(item, d, v));
@@ -2098,7 +2121,7 @@ export default function Editor({ initialLang, onReady }: { initialLang: Lang; on
     if (g.items.length !== 1) return none;
     /* a FAB is the part in the corner of a screen: it grows and shrinks out of that corner,
      * whatever the corner happens to be, rather than out of its top left */
-    if (isFab(before.kind) || isFab(after.kind)) {
+    if (isFab(before.kind) || isFab(after.kind) || isFabPart(before.component) || isFabPart(after.component)) {
       const a = sizeOf(before, widthsRef.current);
       const b = sizeOf(after, widthsRef.current);
       /* the corner to keep, put right again once a part as wide as its label has been measured */
@@ -3574,7 +3597,7 @@ export default function Editor({ initialLang, onReady }: { initialLang: Lang; on
           animate={{ x: g.x - ox, y: g.y - oy }}
           transition={instantG ? INSTANT : OPEN}
           /* keep any selection lift inside the group, so canvas-wide layer order is preserved */
-          style={{ position: "absolute", left: 0, top: 0, zIndex: modalRail ? 2 : undefined, isolation: "isolate" }}
+          style={{ position: "absolute", left: 0, top: 0, zIndex: modalRail ? 2 : drawnOpen(g) ? 1 : undefined, isolation: "isolate" }}
         >
           {layoutOf(g, widths).map((pl) => (
             <div key={pl.item.id} style={{ position: "absolute", left: pl.x - g.x, top: pl.y - g.y }}>
@@ -3664,7 +3687,7 @@ export default function Editor({ initialLang, onReady }: { initialLang: Lang; on
         }}
         transition={instant ? INSTANT : hole ? GAP_TWEEN : OPEN}
         style={{
-          zIndex: modalRail ? 2 : undefined,
+          zIndex: modalRail ? 2 : drawnOpen(g) ? 1 : undefined,
           position: "absolute",
           left: 0,
           top: 0,
@@ -4224,7 +4247,7 @@ export default function Editor({ initialLang, onReady }: { initialLang: Lang; on
                   four points around its circle: dragging one changes the part's size in place,
                   and whatever sits opposite stays where it is */}
               {/* a FAB showing its menu is being edited as a menu, not sized as a button */}
-              {!handMode && !drag && selectedIds.length === 1 && selected && selected.id !== menuId && HANDLED.has(selected.kind) && (() => {
+              {!handMode && !drag && selectedIds.length === 1 && selected && selected.id !== menuId && (HANDLED.has(selected.kind) || !!componentAxes(selected)) && (() => {
                 const g = groups.find((x) => x.items.length === 1 && !x.free && !x.locked && x.items[0].id === selected.id);
                 if (!g) return null;
                 const b = groupBounds(g, widths);
@@ -4238,10 +4261,14 @@ export default function Editor({ initialLang, onReady }: { initialLang: Lang; on
                     key={selected.id}
                     /* one measure, so the part is held by the points around it rather than by
                      * its edges: a circle's diameter, a label's height */
-                    round={ROUND.has(selected.kind)}
+                    round={ROUND.has(selected.kind) || (!!componentAxes(selected) && !componentAxes(selected)?.width && !componentAxes(selected)?.height)}
                     /* a bar and a slider have a width and nothing else: they are held by their two
                      * ends; a carousel is the other way about and is held by its top and bottom */
-                    sides={WIDE.has(selected.kind) ? BAR_SIDES : TALL.has(selected.kind) ? TALL_SIDES : undefined}
+                    sides={(() => {
+                      const ax = componentAxes(selected);
+                      if (ax) return ax.width && !ax.height ? BAR_SIDES : ax.height && !ax.width ? TALL_SIDES : undefined;
+                      return WIDE.has(selected.kind) ? BAR_SIDES : TALL.has(selected.kind) ? TALL_SIDES : undefined;
+                    })()}
                     /* a part with a height of its own is held by all four edges; one whose height follows its kind by its two ends */
                     box={{ l: b.l + sx, t: b.t + sy, r: b.r + sx, b: b.b + sy }}
                     z={view.z}

@@ -9,10 +9,13 @@ import { readFileSync } from "node:fs";
 import { importLines, itemOfFile, itemsOf, namesIn, printNode } from "./print";
 import { renderNode } from "./render";
 import { PARTS, defaultValues, partBySlug, treeOf, viewOf } from "./registry";
+import { setGlobalLang } from "../lib/i18n";
 
-/* some components read the viewport while they render (the sidebar); a browser would have one */
+/* some components read the viewport while they render (the sidebar); a browser would have one.
+ * Seed text is in English here: the editor's language is a module-level value, set it. */
 beforeAll(() => {
   vi.stubGlobal("window", { innerWidth: 1280, matchMedia: () => ({ matches: false, addEventListener() {}, removeEventListener() {} }) });
+  setGlobalLang("en");
 });
 
 describe("the part registry", () => {

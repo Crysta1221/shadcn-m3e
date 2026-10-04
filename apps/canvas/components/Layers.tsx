@@ -1,5 +1,8 @@
 "use client";
 
+import { labelOfPart } from "@/parts/resize";
+import { partBySlug } from "@/parts/registry";
+import { nameOf as partNameOf } from "@/parts/labels";
 import { ReactNode, useMemo, useState } from "react";
 import { Reorder, useDragControls } from "motion/react";
 import { Frame, Group, Item, KIND_SPEC, Palette, explodeGroup, isPhoneFrame, paletteIconOf } from "@/lib/tokens";
@@ -17,6 +20,11 @@ import { Lang, KIND_TEXT, t, useLang } from "@/lib/i18n";
  * handle; the page turns the new order back into a group. */
 
 function nameOf(it: Item, lang: Lang) {
+  if (it.kind === "component") {
+    const def = partBySlug(it.component);
+    /* a real component is called by the first text it shows, then by its type */
+    return labelOfPart(def, it.props) || (def && partNameOf(def, lang)) || it.label;
+  }
   const spec = KIND_SPEC[it.kind];
   const noun = KIND_TEXT[lang][it.kind]?.noun ?? spec.label;
   return it.label.trim() || (it.kind === "iconButton" || it.kind === "fab" ? (it.icon ?? noun) : noun);

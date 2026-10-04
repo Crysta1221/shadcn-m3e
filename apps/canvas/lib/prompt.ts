@@ -1,4 +1,5 @@
 import { partBySlug, treeOf } from "../parts/registry";
+import { labelOfPart } from "../parts/resize";
 import { inlineNode } from "../parts/print";
 import { KIND_TEXT, Lang, SWIPE_TEXT, TRANSITION_TEXT, getLang } from "./i18n";
 import { constrainModalRails } from "./rail";
@@ -678,7 +679,8 @@ function componentText(it: Item, lang: Lang): string {
   const def = partBySlug(it.component);
   if (!def) return it.label || "component";
   const lead = { ja: `shadcn M3E の ${def.name}`, en: `the shadcn M3E ${def.name}`, zh: `shadcn M3E 的 ${def.name}`, ko: `shadcn M3E의 ${def.name}` }[lang];
-  return `${lead}: \`${inlineNode(treeOf(def, it.props))}\``;
+  const called = labelOfPart(def, it.props);
+  return `${lead}${called ? ` "${called}"` : ""}: \`${inlineNode(treeOf(def, it.props))}\``;
 }
 
 const itemText = (it: Item, lang: Lang) =>

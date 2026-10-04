@@ -53,26 +53,25 @@ export const containment: PartDef[] = [
     name: "Dialog",
     category: "Containment",
     icon: "web_asset",
-    w: 120,
-    h: 40,
+    w: 360,
+    h: 232,
     props: [
       { key: "style", label: "Style", kind: "enum", default: "basic", options: [{ value: "basic", label: "Basic" }, { value: "fullscreen", label: "Full-screen" }] },
-      { key: "trigger", label: "Button label", kind: "text", default: "Open dialog" },
-      { key: "variant", label: "Button variant", kind: "enum", default: "tonal", options: BUTTON_VARIANTS },
-      { key: "icon", label: "Icon (basic)", kind: "icon", default: "" },
+      { key: "icon", label: "Icon", kind: "icon", default: "", when: (p) => p.s("style") === "basic" },
       { key: "title", label: "Title", kind: "text", default: "Reset settings?" },
       { key: "description", label: "Description", kind: "text", default: "This will reset your app preferences back to their default settings.", multiline: true },
-      { key: "dismiss", label: "Dismiss action (basic)", kind: "text", default: "Cancel" },
+      { key: "dismiss", label: "Dismiss action", kind: "text", default: "Cancel", when: (p) => p.s("style") === "basic" },
       { key: "confirm", label: "Confirm action", kind: "text", default: "Accept" },
-      { key: "stacked", label: "Stacked actions (basic)", kind: "bool", default: false },
-      { key: "closeButton", label: "Close button (basic)", kind: "bool", default: false },
-      { key: "width", label: "Width (full-screen)", kind: "number", default: 412, min: 280, max: 1280, step: 4, unit: "px" },
-      { key: "height", label: "Height (full-screen)", kind: "number", default: 640, min: 320, max: 900, step: 4, unit: "px" },
+      { key: "stacked", label: "Stacked actions", kind: "bool", default: false, when: (p) => p.s("style") === "basic" },
+      { key: "closeButton", label: "Close button", kind: "bool", default: false, when: (p) => p.s("style") === "basic" },
+      { key: "width", label: "Width", kind: "number", default: 412, min: 280, max: 1280, step: 4, unit: "px", when: (p) => p.s("style") === "fullscreen" },
+      { key: "height", label: "Height", kind: "number", default: 640, min: 320, max: 900, step: 4, unit: "px", when: (p) => p.s("style") === "fullscreen" },
     ],
-    // a basic dialog is the card; a full-screen one fills the box it is drawn in
-    open: { box: (p) => (p.s("style") === "fullscreen" ? { w: p.n("width"), h: p.n("height") } : { w: 420, h: p.b("stacked") ? 300 : 260 }), trigger: "hide" },
+    // a basic dialog is only its card: the box is a screen the card floats in, and the part
+    // stands where the card lands (fit). A full-screen one fills a screen of its own size.
+    open: { box: (p) => (p.s("style") === "fullscreen" ? { w: p.n("width"), h: p.n("height") } : { w: 560, h: 400 }), trigger: "hide", fit: true },
     tree: (p) => {
-      const trigger = h("DialogTrigger", { render: h("Button", { variant: p.s("variant") }) }, p.s("trigger"));
+      const trigger = h("DialogTrigger", { render: h("Button", { variant: "tonal" }) }, "Open dialog");
       if (p.s("style") === "fullscreen") {
         return h(
           "Dialog",
@@ -117,11 +116,9 @@ export const containment: PartDef[] = [
     name: "Alert dialog",
     category: "Containment",
     icon: "report",
-    w: 120,
-    h: 40,
+    w: 320,
+    h: 200,
     props: [
-      { key: "trigger", label: "Button label", kind: "text", default: "Delete account" },
-      { key: "variant", label: "Button variant", kind: "enum", default: "outlined", options: BUTTON_VARIANTS },
       { key: "icon", label: "Icon", kind: "icon", default: "" },
       { key: "title", label: "Title", kind: "text", default: "Delete your account?" },
       { key: "description", label: "Description", kind: "text", default: "This action cannot be undone.", multiline: true },
@@ -129,12 +126,12 @@ export const containment: PartDef[] = [
       { key: "action", label: "Confirm action", kind: "text", default: "Delete" },
       { key: "size", label: "Size", kind: "enum", default: "default", options: ["default", "sm"] },
     ],
-    open: { box: () => ({ w: 420, h: 240 }), trigger: "hide" },
+    open: { box: () => ({ w: 560, h: 360 }), trigger: "hide", fit: true },
     tree: (p) =>
       h(
         "AlertDialog",
         null,
-        h("AlertDialogTrigger", { render: h("Button", { variant: p.s("variant") }) }, p.s("trigger")),
+        h("AlertDialogTrigger", { render: h("Button", { variant: "outlined" }) }, "Delete account"),
         h(
           "AlertDialogContent",
           { size: p.s("size") === "default" ? undefined : p.s("size") },
@@ -154,22 +151,21 @@ export const containment: PartDef[] = [
     name: "Sheet",
     category: "Containment",
     icon: "side_navigation",
-    w: 120,
-    h: 40,
+    w: 300,
+    h: 480,
     props: [
-      { key: "trigger", label: "Button label", kind: "text", default: "Open sheet" },
-      { key: "variant", label: "Button variant", kind: "enum", default: "tonal", options: BUTTON_VARIANTS },
       { key: "side", label: "Side", kind: "enum", default: "right", options: ["right", "left", "bottom", "top"] },
       { key: "title", label: "Title", kind: "text", default: "Filters" },
       { key: "description", label: "Description", kind: "text", default: "Narrow down the results.", multiline: true },
       { key: "footer", label: "Save and Cancel", kind: "bool", default: false },
     ],
-    open: { box: (p) => (["left", "right"].includes(p.s("side")) ? { w: 380, h: 340 } : { w: 380, h: 280 }), trigger: "hide" },
+    // the sheet docks to an edge of the screen the box stands in for; the part is the sheet itself
+    open: { box: () => ({ w: 412, h: 560 }), trigger: "hide", fit: true },
     tree: (p) =>
       h(
         "Sheet",
         null,
-        h("SheetTrigger", { render: h("Button", { variant: p.s("variant") }) }, p.s("trigger")),
+        h("SheetTrigger", { render: h("Button", { variant: "tonal" }) }, "Open sheet"),
         h(
           "SheetContent",
           { side: p.s("side") === "right" ? undefined : p.s("side") },
@@ -222,22 +218,20 @@ export const containment: PartDef[] = [
     name: "Drawer",
     category: "Containment",
     icon: "vertical_align_bottom",
-    w: 120,
-    h: 40,
+    w: 412,
+    h: 200,
     props: [
-      { key: "trigger", label: "Button label", kind: "text", default: "Open drawer" },
-      { key: "variant", label: "Button variant", kind: "enum", default: "tonal", options: BUTTON_VARIANTS },
       { key: "title", label: "Title", kind: "text", default: "Share" },
       { key: "description", label: "Description", kind: "text", default: "Choose where to send this.", multiline: true },
       { key: "close", label: "Close action", kind: "text", default: "Close" },
       { key: "swipeHandle", label: "Swipe handle", kind: "bool", default: true },
     ],
-    open: { box: () => ({ w: 420, h: 340 }), trigger: "hide" },
+    open: { box: () => ({ w: 412, h: 560 }), trigger: "hide", fit: true },
     tree: (p) =>
       h(
         "Drawer",
         { showSwipeHandle: p.b("swipeHandle") || undefined },
-        h("DrawerTrigger", { render: h("Button", { variant: p.s("variant") }) }, p.s("trigger")),
+        h("DrawerTrigger", { render: h("Button", { variant: "tonal" }) }, "Open drawer"),
         h(
           "DrawerContent",
           null,

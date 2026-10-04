@@ -20,7 +20,9 @@ export function PartView({ item, live = false }: { item: Item; live?: boolean })
   if (!tree) return <span style={{ color: "#B3261E", fontSize: 12 }}>Unknown part {item.component}</span>;
   return (
     <PartSurface>
-      <div inert={!live} style={{ display: "inline-flex", pointerEvents: live ? undefined : "none" }}>
+      {/* an inline box inside the part's block would sit on the strut's baseline, ~a line's
+       *  leading low; top-aligned, the part's content starts at the part's own top */}
+      <div inert={!live} style={{ display: "inline-flex", verticalAlign: "top", pointerEvents: live ? undefined : "none" }}>
         {renderNode(tree)}
       </div>
     </PartSurface>

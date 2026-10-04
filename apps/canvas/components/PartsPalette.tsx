@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { Palette } from "@/lib/tokens";
 import { CATEGORIES, PARTS, partBySlug, type PartCategory } from "@/parts/registry";
+import { nameOf } from "@/parts/labels";
 import { Icon } from "./M3Node";
 import { t, useLang } from "@/lib/i18n";
 import { Field, Section, Tile } from "./ui";
@@ -49,8 +50,8 @@ export function PartsPalette({
   const filtered = useMemo(() => {
     const s = q.trim().toLowerCase();
     if (!s) return PARTS;
-    return PARTS.filter((d) => d.name.toLowerCase().includes(s) || d.slug.includes(s));
-  }, [q]);
+    return PARTS.filter((d) => d.name.toLowerCase().includes(s) || nameOf(d, lang).toLowerCase().includes(s) || d.slug.includes(s));
+  }, [q, lang]);
 
   const tile = (slug: string) => {
     const d = partBySlug(slug);
@@ -59,7 +60,7 @@ export function PartsPalette({
       <Tile
         key={slug}
         icon={d.icon}
-        label={d.name}
+        label={nameOf(d, lang)}
         p={p}
         onPointerDown={(e) => onPartPointerDown(e, slug)}
         onClick={() => onPartActivate(slug)}

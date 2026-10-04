@@ -1,61 +1,80 @@
 "use client";
 
 import { useState } from "react";
-import { Frame, Item, NavTab, Palette } from "@/lib/tokens";
-import { t, useLang } from "@/lib/i18n";
+import { Frame, Item, NavTab, PHONE_W, Palette, frameSizeOf } from "@/lib/tokens";
+import { t, useLang, type Lang } from "@/lib/i18n";
 import { partBySlug, reader } from "@/parts/registry";
+import { choiceLabelOf, labelOf, nameOf } from "@/parts/labels";
+import { dpOf } from "@/parts/resize";
 import type { ListItem, PropDef } from "@/parts/types";
 import { AiHooks } from "./Inspector";
-import { AlignBox, EntryList, IconRow, NoteSection, PartHeader, PartTabs, PlaceFn, Tab, TriggerSection } from "./PartPanel";
-import { Field, PanelShell, Section, Segmented, Select, Slider, Toggle } from "./ui";
+import { AlignBox, EntryList, IconRow, NoteSection, PartHeader, PartTabs, PlaceFn, Tab, TriggerSection, WidthRows } from "./PartPanel";
+import { Field, NamedSizes, PanelShell, Section, Segmented, Select, Slider, Toggle } from "./ui";
 
 /* The panel of a part that is a real shadcn M3E component. It is built from the part's own prop
  * definitions: text, choices, switches, numbers, icons and lists, each drawn with the controls
  * the other panels use, and written back into `item.props`. */
 
-const choices = (def: Extract<PropDef, { kind: "enum" }>) => def.options.map((o) => (typeof o === "string" ? { key: o, label: o } : { key: o.value, label: o.label }));
+const choices = (def: Extract<PropDef, { kind: "enum" }>, lang: Lang) => def.options.map((o) => ({ key: typeof o === "string" ? o : o.value, label: choiceLabelOf(o, lang) }));
 
 /** a list prop is edited as the rows the entry list knows: a label, and an icon when the part has them */
 const toRows = (list: ListItem[]): NavTab[] => list.map((x) => ({ icon: x.icon ?? "", label: x.label }));
 const fromRows = (rows: NavTab[], icons: boolean): ListItem[] => rows.map((x) => (icons && x.icon ? { label: x.label, icon: x.icon } : { label: x.label }));
 
-function PropRow({ def, value, onChange, item, p }: { def: PropDef; value: unknown; onChange: (v: unknown) => void; item: Item; p: Palette }) {
-  const label = <div style={{ fontSize: 12, fontWeight: 600, color: p.onSurfaceVariant, padding: "0 4px 6px" }}>{def.label}</div>;
+function PropRow({ def, value, onChange, item, p, frameW, lang }: { def: PropDef; value: unknown; onChange: (v: unknown) => void; item: Item; p: Palette; frameW: number; lang: Lang }) {
+  const labelText = labelOf(def, lang);
+  const label = <div style={{ fontSize: 12, fontWeight: 600, color: p.onSurfaceVariant, padding: "0 4px 6px" }}>{labelText}</div>;
   switch (def.kind) {
     case "text":
       return (
         <div>
           {label}
-          <Field value={String(value ?? "")} onChange={onChange} placeholder={def.label} p={p} multiline={def.multiline} rows={3} height={44} />
+          <Field value={String(value ?? "")} onChange={onChange} placeholder={labelText} p={p} multiline={def.multiline} rows={3} height={44} />
         </div>
       );
     case "enum": {
-      const options = choices(def);
+      const options = choices(def, lang);
+      /* a size of named steps carries its dp in the label and is a row of presets */
+      const dps = def.key === "size" ? def.options.map(dpOf) : [];
+      if (dps.length > 1 && dps.every((v): v is number => v !== undefined)) {
+        const steps = options.map((o, i) => ({ key: o.key, value: dps[i]! }));
+        return (
+          <div>
+            {label}
+            <NamedSizes steps={steps} value={steps[options.findIndex((o) => o.key === String(value))]?.value ?? steps[0].value} onChange={(dp) => onChange(steps.find((s) => s.value === dp)?.key ?? steps[0].key)} p={p} label={labelText} />
+          </div>
+        );
+      }
       return (
         <div>
           {label}
           {options.length <= 3 ? (
-            <Segmented<string> options={options} value={String(value)} onChange={onChange} p={p} height={40} label={def.label} />
+            <Segmented<string> options={options} value={String(value)} onChange={onChange} p={p} height={40} label={labelText} />
           ) : (
-            <Select options={options} value={String(value)} onChange={onChange} p={p} label={def.label} />
+            <Select options={options} value={String(value)} onChange={onChange} p={p} label={labelText} />
           )}
         </div>
       );
     }
     case "bool":
-      return <Toggle on={value === true} onChange={onChange} p={p} label={def.label} grow />;
+      return <Toggle on={value === true} onChange={onChange} p={p} label={labelText} grow />;
     case "number":
+      /* a width is set the way every other part's is: the slider, and the widths of the screen under it */
+      if (def.key === "width") {
+        const clamp = (v: number) => Math.min(def.max, Math.max(def.min, v));
+        return <WidthRows value={Number(value)} min={def.min} max={def.max} step={def.step ?? 4} frameW={frameW} onChange={(v) => v !== undefined && onChange(clamp(v))} p={p} />;
+      }
       return (
         <div>
           {label}
-          <Slider value={Number(value)} min={def.min} max={def.max} step={def.step ?? 1} unit={def.unit} title={def.label} onChange={onChange} p={p} />
+          <Slider value={Number(value)} min={def.min} max={def.max} step={def.step ?? 1} unit={def.unit} title={labelText} onChange={onChange} p={p} />
         </div>
       );
     case "icon":
       return (
         <div>
           {label}
-          <IconRow slots={[{ key: def.key, value: typeof value === "string" && value ? value : null, title: def.label }]} onPick={(_, icon) => onChange(icon ?? "")} p={p} />
+          <IconRow slots={[{ key: def.key, value: typeof value === "string" && value ? value : null, title: labelText }]} onPick={(_, icon) => onChange(icon ?? "")} p={p} />
         </div>
       );
     case "list": {
@@ -84,8 +103,9 @@ function PropRow({ def, value, onChange, item, p }: { def: PropDef; value: unkno
   }
 }
 
-/** the controls of a part's props, one per prop */
-export function ComponentProps({ item, palette: p, onChange }: { item: Item; palette: Palette; onChange: (patch: Partial<Item>) => void }) {
+/** the controls of a part's props, one per prop the part shows in this state */
+export function ComponentProps({ item, palette: p, onChange, frame }: { item: Item; palette: Palette; onChange: (patch: Partial<Item>) => void; frame?: Frame | null }) {
+  const lang = useLang();
   const def = partBySlug(item.component);
   if (!def) return null;
   const values = reader(def, item.props);
@@ -93,9 +113,11 @@ export function ComponentProps({ item, palette: p, onChange }: { item: Item; pal
   const set = (key: string, v: unknown) => onChange({ props: { ...item.props, [key]: v } });
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-      {def.props.map((d) => (
-        <PropRow key={d.key} def={d} value={read(d)} onChange={(v) => set(d.key, v)} item={item} p={p} />
-      ))}
+      {def.props
+        .filter((d) => !d.when || d.when(values))
+        .map((d) => (
+          <PropRow key={d.key} def={d} value={read(d)} onChange={(v) => set(d.key, v)} item={item} p={p} frameW={frame ? frameSizeOf(frame).w : PHONE_W} lang={lang} />
+        ))}
     </div>
   );
 }
@@ -137,13 +159,13 @@ export function ComponentInspector({
       p={p}
       locked={!!locked}
       onUnlock={onToggleLock}
-      head={<PartHeader kind={item.kind} title={def.name} icon={def.icon} p={p} locked={!!locked} onDuplicate={onDuplicate} onToggleLock={onToggleLock} onDelete={onDelete} />}
+      head={<PartHeader kind={item.kind} title={nameOf(def, lang)} icon={def.icon} p={p} locked={!!locked} onDuplicate={onDuplicate} onToggleLock={onToggleLock} onDelete={onDelete} />}
       tabs={<PartTabs value={tab} onChange={setTab} p={p} />}
     >
       {tab === "design" && (
         <div role="tabpanel" id="part-panel-design" aria-labelledby="part-tab-design">
           <Section id="part-props" icon="tune" title={t("style", lang)} p={p}>
-            <ComponentProps item={item} palette={p} onChange={onChange} />
+            <ComponentProps item={item} palette={p} onChange={onChange} frame={frame} />
           </Section>
           {onPlace && (
             <Section id="part-align" icon="grid_on" title={t("align", lang)} p={p}>
