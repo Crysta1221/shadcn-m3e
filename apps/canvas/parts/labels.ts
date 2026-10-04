@@ -423,6 +423,11 @@ export const COMMON_TEXT: Record<string, Labels> = {
   "Card title": { ja: "カードの見出し", zh: "卡片标题", ko: "카드 제목" },
   "Supporting text for the card.": { ja: "カードの補足テキストがここに入ります。", zh: "卡片的辅助文字写在这里。", ko: "카드의 보조 텍스트가 여기에 들어갑니다." },
   Inbox: { ja: "受信トレイ", zh: "收件箱", ko: "받은편지함" },
+  Starred: { ja: "スター付き", zh: "已加星标", ko: "별표 표시" },
+  Archive: { ja: "アーカイブ", zh: "归档", ko: "보관함" },
+  Favorite: { ja: "お気に入り", zh: "收藏", ko: "즐겨찾기" },
+  "Supporting text": { ja: "サブテキスト", zh: "辅助文本", ko: "보조 텍스트" },
+  "Get started": { ja: "はじめる", zh: "开始", ko: "시작하기" },
   "12 new messages": { ja: "新着 12 件", zh: "12 条新消息", ko: "새 메시지 12개" },
   "Reset settings?": { ja: "設定をリセットしますか？", zh: "重置设置？", ko: "설정을 초기화할까요?" },
   "This will reset your app preferences back to their default settings.": {

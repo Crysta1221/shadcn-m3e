@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import { Item } from "@/lib/tokens";
+import { useLang } from "@/lib/i18n";
 import { useIcons } from "@/parts/icons";
 import { PartSurface } from "@/parts/theme";
 import { appearanceOf } from "@/parts/appearance";
@@ -17,7 +18,9 @@ const NOTHING: PNode = { type: "span" };
  *  (`live`) it works. */
 export function PartView({ item, live = false, screen }: { item: Item; live?: boolean; /** the frame the part is on: an open overlay's box is no larger than it */ screen?: Screen }) {
   const def = partBySlug(item.component);
-  const tree = useMemo(() => (def ? viewOf(def, item.props, appearanceOf(item), screen, live) : null), [def, item.props, item.fill, item.textColor, item.corners, screen?.w, screen?.h, live]);
+  /* a prop left at its default shows the default of the editor's language */
+  const lang = useLang();
+  const tree = useMemo(() => (def ? viewOf(def, item.props, appearanceOf(item), screen, live) : null), [def, item.props, item.fill, item.textColor, item.corners, screen?.w, screen?.h, live, lang]);
   /* the icon component is memoized: icons that arrive after the first draw show only in a fresh tree */
   const icons = useIcons(tree ?? NOTHING);
   if (!tree) return <span style={{ color: "#B3261E", fontSize: 12 }}>Unknown part {item.component}</span>;

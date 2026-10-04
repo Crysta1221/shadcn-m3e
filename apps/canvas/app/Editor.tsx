@@ -134,6 +134,7 @@ import { MotionPanel, ShapePanel, TypePanel } from "@/components/ThemePanel";
 import { ThemeContext, ensureFontLoaded, ensureLangFontLoaded } from "@/lib/theme";
 import { PartThemeContext, PartThemeStyle, type PartTheme } from "@/parts/theme";
 import { partBySlug, translateComponentProps } from "@/parts/registry";
+import { COMMON_TEXT } from "@/parts/labels";
 import { FIT_OVERLAY, REMEASURE } from "@/parts/contained";
 import { axisStep, axisValue, axisWrite, resizeOf, type PartAxis } from "@/parts/resize";
 import { fullWidth, roleOf } from "@/parts/role";
@@ -362,7 +363,9 @@ const partOf = (slug: string, props: Record<string, unknown>, id: string): Item 
 /* The starter sketch: an app bar, a pair of buttons, three list items, a FAB and a navigation bar, all
  * of them the real components. Parts are as tall as they measure, so the rows sit apart on their own. */
 const seed = (lang: Lang = getLang()): Group[] => {
-  const text = SEED_TEXT[lang];
+  /* the parts' own seed words, so a change of language reseeds them the way it does a part added later */
+  const word = (en: string) => (lang === "en" ? en : (COMMON_TEXT[en]?.[lang] ?? en));
+  const text = { favorite: word("Favorite"), share: word("Share"), inbox: word("Inbox"), starred: word("Starred"), archive: word("Archive"), supporting: word("Supporting text") };
   let n = 0;
   const sid = () => `seed${++n}`;
   const content = PHONE_W - PHONE_MARGIN * 2;
