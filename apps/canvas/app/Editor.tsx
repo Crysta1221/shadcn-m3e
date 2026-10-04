@@ -134,7 +134,7 @@ import { MotionPanel, ShapePanel, TypePanel } from "@/components/ThemePanel";
 import { ThemeContext, ensureFontLoaded, ensureLangFontLoaded } from "@/lib/theme";
 import { PartThemeContext, PartThemeStyle, type PartTheme } from "@/parts/theme";
 import { partBySlug, translateComponentProps } from "@/parts/registry";
-import { FIT_OVERLAY } from "@/parts/contained";
+import { FIT_OVERLAY, REMEASURE } from "@/parts/contained";
 import { axisStep, axisValue, axisWrite, resizeOf, type PartAxis } from "@/parts/resize";
 import { fullWidth, roleOf } from "@/parts/role";
 import { BottomSheet, MobileActionBar, MobileInspector, MobileLang, MobileSettings } from "@/components/Mobile";
@@ -359,7 +359,7 @@ const lockedGroupMsg = () => t("lockedGroup", getLang());
 /** a part that is a shadcn M3E component, with the values the author would have set */
 const partOf = (slug: string, props: Record<string, unknown>, id: string): Item => ({ ...makeItem("component", slug), id, props });
 
-/* The starter sketch: an app bar, two buttons, three list items, a FAB and a navigation bar, all
+/* The starter sketch: an app bar, a pair of buttons, three list items, a FAB and a navigation bar, all
  * of them the real components. Parts are as tall as they measure, so the rows sit apart on their own. */
 const seed = (lang: Lang = getLang()): Group[] => {
   const text = SEED_TEXT[lang];
@@ -367,18 +367,21 @@ const seed = (lang: Lang = getLang()): Group[] => {
   const sid = () => `seed${++n}`;
   const content = PHONE_W - PHONE_MARGIN * 2;
   const bar = partOf("app-bar", { title: text.inbox, width: PHONE_W }, sid());
-  const a = partOf("button", { label: text.favorite, icon: "star", size: "md" }, sid());
-  const b = partOf("button", { label: text.share, icon: "share", variant: "tonal", size: "md" }, sid());
-  const rows = [text.inbox, text.starred, text.archive].map((title, i) =>
-    partOf("item", { title, description: text.supporting, icon: ["inbox", "star", "archive"][i], width: content }, sid()),
+  /* the two buttons are one connected pair, the way the first canvas drew them */
+  const pair = partOf(
+    "button-group",
+    { items: [{ label: text.favorite, icon: "star", variant: "filled" }, { label: text.share, icon: "share" }], buttonVariant: "tonal", size: "md" },
+    sid(),
+  );
+  const rows = [text.inbox, text.starred, text.archive].map((label, i) =>
+    partOf("item", { items: [{ label, icon: ["inbox", "star", "archive"][i] }], description: text.supporting, trailing: "icon", width: content }, sid()),
   );
   const fab = partOf("fab", { icon: "edit" }, sid());
   const nav = partOf("navigation-bar", { width: PHONE_W }, sid());
   const navH = partBySlug("navigation-bar")?.h ?? 64;
   return [
     { id: sid(), x: 0, y: 0, axis: "x", items: [bar] },
-    { id: sid(), x: PHONE_MARGIN, y: 88, axis: "x", items: [a] },
-    { id: sid(), x: PHONE_MARGIN + 150, y: 88, axis: "x", items: [b] },
+    { id: sid(), x: PHONE_MARGIN, y: 88, axis: "x", items: [pair] },
     ...rows.map((row, i) => ({ id: sid(), x: PHONE_MARGIN, y: 168 + i * 76, axis: "y" as const, items: [row] })),
     { id: sid(), x: PHONE_W - 56 - PHONE_MARGIN, y: PHONE_H - navH - 56 - PHONE_MARGIN, axis: "x", items: [fab] },
     { id: sid(), x: 0, y: PHONE_H - navH, axis: "x", items: [nav] },
@@ -932,6 +935,13 @@ export default function Editor({ initialLang, onReady }: { initialLang: Lang; on
    *  its own label is only measured after it is drawn, so the corner is put right once the
    *  measuring pass knows how wide it came out. */
   const fabAnchor = useRef<{ id: string; right: number; bottom: number } | null>(null);
+  /* an overlay mounts after the render that made its box; it says so, and this render measures it */
+  const [, setRemeasure] = useState(0);
+  useEffect(() => {
+    const again = () => setRemeasure((n) => n + 1);
+    window.addEventListener(REMEASURE, again);
+    return () => window.removeEventListener(REMEASURE, again);
+  }, []);
   /** a screen that changed size and is waiting for its parts' new measures before it is
    *  laid out again — an overlay's size only settles once it has been drawn in its new box */
   const retidyRef = useRef<string | null>(null);

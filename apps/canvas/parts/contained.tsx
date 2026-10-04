@@ -1,6 +1,6 @@
 "use client";
 
-import { useLayoutEffect, useState, type ReactNode } from "react";
+import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { PortalContainer } from "@/components/m3e/portal-container";
 
 type Place = "start" | "end" | "center";
@@ -10,6 +10,10 @@ const FLEX: Record<Place, string> = { start: "flex-start", end: "flex-end", cent
 const OVERLAY = '[data-slot$="-popup"], [data-slot$="-content"]';
 /** finds the overlay of a `fit` box under a measured element (the editor's measure pass) */
 export const FIT_OVERLAY = `[data-fit] :is([data-slot$="-popup"], [data-slot$="-content"])`;
+
+/** said on `window` when a fit overlay has appeared or changed size: the editor's measure pass
+ *  runs on its own renders, and the overlay mounts through a portal after the one that made the box */
+export const REMEASURE = "m3-remeasure";
 
 /** A box the overlays inside it are drawn in, instead of on the page: a dialog or a menu shown
  *  open where it would appear. The transform makes `fixed` overlays lay out inside the box; what
@@ -24,6 +28,8 @@ export const FIT_OVERLAY = `[data-fit] :is([data-slot$="-popup"], [data-slot$="-
 export function Contained({ width, height, ax = "start", ay = "start", fit = false, live = false, children }: { width?: number; height?: number; ax?: Place; ay?: Place; fit?: boolean; /** the preview's box: the overlay is opened by its trigger, so it must not be clipped */ live?: boolean; children?: ReactNode }) {
   const [box, setBox] = useState<HTMLDivElement | null>(null);
   const [shift, setShift] = useState<{ x: number; y: number } | null>(null);
+  /** the overlay's size the editor was last told of: a re-render restarts the watch below, and must not tell again */
+  const told = useRef("");
   useLayoutEffect(() => {
     if (!fit || !box) return;
     /* the overlay settles through its opening spring; measure every frame until it holds still
@@ -45,6 +51,11 @@ export function Contained({ width, height, ax = "start", ay = "start", fit = fal
       still = now === last ? still + 1 : 0;
       last = now;
       setShift({ x, y });
+      const size = r ? `${Math.round(r.width / z)}x${Math.round(r.height / z)}` : "";
+      if (size && size !== told.current) {
+        told.current = size;
+        window.dispatchEvent(new Event(REMEASURE));
+      }
       if (still < 4 && performance.now() - started < 2500) raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
