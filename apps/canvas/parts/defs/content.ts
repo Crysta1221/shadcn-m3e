@@ -83,11 +83,13 @@ export const content: PartDef[] = [
     props: [
       { key: "initials", label: "Initials", kind: "text", default: "TK" },
       { key: "size", label: "Size", kind: "enum", default: "default", options: ["sm", "default", "lg"] },
+      { key: "image", label: "Image", kind: "image" },
       { key: "count", label: "People (a group when more than one)", kind: "number", default: 1, min: 1, max: 5, step: 1 },
     ],
     tree: (p) => {
       const size = p.s("size") === "default" ? undefined : p.s("size");
-      if (p.n("count") <= 1) return h("Avatar", { size }, h("AvatarFallback", null, p.s("initials")));
+      if (p.n("count") <= 1)
+        return h("Avatar", { size }, p.s("image") && h("AvatarImage", { src: p.s("image"), alt: p.s("initials") || "Avatar" }), h("AvatarFallback", null, p.s("initials")));
       return h(
         "AvatarGroup",
         null,
@@ -101,6 +103,8 @@ export const content: PartDef[] = [
     category: "Content",
     icon: "view_carousel",
     role: "fullWidth",
+    /* the slides are the tree's only divs: the fill and corners land on each of them */
+    appearance: { target: "div", radius: 28 },
     w: 320,
     h: 200,
     props: [
@@ -141,6 +145,7 @@ export const content: PartDef[] = [
     category: "Content",
     icon: "view_carousel",
     role: "fullWidth",
+    appearance: { target: "CarouselSlide", radius: 28 },
     w: 420,
     h: 180,
     props: [
@@ -294,6 +299,7 @@ export const content: PartDef[] = [
     name: "Empty",
     category: "Content",
     icon: "inbox",
+    appearance: { radius: 16 },
     w: 360,
     h: 280,
     props: [

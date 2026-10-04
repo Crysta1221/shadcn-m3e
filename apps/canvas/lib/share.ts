@@ -1,5 +1,6 @@
-import { Doc } from "./tokens";
+import { Doc, Item } from "./tokens";
 import { isProject } from "./project";
+import { imageKeys, partBySlug } from "../parts/registry";
 
 /* A design travels in a link: the document as JSON, deflated and base64url-encoded
  * after `#docz=`, or plain JSON after `#doc=` for tools that cannot compress. The
@@ -8,15 +9,23 @@ import { isProject } from "./project";
 export const DOC_PARAM = "doc";
 export const DOCZ_PARAM = "docz";
 
-/** the document with what a link should not carry: picked images and AI rewrite history */
+/** the item without what a link should not carry: a `src` or an image prop that is a picked
+ *  file's data (a web address stays), and the AI rewrite history */
+function shareableItem({ src, noteHistory: _h, ...it }: Item): Item {
+  const out: Item = src && /^https?:\/\//.test(src) ? { ...it, src } : it;
+  const def = out.kind === "component" && out.props ? partBySlug(out.component) : undefined;
+  const keys = def ? imageKeys(def) : [];
+  if (!keys.length || !keys.some((k) => typeof out.props![k] === "string" && (out.props![k] as string).startsWith("data:"))) return out;
+  const props = { ...out.props };
+  for (const k of keys) if (typeof props[k] === "string" && (props[k] as string).startsWith("data:")) delete props[k];
+  return { ...out, props };
+}
+
 export function shareable(doc: Doc): Doc {
   return {
     ...doc,
     frames: doc.frames.map(({ noteHistory: _h, ...f }) => f),
-    groups: doc.groups.map((g) => ({
-      ...g,
-      items: g.items.map(({ src, noteHistory: _h, ...it }) => (src && /^https?:\/\//.test(src) ? { ...it, src } : it)),
-    })),
+    groups: doc.groups.map((g) => ({ ...g, items: g.items.map(shareableItem) })),
   };
 }
 

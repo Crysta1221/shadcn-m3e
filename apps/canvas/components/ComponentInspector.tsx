@@ -8,8 +8,8 @@ import { choiceLabelOf, labelOf, nameOf } from "@/parts/labels";
 import { dpOf } from "@/parts/resize";
 import type { ListItem, PropDef } from "@/parts/types";
 import { AiHooks } from "./Inspector";
-import { AlignBox, EntryList, IconRow, NoteSection, PartHeader, PartTabs, PlaceFn, Tab, TriggerSection, WidthRows } from "./PartPanel";
-import { Field, NamedSizes, PanelShell, Section, Segmented, Select, Slider, Toggle } from "./ui";
+import { AlignBox, AppearanceCorners, EntryList, FillRun, IconRow, NoteSection, PartHeader, PartTabs, PlaceFn, Tab, TextRun, TriggerSection, WidthRows } from "./PartPanel";
+import { Field, ImageRow, NamedSizes, PanelShell, Section, Segmented, Select, Slider, Toggle } from "./ui";
 
 /* The panel of a part that is a real shadcn M3E component. It is built from the part's own prop
  * definitions: text, choices, switches, numbers, icons and lists, each drawn with the controls
@@ -77,6 +77,13 @@ function PropRow({ def, value, onChange, item, p, frameW, lang }: { def: PropDef
           <IconRow slots={[{ key: def.key, value: typeof value === "string" && value ? value : null, title: labelText }]} onPick={(_, icon) => onChange(icon ?? "")} p={p} />
         </div>
       );
+    case "image":
+      return (
+        <div>
+          {label}
+          <ImageRow value={typeof value === "string" && value ? value : undefined} onChange={(src) => onChange(src ?? "")} p={p} />
+        </div>
+      );
     case "list": {
       const list = (value as ListItem[]) ?? [];
       const icons = def.icons === true;
@@ -109,7 +116,7 @@ export function ComponentProps({ item, palette: p, onChange, frame }: { item: It
   const def = partBySlug(item.component);
   if (!def) return null;
   const values = reader(def, item.props);
-  const read = (d: PropDef) => (d.kind === "text" || d.kind === "icon" || d.kind === "enum" ? values.s(d.key) : d.kind === "bool" ? values.b(d.key) : d.kind === "number" ? values.n(d.key) : values.list(d.key));
+  const read = (d: PropDef) => (d.kind === "text" || d.kind === "icon" || d.kind === "enum" || d.kind === "image" ? values.s(d.key) : d.kind === "bool" ? values.b(d.key) : d.kind === "number" ? values.n(d.key) : values.list(d.key));
   const set = (key: string, v: unknown) => onChange({ props: { ...item.props, [key]: v } });
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
@@ -167,6 +174,15 @@ export function ComponentInspector({
           <Section id="part-props" icon="tune" title={t("style", lang)} p={p}>
             <ComponentProps item={item} palette={p} onChange={onChange} frame={frame} />
           </Section>
+          {def.appearance && (
+            <Section id="part-appearance" icon="format_paint" title={t("appearance", lang)} p={p}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                <FillRun value={item.fill} onChange={(fill) => onChange({ fill })} p={p} clearable />
+                <TextRun value={item.textColor} onChange={(textColor) => onChange({ textColor })} p={p} />
+                <AppearanceCorners item={item} seed={def.appearance.radius ?? 16} onChange={onChange} p={p} />
+              </div>
+            </Section>
+          )}
           {onPlace && (
             <Section id="part-align" icon="grid_on" title={t("align", lang)} p={p}>
               <AlignBox key={item.id} onPlace={onPlace} p={p} />

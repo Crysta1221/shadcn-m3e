@@ -26,53 +26,53 @@
 
 ### B. props 差分（監査 B1–B21）
 
-| 対象 | 追加する prop | ライブラリ変更 |
-| --- | --- | --- |
-| Button / Switch | `width` | 不要 (S) |
-| Button（アイコンのみ） | `width="narrow\|wide"` | 不要 (S) |
-| FAB | `lowered` / `collapsed` | 不要 (S) |
-| Split button | メニュー項目アイコン（`menuItems` を `icons` 化） | 不要 (S) |
-| App bar | 末尾アイコン複数・`scrolled` | 不要 (S) |
-| Navigation bar | `badge` / `layout` / `elevated` | 不要 (S) |
-| Navigation rail | `modal` / `compact` | 不要 (S) |
-| Search | `leading` | 不要 (S) |
-| Text field | `value` | 不要 (S) |
-| Date/Time picker | `defaultView` / 幅 | 不要 (S) |
-| Dialog | 基本幅（`width`(basic)） | 不要 (S) |
-| Tabs | アイコン・横スクロール | 不要 (S) |
-| Chip | 高さ 32/40/56（`chipVariants` に size）・`InputChip`（削除ボタン） | 要 (M) |
-| Progress / Circular progress | `thickness` | 要 (M) |
-| Select | filled・`label`/`supporting` | 要 (M) |
-| Search | `outlined` | 要 (M) |
-| Expressive carousel | full-screen レイアウト | 要 (M) |
-| Card | 画像（上/下/左/右/背景）・画像サイズ・`textAlign`/`contentAlign`・`size`・`interactive`・塗り・角丸 | 大 (L) |
-| Item | 末尾アイコン/スイッチ・`size`・複数行（`items` → `ItemGroup`） | (S) |
-| Chip | `items` で複数個（Chip group 相当） | (S) |
-| Drawer | `inline`（標準ボトムシートの描画） | (S) |
-| Carousel | `src`・`itemWidth`・`gap`・枚数 2–8 | (S) |
-| ButtonGroup | 各項目の `variant`/`width` | (S) |
+| 対象                         | 追加する prop                                                                                       | ライブラリ変更 |
+| ---------------------------- | --------------------------------------------------------------------------------------------------- | -------------- |
+| Button / Switch              | `width`                                                                                             | 不要 (S)       |
+| Button（アイコンのみ）       | `width="narrow\|wide"`                                                                              | 不要 (S)       |
+| FAB                          | `lowered` / `collapsed`                                                                             | 不要 (S)       |
+| Split button                 | メニュー項目アイコン（`menuItems` を `icons` 化）                                                   | 不要 (S)       |
+| App bar                      | 末尾アイコン複数・`scrolled`                                                                        | 不要 (S)       |
+| Navigation bar               | `badge` / `layout` / `elevated`                                                                     | 不要 (S)       |
+| Navigation rail              | `modal` / `compact`                                                                                 | 不要 (S)       |
+| Search                       | `leading`                                                                                           | 不要 (S)       |
+| Text field                   | `value`                                                                                             | 不要 (S)       |
+| Date/Time picker             | `defaultView` / 幅                                                                                  | 不要 (S)       |
+| Dialog                       | 基本幅（`width`(basic)）                                                                            | 不要 (S)       |
+| Tabs                         | アイコン・横スクロール                                                                              | 不要 (S)       |
+| Chip                         | 高さ 32/40/56（`chipVariants` に size）・`InputChip`（削除ボタン）                                  | 要 (M)         |
+| Progress / Circular progress | `thickness`                                                                                         | 要 (M)         |
+| Select                       | filled・`label`/`supporting`                                                                        | 要 (M)         |
+| Search                       | `outlined`                                                                                          | 要 (M)         |
+| Expressive carousel          | full-screen レイアウト                                                                              | 要 (M)         |
+| Card                         | 画像（上/下/左/右/背景）・画像サイズ・`textAlign`/`contentAlign`・`size`・`interactive`・塗り・角丸 | 大 (L)         |
+| Item                         | 末尾アイコン/スイッチ・`size`・複数行（`items` → `ItemGroup`）                                      | (S)            |
+| Chip                         | `items` で複数個（Chip group 相当）                                                                 | (S)            |
+| Drawer                       | `inline`（標準ボトムシートの描画）                                                                  | (S)            |
+| Carousel                     | `src`・`itemWidth`・`gap`・枚数 2–8                                                                 | (S)            |
+| ButtonGroup                  | 各項目の `variant`/`width`                                                                          | (S)            |
 
 ### C. 挙動差分（`item.kind` 分岐から component が見えない箇所）
 
-| # | 機能 | 本家の実装箇所 | component 対応の現状 |
-| --- | --- | --- | --- |
-| C1 | リサイズハンドル・矢印キー | `Editor.tsx` HANDLED/WIDE/TALL/ROUND, `sizeDragSpec` | **作業中**: number prop（`width`/`height`/`size`）は配線済。enum `size`（XS–XL 吸着）は未 |
-| C2 | 幅・サイズのプリセット行 | `WidthRows`/`NamedSizes`（`PartPanel.tsx`） | width 済。**size enum→`NamedSizes` 未** |
-| C3 | フレーム変更時の bar 追従・nav-bar↔nav-rail 入替 | `carryItemSize`/`fitHeight`/`swapNav`（`tidy.ts`/`tokens.ts`） | 未（props 対応が必要） |
-| C4 | Tidy の配置（top/bottom/floating/fab/overlay/rail/label/control/fullWidth/listLike） | `tidy.ts` の `u.kind` 分岐・`holdsEdgeBar`・`FULL_WIDTH` | 未（`PartDef.role` で判定へ） |
-| C5 | 塗りロール（10 トークン） | `FillRun` | 未（`PartDef.appearance`） |
-| C6 | 角丸（4 隅可） | `CornerRows`/`EdgeCornerRows` | 未（同上） |
-| C7 | スロットごとのタップ（`tab:N`/`icon`/`icon2`/menu） | `actionSlotsOf`/`SlotStrip`/`CardStrip`/`TriggerSection` | 未（`PartDef.slots(p)`＋`data-tap`） |
-| C8 | プレビュー選択状態・画面またぎ共有（navKey） | `Preview.tsx` navKind/values | 未（`PartDef.selectKey`＋`viewOf` 上書き） |
-| C9 | トグル（押したときの見た目）・Rail 展開・メニュー開閉 | `flippedLook`/`toggle`/`changeRail`/select menu | 未。ライブラリに `selectedIcon`/`selectedLabel` 追加 |
-| C10 | 画像（`src` data URL） | `ImageRow`/`readImage` | 未（`PropDef.kind:"image"`。共有時は `shareable()` で除外） |
-| C11 | 最初のテキストを呼び名に | `nameOf`（Layers）・prompt | Layers 済（作業中）。**prompt.ts の `componentText` は未** |
-| C12 | プロンプトの STYLE_NOTES・レール・リスト文言 | `prompt.ts` | 未（`roleOf` 経由へ） |
-| C13 | 接続された行（ボタン/リスト融合） | `connect`/runs | 未（button-group/toggle-group/Item 複数行で代替＋Tidy のまとめ選択肢） |
-| C14 | FAB の角アンカー | `fabAnchor` | 済（`isFabPart`。Phase 2 で `role==="fab"` に一般化） |
-| C15 | ローカライズ（部品名・prop 名） | `KIND_TEXT`/`UI`（i18n.ts） | 未。**Phase 0 へ前倒し＋拡大** |
-| C16 | モバイルインスペクタのトリガー/ノート | `Mobile.tsx` | ノート済・**トリガー未**（作業中） |
-| — | 開いた部品の z-index・controlled open | `registry.ts`/`Editor.tsx` | 済（作業中の変更） |
+| #   | 機能                                                                                 | 本家の実装箇所                                                 | component 対応の現状                                                                      |
+| --- | ------------------------------------------------------------------------------------ | -------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| C1  | リサイズハンドル・矢印キー                                                           | `Editor.tsx` HANDLED/WIDE/TALL/ROUND, `sizeDragSpec`           | **作業中**: number prop（`width`/`height`/`size`）は配線済。enum `size`（XS–XL 吸着）は未 |
+| C2  | 幅・サイズのプリセット行                                                             | `WidthRows`/`NamedSizes`（`PartPanel.tsx`）                    | width 済。**size enum→`NamedSizes` 未**                                                   |
+| C3  | フレーム変更時の bar 追従・nav-bar↔nav-rail 入替                                     | `carryItemSize`/`fitHeight`/`swapNav`（`tidy.ts`/`tokens.ts`） | 未（props 対応が必要）                                                                    |
+| C4  | Tidy の配置（top/bottom/floating/fab/overlay/rail/label/control/fullWidth/listLike） | `tidy.ts` の `u.kind` 分岐・`holdsEdgeBar`・`FULL_WIDTH`       | 未（`PartDef.role` で判定へ）                                                             |
+| C5  | 塗りロール（10 トークン）                                                            | `FillRun`                                                      | 未（`PartDef.appearance`）                                                                |
+| C6  | 角丸（4 隅可）                                                                       | `CornerRows`/`EdgeCornerRows`                                  | 未（同上）                                                                                |
+| C7  | スロットごとのタップ（`tab:N`/`icon`/`icon2`/menu）                                  | `actionSlotsOf`/`SlotStrip`/`CardStrip`/`TriggerSection`       | 未（`PartDef.slots(p)`＋`data-tap`）                                                      |
+| C8  | プレビュー選択状態・画面またぎ共有（navKey）                                         | `Preview.tsx` navKind/values                                   | 未（`PartDef.selectKey`＋`viewOf` 上書き）                                                |
+| C9  | トグル（押したときの見た目）・Rail 展開・メニュー開閉                                | `flippedLook`/`toggle`/`changeRail`/select menu                | 未。ライブラリに `selectedIcon`/`selectedLabel` 追加                                      |
+| C10 | 画像（`src` data URL）                                                               | `ImageRow`/`readImage`                                         | 未（`PropDef.kind:"image"`。共有時は `shareable()` で除外）                               |
+| C11 | 最初のテキストを呼び名に                                                             | `nameOf`（Layers）・prompt                                     | Layers 済（作業中）。**prompt.ts の `componentText` は未**                                |
+| C12 | プロンプトの STYLE_NOTES・レール・リスト文言                                         | `prompt.ts`                                                    | 未（`roleOf` 経由へ）                                                                     |
+| C13 | 接続された行（ボタン/リスト融合）                                                    | `connect`/runs                                                 | 未（button-group/toggle-group/Item 複数行で代替＋Tidy のまとめ選択肢）                    |
+| C14 | FAB の角アンカー                                                                     | `fabAnchor`                                                    | 済（`isFabPart`。Phase 2 で `role==="fab"` に一般化）                                     |
+| C15 | ローカライズ（部品名・prop 名）                                                      | `KIND_TEXT`/`UI`（i18n.ts）                                    | 未。**Phase 0 へ前倒し＋拡大**                                                            |
+| C16 | モバイルインスペクタのトリガー/ノート                                                | `Mobile.tsx`                                                   | ノート済・**トリガー未**（作業中）                                                        |
+| —   | 開いた部品の z-index・controlled open                                                | `registry.ts`/`Editor.tsx`                                     | 済（作業中の変更）                                                                        |
 
 ### D. 旧スケッチ移行
 

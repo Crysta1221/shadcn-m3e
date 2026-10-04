@@ -10,6 +10,7 @@ export const containment: PartDef[] = [
     category: "Containment",
     icon: "credit_card",
     role: "listLike",
+    appearance: { radius: 12 },
     w: 280,
     h: 120,
     props: [
@@ -33,6 +34,7 @@ export const containment: PartDef[] = [
     category: "Containment",
     icon: "list_alt",
     role: "listLike",
+    appearance: { radius: 16 },
     w: 280,
     h: 64,
     props: [
@@ -164,6 +166,8 @@ export const containment: PartDef[] = [
       { key: "description", label: "Description", kind: "text", default: "Narrow down the results.", multiline: true },
       { key: "footer", label: "Save and Cancel", kind: "bool", default: false },
     ],
+    /* the look belongs to the panel inside the portal, not the root that opens it */
+    appearance: { target: "SheetContent", radius: 16 },
     // the sheet docks to an edge of the screen the box stands in for; the part is the sheet itself
     open: { box: () => ({ w: 412, h: 560 }), trigger: "hide", fit: true },
     tree: (p) =>
@@ -196,6 +200,7 @@ export const containment: PartDef[] = [
       { key: "width", label: "Sheet width", kind: "number", default: 360, min: 256, max: 400, step: 4, unit: "px" },
       { key: "height", label: "Frame height", kind: "number", default: 320, min: 200, max: 560, step: 8, unit: "px" },
     ],
+    appearance: { target: "SideSheet", radius: 16 },
     tree: (p) => {
       const width = Math.round(p.n("width"));
       return h(
@@ -232,6 +237,7 @@ export const containment: PartDef[] = [
       { key: "close", label: "Close action", kind: "text", default: "Close" },
       { key: "swipeHandle", label: "Swipe handle", kind: "bool", default: true },
     ],
+    appearance: { target: "DrawerContent", radius: 28 },
     open: { box: () => ({ w: 412, h: 560 }), trigger: "hide", fit: true },
     tree: (p) =>
       h(

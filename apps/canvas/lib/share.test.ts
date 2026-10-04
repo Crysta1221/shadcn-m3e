@@ -68,6 +68,24 @@ describe("shareable", () => {
     const value = { ...doc(), groups: [{ ...doc().groups[0], locked: true }] };
     expect(shareable(value).groups[0].locked).toBe(true);
   });
+
+  it("drops a component's picked image but keeps one on the web", () => {
+    const value = doc();
+    value.groups[0].items = [
+      { id: "picked", kind: "component", component: "avatar", label: "", icon: null, variant: "filled", props: { image: "data:image/webp;base64,AAAA", initials: "TK" } },
+      { id: "linked", kind: "component", component: "avatar", label: "", icon: null, variant: "filled", props: { image: "https://example.test/me.png" } },
+    ];
+    const result = shareable(value);
+    expect(result.groups[0].items[0].props).toEqual({ initials: "TK" });
+    expect(result.groups[0].items[1].props).toEqual({ image: "https://example.test/me.png" });
+    expect(value.groups[0].items[0].props).toEqual({ image: "data:image/webp;base64,AAAA", initials: "TK" });
+  });
+
+  it("leaves a component without image props untouched", () => {
+    const value = doc();
+    value.groups[0].items = [{ id: "b", kind: "component", component: "button", label: "", icon: null, variant: "filled", props: { label: "Go" } }];
+    expect(shareable(value).groups[0].items[0].props).toEqual({ label: "Go" });
+  });
 });
 
 describe("shareLink and readShareHash", () => {

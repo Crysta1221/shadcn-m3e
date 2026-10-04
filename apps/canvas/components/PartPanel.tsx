@@ -19,7 +19,10 @@ import {
   Palette,
   Radii,
   TAPPABLE,
+  TEXT_TOKENS,
   TOGGLEABLE,
+  TextToken,
+  uniformRadii,
   Variant,
   contentWidth,
   defaultTabsFor,
@@ -38,10 +41,10 @@ import {
 import { Lang } from "@/lib/i18n";
 import { Icon, boxStyle } from "./M3Node";
 import { IconPicker } from "./IconPicker";
-import { CornerIcon, Field, IconBtn, RUN_CELL, Section, Segmented, Select, SelectOption, Slider } from "./ui";
+import { CornerIcon, Field, IconBtn, RUN_CELL, Section, Segmented, Select, SelectOption, Slider, Toggle } from "./ui";
 import { AiHooks, variantsOf } from "./Inspector";
 import { LinkStage, TapStage } from "./TapStage";
-import { COLOR_TOKEN_TEXT, KIND_TEXT, t, useLang } from "@/lib/i18n";
+import { COLOR_TOKEN_TEXT, KIND_TEXT, TEXT_TOKEN_TEXT, t, useLang } from "@/lib/i18n";
 
 /* The chrome every part's panel wears: the title row with its menu, the two tabs, the grid that
  * lines a part up, the field the model writes into, and the tap action with its stage. A part
@@ -513,28 +516,78 @@ const BLANK: Item = { id: "", kind: "box", label: "", icon: null, variant: "fill
 
 /** The colours a box can be, as one connected run of the theme's own roles: each cell is
  *  painted in the role, and the chosen one carries a check mark in the colour that reads on it.
- *  The run wraps onto a second row, since ten roles are more than one row holds. */
-export function FillRun({ value, onChange, p }: { value: ColorToken; onChange: (fill: ColorToken) => void; p: Palette }) {
+ *  The run wraps onto a second row, since ten roles are more than one row holds. `clearable`
+ *  adds an auto cell for a part that has a colour of its own until one is picked. */
+export function FillRun({ value, onChange, p, clearable = false }: { value?: ColorToken; onChange: (fill: ColorToken | undefined) => void; p: Palette; clearable?: boolean }) {
   const lang = useLang();
+  const auto = { key: "" as const, title: t("autoWidth", lang), node: <Icon name="format_paint" size={20} />, style: { background: p.surfaceContainerHigh, color: p.onSurfaceVariant, border: `1px solid ${p.outlineVariant}`, minWidth: 0, padding: 0 } };
   const rows = [COLOR_TOKENS.slice(0, 5), COLOR_TOKENS.slice(5)];
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
       {rows.map((row, r) => (
-        <Segmented<ColorToken>
+        <Segmented<ColorToken | "">
           key={r}
-          options={row.map((tk) => ({
-            key: tk.key,
-            title: lang === "en" ? tk.label : COLOR_TOKEN_TEXT[lang][tk.key],
-            node: tk.key === value ? <Icon name="check" size={20} /> : <span />,
-            style: { background: p[tk.key], color: onToken(tk.key, p), border: `1px solid ${p.outlineVariant}`, minWidth: 0, padding: 0 },
-          }))}
-          value={value}
-          onChange={onChange}
+          options={[
+            ...(r === 0 && clearable ? [auto] : []),
+            ...row.map((tk) => ({
+              key: tk.key as ColorToken | "",
+              title: lang === "en" ? tk.label : COLOR_TOKEN_TEXT[lang][tk.key],
+              node: tk.key === value ? <Icon name="check" size={20} /> : <span />,
+              style: { background: p[tk.key], color: onToken(tk.key, p), border: `1px solid ${p.outlineVariant}`, minWidth: 0, padding: 0 },
+            })),
+          ]}
+          value={value ?? ""}
+          onChange={(k) => onChange(k || undefined)}
           p={p}
           label={`${t("style", lang)} ${r + 1}/${rows.length}`}
           tight
         />
       ))}
+    </div>
+  );
+}
+
+/** The colour the words on a part can take, as a run of letters painted in each role. The first
+ *  cell is the part's own look, so a chosen colour can be let go of again. */
+export function TextRun({ value, onChange, p }: { value?: TextToken; onChange: (text: TextToken | undefined) => void; p: Palette }) {
+  const lang = useLang();
+  return (
+    <Segmented<TextToken | "">
+      options={[
+        { key: "", title: t("autoWidth", lang), node: <Icon name="format_clear" size={20} />, style: { background: p.surfaceContainerHigh, color: p.onSurfaceVariant, border: `1px solid ${p.outlineVariant}`, minWidth: 0, padding: 0 } },
+        ...TEXT_TOKENS.map((tk) => ({
+          key: tk.key as TextToken | "",
+          title: lang === "en" ? tk.label : TEXT_TOKEN_TEXT[lang][tk.key],
+          node: tk.key === value ? <Icon name="check" size={20} /> : <span style={{ fontWeight: 700, fontSize: 15 }}>A</span>,
+          style: { background: p.surfaceContainerHigh, color: p[tk.key], border: `1px solid ${p.outlineVariant}`, minWidth: 0, padding: 0 },
+        })),
+      ]}
+      value={value ?? ""}
+      onChange={(k) => onChange(k || undefined)}
+      p={p}
+      label={t("textColor", lang)}
+      tight
+    />
+  );
+}
+
+/** The four corners of a component part. They hold the component's own radius until the toggle
+ *  turns editing on; then each corner is its own, seeded from `seed`, set on a drawing of the
+ *  part the way `CornerRows` does for the legacy kinds. */
+export function AppearanceCorners({ item, seed, onChange, p }: { item: Item; seed: number; onChange: (patch: Partial<Item>) => void; p: Palette }) {
+  const lang = useLang();
+  const corners = item.corners;
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+      <Toggle
+        on={!!corners}
+        onChange={(on) => onChange({ corners: on ? uniformRadii(seed) : undefined })}
+        p={p}
+        icon="rounded_corner"
+        label={t("cornersEach", lang)}
+        grow
+      />
+      {corners && <CornerStage item={item} corners={corners} max={48} onChange={(c) => onChange({ corners: c })} p={p} />}
     </div>
   );
 }

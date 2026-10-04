@@ -66,6 +66,12 @@ export const COLOR_TOKEN_TEXT = {
   ko: { surface: "표면", surfaceContainerLow: "낮은 컨테이너", surfaceContainer: "컨테이너", surfaceContainerHigh: "높은 컨테이너", surfaceContainerHighest: "가장 높은 컨테이너", primaryContainer: "주 색상 컨테이너", secondaryContainer: "보조 색상 컨테이너", tertiaryContainer: "세 번째 색상 컨테이너", primary: "주 색상", inverseSurface: "반전 표면" },
 };
 
+export const TEXT_TOKEN_TEXT = {
+  ja: { onSurface: "サーフェス上", onSurfaceVariant: "サーフェス上（弱）", primary: "プライマリ", secondary: "セカンダリ", onPrimaryContainer: "プライマリコンテナ上", onSecondaryContainer: "セカンダリコンテナ上", onTertiaryContainer: "ターシャリコンテナ上", inverseOnSurface: "反転サーフェス上" },
+  zh: { onSurface: "表面上", onSurfaceVariant: "表面变体", primary: "主色", secondary: "次色", onPrimaryContainer: "主色容器上", onSecondaryContainer: "次色容器上", onTertiaryContainer: "第三色容器上", inverseOnSurface: "反色表面上" },
+  ko: { onSurface: "표면 위", onSurfaceVariant: "표면 변형", primary: "기본색", secondary: "보조색", onPrimaryContainer: "기본 컨테이너 위", onSecondaryContainer: "보조 컨테이너 위", onTertiaryContainer: "세 번째 컨테이너 위", inverseOnSurface: "반전 표면 위" },
+};
+
 /** exported for the parity tests only; read strings through t() */
 export const UI = {
   // panels
@@ -200,6 +206,7 @@ export const UI = {
   noIcon: { ja: "アイコンなし", en: "No icon", zh: "无图标" },
   searchIcons: { ja: "アイコンを検索", en: "Search icons", zh: "搜索图标" },
   style: { ja: "スタイル", en: "Style", zh: "样式" },
+  appearance: { ja: "外観", en: "Appearance", zh: "外观" },
   filled: { ja: "塗りつぶし", en: "Filled", zh: "填充" },
   tonal: { ja: "トーナル", en: "Tonal", zh: "色调" },
   elevated: { ja: "浮き上がり", en: "Elevated", zh: "凸起" },
@@ -516,7 +523,7 @@ export const KO: Record<UIKey, string> = {
   duplicate: "복제", more: "더보기", delete: "삭제", deleteSelection: "선택 항목 삭제",
   text: "텍스트", label: "레이블", bold: "굵게", action: "동작", supporting: "보조 텍스트", tabs: "항목", changeIcon: "아이콘 변경",
   options: "옵션", addOption: "옵션 추가", removeOption: "이 옵션 삭제", addTab: "탭 추가", selectedOption: "초깃값", image: "이미지", pickImage: "이미지 선택", removeImage: "이미지 제거", imageUrl: "이미지 URL", imageFailed: "이 이미지를 읽을 수 없습니다", imageTop: "위쪽", imageBottom: "아래쪽", imageLeading: "앞쪽", imageTrailing: "뒤쪽", imageBehind: "배경", cardLayout: "레이아웃", noImageLayout: "이미지 없음", textPosition: "텍스트 위치", textTop: "위", textMiddle: "가운데", textBottom: "아래", textStart: "왼쪽", textCenter: "가운데", textEnd: "오른쪽", imageSize: "이미지 크기", textColor: "텍스트 색상", autoWidth: "자동", icon: "아이콘", noIcon: "아이콘 없음", searchIcons: "아이콘 검색",
-  style: "스타일", state: "상태", selected: "선택됨", handle: "핸들", switchOff: "스위치(꺼짐)", switchOn: "스위치(켜짐)", on: "켜짐", container: "컨테이너", wavy: "물결 모양", determinate: "확정형",
+  style: "스타일", appearance: "모양", state: "상태", selected: "선택됨", handle: "핸들", switchOff: "스위치(꺼짐)", switchOn: "스위치(켜짐)", on: "켜짐", container: "컨테이너", wavy: "물결 모양", determinate: "확정형",
   railState: "레일 표시", railCollapsed: "접힘", railExpanded: "펼침",
  
  

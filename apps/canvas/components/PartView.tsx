@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { Item } from "@/lib/tokens";
 import { useIcons } from "@/parts/icons";
 import { PartSurface } from "@/parts/theme";
+import { appearanceOf } from "@/parts/appearance";
 import { partBySlug, viewOf } from "@/parts/registry";
 import { renderNode } from "@/parts/render";
 import type { PNode } from "@/parts/node";
@@ -15,7 +16,7 @@ const NOTHING: PNode = { type: "span" };
  *  (`live`) it works. */
 export function PartView({ item, live = false }: { item: Item; live?: boolean }) {
   const def = partBySlug(item.component);
-  const tree = useMemo(() => (def ? viewOf(def, item.props) : null), [def, item.props]);
+  const tree = useMemo(() => (def ? viewOf(def, item.props, appearanceOf(item)) : null), [def, item.props, item.fill, item.textColor, item.corners]);
   useIcons(tree ?? NOTHING);
   if (!tree) return <span style={{ color: "#B3261E", fontSize: 12 }}>Unknown part {item.component}</span>;
   return (

@@ -10,6 +10,7 @@ import { selection } from "./defs/selection";
 import { textInputs } from "./defs/text-inputs";
 import { theming } from "./defs/theming";
 import type { ListItem, P, PartDef, PropDef, PropValues } from "./types";
+import { applyAppearance, type Appearance } from "./appearance";
 import { h, mapNodes, type PNode } from "./node";
 import { COMMON_TEXT, defaultTextOf, listTextOf } from "./labels";
 import { getLang, type Lang } from "../lib/i18n";
@@ -36,6 +37,8 @@ function read(def: PropDef, values: PropValues | undefined): unknown {
       return typeof v === "string" && def.options.some((o) => (typeof o === "string" ? o : o.value) === v) ? v : def.default;
     case "bool":
       return typeof v === "boolean" ? v : def.default;
+    case "image":
+      return typeof v === "string" ? v : (def.default ?? "");
     case "number":
       return typeof v === "number" && Number.isFinite(v) ? Math.min(def.max, Math.max(def.min, v)) : def.default;
     case "list":
@@ -61,8 +64,9 @@ export function reader(def: PartDef, values: PropValues | undefined): P {
   };
 }
 
-/** the JSX tree of a part with the given prop values */
-export const treeOf = (def: PartDef, values?: PropValues): PNode => def.tree(reader(def, values));
+/** the JSX tree of a part with the given prop values, painted with its appearance when it has one */
+export const treeOf = (def: PartDef, values?: PropValues, appearance?: Appearance): PNode =>
+  applyAppearance(def.tree(reader(def, values)), appearance, def.appearance?.target);
 
 /** the components that open something: while the part is drawn open they are held open (a click on the canvas must not dismiss them), and are not modal */
 const OVERLAY_ROOTS = new Set(["Dialog", "AlertDialog", "Sheet", "SideSheet", "Drawer", "Popover", "HoverCard", "Tooltip", "DropdownMenu", "ContextMenu", "Select", "Combobox"]);
@@ -96,9 +100,9 @@ function opened(node: PNode, open: NonNullable<PartDef["open"]>, first: { menu: 
 
 /** What the canvas draws for a part: its tree, and for a part that opens something, that thing
  *  drawn open inside a box (see `PartDef.open`). The code printed is always `treeOf`. */
-export function viewOf(def: PartDef, values?: PropValues): PNode {
+export function viewOf(def: PartDef, values?: PropValues, appearance?: Appearance): PNode {
   const p = reader(def, values);
-  const tree = def.view ? def.view(p) : def.tree(p);
+  const tree = applyAppearance(def.view ? def.view(p) : def.tree(p), appearance, def.appearance?.target);
   const open = def.open;
   if (!open) return tree;
   const { w, h: height, ax, ay } = open.box(p);
@@ -109,6 +113,10 @@ export function viewOf(def: PartDef, values?: PropValues): PNode {
 
 /** the default value of every prop */
 export const defaultValues = (def: PartDef): PropValues => Object.fromEntries(def.props.map((d) => [d.key, d.default]));
+
+/** the keys of a part's `image` props: the ones a data URL can hide in, which a shared link
+ *  drops and the printed code swaps for a placeholder */
+export const imageKeys = (def: PartDef): string[] => def.props.filter((d) => d.kind === "image").map((d) => d.key);
 
 /* -- language ----------------------------------------------------------------- */
 

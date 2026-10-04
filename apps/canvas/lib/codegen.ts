@@ -39,7 +39,8 @@ import {
 import { EXTERNAL } from "../parts/externals";
 import { FILE_OF } from "../parts/files.generated";
 import { inlineNode, itemOfFile, namesIn } from "../parts/print";
-import { partBySlug, treeOf } from "../parts/registry";
+import { appearanceOf } from "../parts/appearance";
+import { imageKeys, partBySlug, treeOf } from "../parts/registry";
 import { fullWidth, roleOf } from "../parts/role";
 
 export const REGISTRY_URL = "https://shadcn-m3e.crystaworld.dev/r/{name}.json";
@@ -123,6 +124,9 @@ const FILE: Record<string, string> = {
 const role = (t: ColorToken | string) => t.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`);
 
 const str = (s: string) => JSON.stringify(s);
+
+/** the path the code gives a picture the sketch holds as data: the file's own contents stay in the sketch */
+const PLACEHOLDER_IMAGE = "/placeholder.svg";
 /** text as a JSX child: plain when it can be, an expression when it holds a brace or an angle */
 const txt = (s: string) => (/[{}<>]|^\s|\s$/.test(s) ? `{${str(s)}}` : s);
 const icon = (name: string | null | undefined, extra = "") => (name ? `<Icon name=${str(name)}${extra} />` : "");
@@ -353,7 +357,10 @@ function jsx(it: Item, c: Ctx, widths: Record<string, number>): string {
     case "component": {
       const def = partBySlug(it.component);
       if (!def) return `{/* unknown component ${it.component ?? ""} */}`;
-      const tree = treeOf(def, it.props);
+      /* a picked image lives in the sketch as data; the code stands in a path for it */
+      const props = { ...it.props };
+      for (const k of imageKeys(def)) if (typeof props[k] === "string" && (props[k] as string).startsWith("data:")) props[k] = PLACEHOLDER_IMAGE;
+      const tree = treeOf(def, props, appearanceOf(it));
       c.use(...namesIn(tree));
       return inlineNode(tree);
     }

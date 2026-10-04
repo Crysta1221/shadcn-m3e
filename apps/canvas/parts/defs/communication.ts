@@ -226,6 +226,7 @@ export const communication: PartDef[] = [
     category: "Communication",
     icon: "warning",
     role: "listLike",
+    appearance: { radius: 16 },
     w: 360,
     h: 72,
     props: [

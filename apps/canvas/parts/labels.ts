@@ -119,6 +119,7 @@ export const COMMON_LABELS: Record<string, Labels> = {
   Content: { ja: "内容", zh: "内容", ko: "내용" },
   Placeholder: { ja: "プレースホルダー", zh: "占位文本", ko: "플레이스홀더" },
   Icon: { ja: "アイコン", zh: "图标", ko: "아이콘" },
+  Image: { ja: "画像", zh: "图片", ko: "이미지" },
   "Leading icon": { ja: "先頭アイコン", zh: "前置图标", ko: "앞 아이콘" },
   "Trailing icon": { ja: "末尾アイコン", zh: "末尾图标", ko: "뒤 아이콘" },
   "Icon (basic)": { ja: "アイコン", zh: "图标", ko: "아이콘" },

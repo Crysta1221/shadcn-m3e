@@ -2633,6 +2633,7 @@ export function baseRadii(it: Item): Radii {
       return uniformRadii((it.size ?? 48) / 2);
     case "card":
     case "image":
+    case "component":
       if (it.corners) return { ...it.corners };
     // falls through
     case "camera":

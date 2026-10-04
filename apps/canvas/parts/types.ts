@@ -27,6 +27,8 @@ export type PropDef = {
   | { kind: "number"; default: number; min: number; max: number; step?: number; unit?: string }
   /** a Material Symbols name; "" means no icon */
   | { kind: "icon"; default: string }
+  /** an image the author picks or links: a `data:` URL or an http(s) address; "" is none */
+  | { kind: "image"; default?: string }
   /** rows the author adds and removes; `icons` gives each row an icon as well */
   | { kind: "list"; default: ListItem[]; min?: number; max?: number; icons?: boolean }
 );
@@ -60,6 +62,10 @@ export type PartDef = {
   w: number;
   h: number;
   props: PropDef[];
+  /** the part can take a fill role, a text role and custom corners: the panel offers them, and
+   *  they are painted onto the node(s) named by `target` (the tree's root when left out).
+   *  `radius` is the corner radius the component already has, the seed the corner editor starts from. */
+  appearance?: { target?: string | string[]; radius?: number };
   /** the JSX the part stands for */
   tree: (p: P) => PNode;
   /** what the canvas draws instead of `tree`, for a part whose open look is not `tree` made to start open */

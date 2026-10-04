@@ -1,4 +1,5 @@
-import { partBySlug, treeOf } from "../parts/registry";
+import { appearanceOf } from "../parts/appearance";
+import { imageKeys, partBySlug, treeOf } from "../parts/registry";
 import { labelOfPart } from "../parts/resize";
 import { nameOf } from "../parts/labels";
 import { roleOf } from "../parts/role";
@@ -692,7 +693,10 @@ function componentText(it: Item, lang: Lang): string {
   if (!def) return it.label || "component";
   const lead = { ja: `shadcn M3E の ${nameOf(def, lang)}`, en: `the shadcn M3E ${nameOf(def, lang)}`, zh: `shadcn M3E 的 ${nameOf(def, lang)}`, ko: `shadcn M3E의 ${nameOf(def, lang)}` }[lang];
   const called = labelOfPart(def, it.props);
-  return `${lead}${called ? ` "${called}"` : ""}: \`${inlineNode(treeOf(def, it.props))}\``;
+  /* a picked image's data is the sketch's own: the prompt sees the placeholder the code prints */
+  const props = { ...it.props };
+  for (const k of imageKeys(def)) if (typeof props[k] === "string" && (props[k] as string).startsWith("data:")) props[k] = "/placeholder.svg";
+  return `${lead}${called ? ` "${called}"` : ""}: \`${inlineNode(treeOf(def, props, appearanceOf(it)))}\``;
 }
 
 const itemText = (it: Item, lang: Lang) =>

@@ -71,4 +71,17 @@ describe("buildCode", () => {
     const doc = { ...one("button"), frames: [], frame: "blank" as const };
     expect(buildCode(doc, {}).code).toContain("export function");
   });
+
+  it("prints a component's appearance as fixed classes and a picked image as a placeholder", () => {
+    const doc = one("component");
+    doc.groups[0].items = [
+      { ...makeItem("component", "card"), id: "c", fill: "primaryContainer", corners: { tl: 24, tr: 24, bl: 24, br: 24 } },
+      { ...makeItem("component", "avatar"), id: "a", props: { image: "data:image/webp;base64,AAAA" } },
+    ];
+    const { code } = buildCode(doc, {});
+    expect(code).toContain('className="bg-primary-container text-on-primary-container"');
+    expect(code).toContain('borderRadius: "24px 24px 24px 24px"');
+    expect(code).toContain('src="/placeholder.svg"');
+    expect(code).not.toContain("data:image");
+  });
 });

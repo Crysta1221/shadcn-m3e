@@ -6,6 +6,7 @@ import { CONTRASTS, Contrast, FONTS, Item, KIND_SPEC, NavTab, PALETTES, Palette,
 import { partBySlug } from "@/parts/registry";
 import { nameOf } from "@/parts/labels";
 import { ComponentProps } from "./ComponentInspector";
+import { AppearanceCorners, FillRun, TextRun } from "./PartPanel";
 import { ensureFontLoaded } from "@/lib/theme";
 import { KIND_TEXT, LANGS, Lang, t, useLang } from "@/lib/i18n";
 import { IconPicker } from "./IconPicker";
@@ -360,6 +361,13 @@ function MobileComponentInspector({ item, palette: p, onChange, onDelete, onDupl
         <IconBtn icon="check" p={p} on onClick={onClose} title={t("done", lang)} size={44} />
       </div>
       <ComponentProps item={item} palette={p} onChange={onChange} />
+      {def?.appearance && (
+        <div style={{ marginTop: 14, display: "flex", flexDirection: "column", gap: 14 }}>
+          <FillRun value={item.fill} onChange={(fill) => onChange({ fill })} p={p} clearable />
+          <TextRun value={item.textColor} onChange={(textColor) => onChange({ textColor })} p={p} />
+          <AppearanceCorners item={item} seed={def.appearance.radius ?? 16} onChange={onChange} p={p} />
+        </div>
+      )}
       <div style={{ marginTop: 14 }}>
         <Row icon="bolt" label={t("behavior", lang)} p={p}>
           <Field value={item.note ?? ""} onChange={(note) => onChange({ note })} placeholder={t("whatItDoes", lang)} p={p} icon="bolt" height={48} />
