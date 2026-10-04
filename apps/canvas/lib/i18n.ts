@@ -489,6 +489,22 @@ export const UI = {
     en: "Could not connect. Check the URL, the network and the server's CORS settings",
     zh: "无法连接。请检查 URL、网络和服务器的 CORS 设置",
   },
+  migrate: { ja: "新しい部品に変換", en: "Convert to the new component", zh: "转换为新组件" },
+  migrateHint: {
+    ja: "実際の shadcn M3E コンポーネントで描画され、コードにもそのまま出ます。いつでも元に戻せます。",
+    en: "It is drawn as the real shadcn M3E component and prints as it is. You can switch back at any time.",
+    zh: "将以真实的 shadcn M3E 组件绘制，并原样输出到代码中。随时可以恢复。",
+  },
+  migrateLost: { ja: "次の設定は引き継げません。変換しますか？", en: "These settings cannot be carried over. Convert anyway?", zh: "以下设置无法保留。仍要转换吗？" },
+  migrateRevert: { ja: "旧部品に戻す", en: "Switch back to the old part", zh: "恢复为旧部件" },
+  lostFill: { ja: "塗りの色", en: "Fill color", zh: "填充颜色" },
+  lostCorners: { ja: "角丸", en: "Corner radius", zh: "圆角" },
+  lostIconFill: { ja: "アイコンの背景", en: "Icon background", zh: "图标背景" },
+  lostToggle: { ja: "押したときの色の変化", en: "Color change when pressed", zh: "按下时的颜色变化" },
+  lostSlides: { ja: "スライドの画像", en: "Slide pictures", zh: "幻灯片图片" },
+  lostUnchecked: { ja: "オフの状態", en: "The off state", zh: "关闭状态" },
+  lostTap: { ja: "一部のタップ先", en: "Some tap targets", zh: "部分点击目标" },
+  lostLeadingIcon: { ja: "先頭のアイコン", en: "The leading icon", zh: "前置图标" },
 } as const satisfies Record<string, Str>;
 
 export type UIKey = keyof typeof UI;
@@ -569,6 +585,8 @@ export const KO: Record<UIKey, string> = {
   aiSelectScreen: "먼저 화면을 선택하세요", aiNoKey: "AI 탭에 키를 입력하면 사용할 수 있습니다", aiError: "AI 요청에 실패했습니다",
   aiErrorRefusal: "모델이 답변을 거부했습니다", aiErrorJson: "모델의 응답을 읽을 수 없습니다", aiErrorLong: "답변이 너무 길어 중간에 잘렸습니다. 화면 수를 줄여 다시 시도하세요", aiErrorModel: "모델 ID를 입력하세요",
   aiErrorInsecure: "기본 URL은 https를 사용하거나 localhost를 가리켜야 합니다", aiErrorNetwork: "연결할 수 없습니다. URL, 네트워크 및 서버의 CORS 설정을 확인하세요",
+  migrate: "새 부품으로 변환", migrateHint: "실제 shadcn M3E 컴포넌트로 그려지고 코드에도 그대로 출력됩니다. 언제든지 되돌릴 수 있습니다.", migrateLost: "다음 설정은 가져올 수 없습니다. 그래도 변환할까요?", migrateRevert: "이전 부품으로 되돌리기",
+  lostFill: "채움 색상", lostCorners: "모서리 둥글기", lostIconFill: "아이콘 배경", lostToggle: "누를 때의 색 변화", lostSlides: "슬라이드 이미지", lostUnchecked: "꺼짐 상태", lostTap: "일부 탭 대상", lostLeadingIcon: "앞쪽 아이콘",
 };
 
 /** the locale each language writes its dates in */

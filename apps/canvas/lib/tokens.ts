@@ -1718,6 +1718,8 @@ export type Item = {
   component?: string;
   /** kind "component": the values the author set, over the part's own defaults */
   props?: Record<string, unknown>;
+  /** kind "component": the hand-drawn part this was converted from, kept whole so the conversion can be undone */
+  legacy?: Item;
   /** runtime-only: the editor is showing this FAB's menu open. Never written to JSON. */
   [fabOpen]?: boolean;
   /** runtime-only: the menu rises out of the part's top rather than dropping below it. */

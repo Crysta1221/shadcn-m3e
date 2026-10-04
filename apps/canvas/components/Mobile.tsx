@@ -6,6 +6,7 @@ import { CONTRASTS, Contrast, FONTS, Item, KIND_SPEC, NavTab, PALETTES, Palette,
 import { partBySlug } from "@/parts/registry";
 import { nameOf } from "@/parts/labels";
 import { ComponentProps } from "./ComponentInspector";
+import { MigrateContext, MigrateNotice, type MigrateActions } from "./MigrateNotice";
 import { AppearanceCorners, FillRun, TextRun } from "./PartPanel";
 import { ensureFontLoaded } from "@/lib/theme";
 import { KIND_TEXT, LANGS, Lang, t, useLang } from "@/lib/i18n";
@@ -342,8 +343,13 @@ function LegacyMobileInspector({
 }
 
 /** the editing sheet of a part on a phone: a real component is edited through its props */
-export function MobileInspector(props: React.ComponentProps<typeof LegacyMobileInspector>) {
-  return props.item.kind === "component" ? <MobileComponentInspector {...props} /> : <LegacyMobileInspector {...props} />;
+export function MobileInspector({ onMigrate, onRevert, ...props }: React.ComponentProps<typeof LegacyMobileInspector> & MigrateActions) {
+  return (
+    <MigrateContext.Provider value={{ onMigrate, onRevert }}>
+      <MigrateNotice p={props.palette} margin="0 0 12px" />
+      {props.item.kind === "component" ? <MobileComponentInspector {...props} /> : <LegacyMobileInspector {...props} />}
+    </MigrateContext.Provider>
+  );
 }
 
 function MobileComponentInspector({ item, palette: p, onChange, onDelete, onDuplicate, onClose }: React.ComponentProps<typeof LegacyMobileInspector>) {

@@ -5,6 +5,7 @@ import { COLOR_TOKENS, ColorToken, PLACES, Palette, Place, R_INNER, SETTLE_MS, c
 import { AnimatePresence, animate, motion, useReducedMotion } from "motion/react";
 import { COLOR_TOKEN_TEXT, t, useLang } from "@/lib/i18n";
 import { Icon } from "./M3Node";
+import { MigrateNotice } from "./MigrateNotice";
 
 /** the row of tabs and the clear gap under it, and the band a panel with no tabs fades its top with */
 const PANEL_TABS_H = 48;
@@ -72,6 +73,7 @@ export function PanelShell({
           /* under a row of tabs the content starts below them; with none, it starts under the fade's thick part */
           style={{ padding: `${tabs ? PANEL_TABS_H + PANEL_TABS_GAP : PANEL_FADE_H / 2}px 12px 20px`, overflowY: "auto", height: "100%" }}
         >
+          <MigrateNotice p={p} />
           {children}
         </div>
         {/* the tabs keep their place while the rest scrolls under them, and the panel's own colour
@@ -1922,7 +1924,7 @@ export function ConfirmDialog({
               <Icon name={icon} size={28} />
             </div>
             <div style={{ fontSize: 22, textAlign: "center" }}>{title}</div>
-            <div style={{ fontSize: 14, lineHeight: 1.5, color: p.onSurfaceVariant }}>{body}</div>
+            <div style={{ fontSize: 14, lineHeight: 1.5, color: p.onSurfaceVariant, whiteSpace: "pre-line" }}>{body}</div>
             <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
               {btn(t("cancel", lang), false, onCancel)}
               {btn(t("ok", lang), true, onConfirm)}

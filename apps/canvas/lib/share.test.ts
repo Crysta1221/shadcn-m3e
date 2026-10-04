@@ -81,6 +81,17 @@ describe("shareable", () => {
     expect(value.groups[0].items[0].props).toEqual({ image: "data:image/webp;base64,AAAA", initials: "TK" });
   });
 
+  it("drops the picture of the old part a converted one remembers", () => {
+    const value = doc();
+    const old: Item = { id: "c", kind: "card", label: "Card", icon: null, variant: "filled", src: "data:image/png;base64,AAAA", noteHistory: ["draft"] };
+    value.groups[0].items = [{ id: "c", kind: "component", component: "card", label: "Card", icon: null, variant: "filled", props: { title: "Card" }, legacy: old }];
+    const kept = shareable(value).groups[0].items[0].legacy!;
+    expect(kept.src).toBeUndefined();
+    expect(kept.noteHistory).toBeUndefined();
+    expect(kept.label).toBe("Card");
+    expect(value.groups[0].items[0].legacy!.src).toBe("data:image/png;base64,AAAA");
+  });
+
   it("leaves a component without image props untouched", () => {
     const value = doc();
     value.groups[0].items = [{ id: "b", kind: "component", component: "button", label: "", icon: null, variant: "filled", props: { label: "Go" } }];

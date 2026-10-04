@@ -122,6 +122,7 @@ import { TidyState, PANEL_FADE_H } from "@/components/ui";
 import { AiSettings, DEFAULT_AI, hasKey, isSecureUrl, loadAiSettings, proposeBehavior, proposeDescription, pushHistory, saveAiSettings } from "@/lib/ai";
 import { barSlotOf, bodyRect, carryFrame, holdsEdgeBar, pullInto, tidyFrame } from "@/lib/tidy";
 import { combineButtons } from "@/lib/combine";
+import { LOST_TEXT, canMigrate, migrateLegacy, revertPatch, type Migration } from "@/lib/migrate";
 import { constrainModalRails, modalRailOf, updateRail } from "@/lib/rail";
 import { isProject, readProject, saveProject } from "@/lib/project";
 import { hasShareHash, readShareHash } from "@/lib/share";
@@ -2916,6 +2917,42 @@ export default function Editor({ initialLang, onReady }: { initialLang: Lang; on
     setSelectedIds([]);
   };
 
+  /** an old part waiting for the author to accept what its conversion loses */
+  const [pendingMigrate, setPendingMigrate] = useState<{ id: string; m: Migration } | null>(null);
+
+  /** replaces one part with the change a conversion (or a revert) is, in one undo step, and moves the
+   *  part down or up by what the new drawing takes or gives back */
+  const convertPart = (id: string, patch: Partial<Item>, dy: number) => {
+    if (groupsRef.current.some((g) => g.locked && g.items.some((it) => it.id === id))) {
+      showToast(lockedGroupMsg());
+      return;
+    }
+    snapshot();
+    setGroups((prev) =>
+      prev.map((g) => {
+        const idx = g.items.findIndex((it) => it.id === id);
+        if (idx < 0) return g;
+        const items = g.items.map((it, i) => (i === idx ? { ...it, ...patch } : it));
+        if (!dy) return { ...g, items };
+        if (g.free) return { ...g, items, pos: { ...g.pos, [id]: { x: g.pos?.[id]?.x ?? 0, y: (g.pos?.[id]?.y ?? 0) + dy } } };
+        return g.items.length === 1 ? { ...g, items, y: g.y + dy } : { ...g, items };
+      }),
+    );
+  };
+
+  /** turns the selected old part into its component, once the author has seen what it cannot carry */
+  const migrateSelected = () => {
+    const m = selected ? migrateLegacy(selected) : null;
+    if (!selected || !m) return;
+    if (m.lost.length) setPendingMigrate({ id: selected.id, m });
+    else convertPart(selected.id, m.patch, m.dy);
+  };
+
+  const revertSelected = () => {
+    const back = selected ? revertPatch(selected) : null;
+    if (selected && back) convertPart(selected.id, back.patch, back.dy);
+  };
+
   /** sets where Tidy puts a screen's body, then tidies it that way */
   const setPlace = (f: Frame, place: Place) => {
     const next: Frame = { ...f, place: place === "top" ? undefined : place };
@@ -4623,6 +4660,8 @@ export default function Editor({ initialLang, onReady }: { initialLang: Lang; on
                 <MobileInspector
                   item={selected}
                   palette={p}
+                  onMigrate={canMigrate(selected) ? migrateSelected : undefined}
+                  onRevert={selected.legacy ? revertSelected : undefined}
                   onChange={patchSelected}
                   onDelete={() => {
                     deleteSelected();
@@ -4795,6 +4834,8 @@ export default function Editor({ initialLang, onReady }: { initialLang: Lang; on
                   palette={p}
                   frames={frame === "phone" ? frames : []}
                   onChange={patchSelected}
+                  onMigrate={selected && canMigrate(selected) ? migrateSelected : undefined}
+                  onRevert={selected?.legacy ? revertSelected : undefined}
                   onDelete={deleteSelected}
                   onDuplicate={duplicateSelected}
                   locked={selectedLocked}
@@ -4871,6 +4912,19 @@ export default function Editor({ initialLang, onReady }: { initialLang: Lang; on
           }}
         />
 
+
+        <ConfirmDialog
+          open={pendingMigrate !== null}
+          icon="upgrade"
+          title={t("migrate", lang)}
+          body={[t("migrateLost", lang), ...(pendingMigrate?.m.lost ?? []).map((k) => `・${t(LOST_TEXT[k], lang)}`)].join("\n")}
+          p={p}
+          onCancel={() => setPendingMigrate(null)}
+          onConfirm={() => {
+            if (pendingMigrate) convertPart(pendingMigrate.id, pendingMigrate.m.patch, pendingMigrate.m.dy);
+            setPendingMigrate(null);
+          }}
+        />
 
         <ConfirmDialog
           open={confirmClear}

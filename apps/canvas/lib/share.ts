@@ -11,7 +11,9 @@ export const DOCZ_PARAM = "docz";
 
 /** the item without what a link should not carry: a `src` or an image prop that is a picked
  *  file's data (a web address stays), and the AI rewrite history */
-function shareableItem({ src, noteHistory: _h, ...it }: Item): Item {
+function shareableItem({ src, noteHistory: _h, legacy, ...rest }: Item): Item {
+  /* the old part a converted one remembers carries no picture either */
+  const it = (legacy ? { ...rest, legacy: shareableItem(legacy) } : rest) as Item;
   const out: Item = src && /^https?:\/\//.test(src) ? { ...it, src } : it;
   const def = out.kind === "component" && out.props ? partBySlug(out.component) : undefined;
   const keys = def ? imageKeys(def) : [];

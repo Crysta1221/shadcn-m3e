@@ -3,7 +3,8 @@
 // Type-checks the code the canvas prints against the real shadcn M3E components in
 // packages/m3e, so a wrong component name, prop or prop value fails here rather than in
 // someone's project:
-//   1. a sketch holding one of every older part kind (lib/codegen.ts)
+//   1. a sketch holding one of every older part kind (lib/codegen.ts), and the same sketch
+//      with every part converted to the component that stands for it (lib/migrate.ts)
 //   2. every part of the registry (parts/): its default props, and one instance for every
 //      choice of every enum prop
 // It also checks that the registry lists the same components as the docs.
@@ -18,6 +19,8 @@ import { fileURLToPath } from "node:url";
 import { buildCode } from "../lib/codegen";
 import { allKindsDoc } from "../lib/codegen.fixture";
 import { setGlobalLang } from "../lib/i18n";
+import { migrateLegacy } from "../lib/migrate";
+import type { Item } from "../lib/tokens";
 import { importLines, namesIn, printNode } from "../parts/print";
 import { PARTS, defaultValues, treeOf } from "../parts/registry";
 
@@ -29,6 +32,7 @@ const dir = join(docs, "src", "__codegen__");
 const tag = `${process.pid}`;
 const sketchFile = join(dir, `sketch-${tag}.tsx`);
 const partsFile = join(dir, `parts-${tag}.tsx`);
+const migratedFile = join(dir, `migrated-${tag}.tsx`);
 
 /* --- the registry lists what the docs list --------------------------------------------- */
 const { DOCS } = (await import(join(docs, "src", "docs", "registry.ts"))) as { DOCS: { slug: string; name: string; category: string }[] };
@@ -66,8 +70,19 @@ for (const d of PARTS) {
 const partsCode = [...importLines(names), "", ...bodies, ""].join("\n");
 
 const { code: sketchCode } = buildCode(allKindsDoc(), {});
+/* the old sketch, every part that has a counterpart turned into it */
+const converted = allKindsDoc();
+converted.groups = converted.groups.map((g) => ({
+  ...g,
+  items: g.items.map((it): Item => {
+    const m = migrateLegacy(it);
+    return m ? ({ ...it, ...m.patch } as Item) : it;
+  }),
+}));
+const { code: migratedCode } = buildCode(converted, {});
 mkdirSync(dir, { recursive: true });
 writeFileSync(sketchFile, sketchCode);
+writeFileSync(migratedFile, migratedCode);
 writeFileSync(partsFile, partsCode);
 
 let status = 1;
@@ -83,11 +98,12 @@ try {
     console.log(out);
     console.log("typecheck failed outside the generated code");
   } else {
-    console.log(`${PARTS.length} parts match the docs; ${instances} part instances and the sketch type-check`);
+    console.log(`${PARTS.length} parts match the docs; ${instances} part instances, the sketch and its converted twin type-check`);
     status = 0;
   }
 } finally {
   rmSync(sketchFile, { force: true });
+  rmSync(migratedFile, { force: true });
   rmSync(partsFile, { force: true });
 }
 process.exit(status);

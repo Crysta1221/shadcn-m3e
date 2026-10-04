@@ -25,6 +25,7 @@ import {
 import { ButtonInspector } from "./ButtonInspector";
 import { ComponentInspector } from "./ComponentInspector";
 import { PartInspector } from "./PartInspector";
+import { MigrateContext } from "./MigrateNotice";
 import { AlignBox, PartMenu, PlaceFn } from "./PartPanel";
 import { Icon } from "./M3Node";
 import { PanelShell, Section, Segmented } from "./ui";
@@ -365,6 +366,8 @@ export function Inspector({
   allFrames,
   onShowOn,
   onShowMenu,
+  onMigrate,
+  onRevert,
 }: {
   /** the AI button beside the behavior field */
   ai: AiHooks;
@@ -402,6 +405,10 @@ export function Inspector({
   onShowOn?: (on: boolean) => void;
   /** asks the canvas to show a FAB's menu open while it is being set up */
   onShowMenu?: (open: boolean) => void;
+  /** turns the selected old hand-drawn part into the component that stands for it */
+  onMigrate?: () => void;
+  /** puts a converted part back as the old one it was */
+  onRevert?: () => void;
 }) {
   const lang = useLang();
 
@@ -443,6 +450,7 @@ export function Inspector({
   /* a shadcn M3E component is edited through its own props */
   if (item.kind === "component") {
     return (
+      <MigrateContext.Provider value={{ onRevert }}>
       <ComponentInspector
         ai={ai}
         item={item}
@@ -457,16 +465,18 @@ export function Inspector({
         selfRect={selfRect ?? null}
         allFrames={allFrames ?? frames}
       />
+      </MigrateContext.Provider>
     );
   }
 
   /* the parts a tap sends somewhere and that fuse into a run are edited in the button's panel */
   if (item.kind === "button" || item.kind === "iconButton" || item.kind === "chip" || item.kind === "splitButton" || isFab(item.kind)) {
-    return <ButtonInspector ai={ai} item={item} palette={p} frame={frame ?? null} onChange={onChange} onDelete={onDelete} onDuplicate={onDuplicate} locked={locked} onToggleLock={onToggleLock} onPlace={onPlace} measured={widths?.[item.id]} selfRect={selfRect ?? null} allFrames={allFrames ?? frames} onShowOn={onShowOn} onShowMenu={onShowMenu} />;
+    return <MigrateContext.Provider value={{ onMigrate }}><ButtonInspector ai={ai} item={item} palette={p} frame={frame ?? null} onChange={onChange} onDelete={onDelete} onDuplicate={onDuplicate} locked={locked} onToggleLock={onToggleLock} onPlace={onPlace} measured={widths?.[item.id]} selfRect={selfRect ?? null} allFrames={allFrames ?? frames} onShowOn={onShowOn} onShowMenu={onShowMenu} /></MigrateContext.Provider>;
   }
 
   /* everything else shares one panel, built from the button's own */
   return (
+    <MigrateContext.Provider value={{ onMigrate }}>
     <PartInspector
       ai={ai}
       item={item}
@@ -483,5 +493,6 @@ export function Inspector({
       measured={widths?.[item.id]}
       railStandalone={railStandalone}
     />
+    </MigrateContext.Provider>
   );
 }
