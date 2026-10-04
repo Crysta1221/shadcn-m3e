@@ -1,7 +1,76 @@
-import { h, ic } from "../node";
+import { h, ic, type PNode } from "../node";
 import { around, type P, type PartDef } from "../types";
 
 const BUTTON_VARIANTS = ["filled", "tonal", "elevated", "outlined", "text"];
+
+/* literal class names: Tailwind only sees what is written out */
+const ALIGN_ITEMS = { start: undefined, center: "items-center", end: "items-end" } as const;
+const ALIGN_TEXT = { start: undefined, center: "text-center", end: "text-end" } as const;
+const JUSTIFY = { start: undefined, center: "justify-center", end: "justify-end" } as const;
+const SCRIM = {
+  start: "bg-gradient-to-b from-black/60 via-black/15 to-transparent",
+  center: "bg-black/40",
+  end: "bg-gradient-to-t from-black/60 via-black/15 to-transparent",
+} as const;
+
+/** the card's image area: a band along the top or bottom, a column down a side, or the whole
+ *  background behind a scrim. The placeholder is an icon on primary-container. */
+function cardTree(p: P): PNode {
+  const pos = p.s("imagePos");
+  const src = p.s("image");
+  const bg = pos === "background";
+  const side = pos === "leading" || pos === "trailing";
+  const extent = Math.round(p.n("imageSize"));
+  const inner = src
+    ? h("img", { src, alt: "", className: "size-full object-cover" })
+    : h("div", { className: "grid size-full place-items-center bg-primary-container text-on-primary-container" }, ic(p.s("imageIcon") || "image", { size: 34 }));
+  const media =
+    pos === "none"
+      ? null
+      : bg
+        ? h("div", { className: "absolute inset-0" }, inner)
+        : side
+          ? h("div", { className: "shrink-0 self-stretch overflow-hidden -my-(--card-spacing)", style: { width: extent } }, inner)
+          : h("div", { className: "w-full shrink-0 overflow-hidden", style: { height: extent } }, inner);
+  /* over a photo the words need a scrim; over the placeholder they take the container's on-color */
+  const ink = bg ? (src ? "text-white" : "text-on-primary-container") : undefined;
+  const body = bg ? (src ? "text-white/80" : "text-on-primary-container/80") : undefined;
+  const first = pos === "top" || pos === "leading" || bg;
+  const textCls = ALIGN_TEXT[p.s("textAlign") as keyof typeof ALIGN_TEXT];
+  const style: Record<string, number> = { width: Math.round(p.n("width")) };
+  if (p.n("height") > 0) style.height = Math.round(p.n("height"));
+  if (pos === "top") style.paddingTop = 0;
+  if (pos === "bottom") style.paddingBottom = 0;
+  const header = h(
+    "CardHeader",
+    { className: bg ? "relative" : undefined },
+    h("CardTitle", { className: [ink, textCls].filter(Boolean).join(" ") || undefined }, p.s("title")),
+    p.s("description") && h("CardDescription", { className: [body, textCls].filter(Boolean).join(" ") || undefined }, p.s("description")),
+  );
+  const footer = p.s("action") && h("CardFooter", { className: bg ? "relative" : undefined }, h("Button", { variant: "text", size: "sm" }, p.s("action")));
+  return h(
+    "Card",
+    {
+      variant: p.s("variant"),
+      size: p.s("size") === "default" ? undefined : p.s("size"),
+      interactive: p.b("interactive") || undefined,
+      className:
+        [
+          side && "flex-row",
+          ALIGN_ITEMS[p.s("textAlign") as keyof typeof ALIGN_ITEMS],
+          JUSTIFY[p.s("contentAlign") as keyof typeof JUSTIFY],
+        ]
+          .filter(Boolean)
+          .join(" ") || undefined,
+      style,
+    },
+    media && first && media,
+    media && first && bg && src && h("div", { className: `absolute inset-0 ${SCRIM[p.s("contentAlign") as keyof typeof SCRIM]}` }),
+    header,
+    footer,
+    media && !first && media,
+  );
+}
 
 export const containment: PartDef[] = [
   {
@@ -17,16 +86,32 @@ export const containment: PartDef[] = [
       { key: "title", label: "Title", kind: "text", default: "Card title" },
       { key: "description", label: "Description", kind: "text", default: "Supporting text for the card.", multiline: true },
       { key: "variant", label: "Variant", kind: "enum", default: "filled", options: ["filled", "elevated", "outlined"] },
+      {
+        key: "imagePos",
+        label: "Image position",
+        kind: "enum",
+        default: "top",
+        options: [
+          { value: "none", label: "None" },
+          { value: "top", label: "Top" },
+          { value: "bottom", label: "Bottom" },
+          { value: "leading", label: "Left" },
+          { value: "trailing", label: "Right" },
+          { value: "background", label: "Background" },
+        ],
+      },
+      { key: "image", label: "Image", kind: "image", when: (p) => p.s("imagePos") !== "none" },
+      { key: "imageIcon", label: "Placeholder icon", kind: "icon", default: "image", when: (p) => p.s("imagePos") !== "none" && !p.s("image") },
+      { key: "imageSize", label: "Image size", kind: "number", default: 96, min: 40, max: 320, step: 4, unit: "px", when: (p) => ["top", "bottom", "leading", "trailing"].includes(p.s("imagePos")) },
+      { key: "textAlign", label: "Text align", kind: "enum", default: "start", options: ["start", "center", "end"] },
+      { key: "contentAlign", label: "Content align", kind: "enum", default: "start", options: ["start", "center", "end"] },
+      { key: "size", label: "Density", kind: "enum", default: "default", options: ["sm", "default", "lg"] },
+      { key: "interactive", label: "Interactive", kind: "bool", default: false },
       { key: "action", label: "Action button", kind: "text", default: "" },
       { key: "width", label: "Width", kind: "number", default: 280, min: 160, max: 520, step: 4, unit: "px" },
+      { key: "height", label: "Height (0: auto)", kind: "number", default: 0, min: 0, max: 480, step: 4, unit: "px" },
     ],
-    tree: (p) =>
-      h(
-        "Card",
-        { variant: p.s("variant"), style: { width: Math.round(p.n("width")) } },
-        h("CardHeader", null, h("CardTitle", null, p.s("title")), p.s("description") && h("CardDescription", null, p.s("description"))),
-        p.s("action") && h("CardFooter", null, h("Button", { variant: "text", size: "sm" }, p.s("action"))),
-      ),
+    tree: (p) => cardTree(p),
   },
   {
     slug: "item",
