@@ -67,6 +67,8 @@ import {
   topBarFontOf,
 } from "@/lib/tokens";
 import { CircularProgress, LinearProgress, LoadingIndicator } from "./Loading";
+import { ComponentNode } from "./ComponentNode";
+import { PartView } from "./PartView";
 import { CarouselBody, DatePickerBody, TimePickerBody } from "./Pickers";
 import { t, useLang } from "@/lib/i18n";
 import { useTheme } from "@/lib/theme";
@@ -627,6 +629,7 @@ function RadioContent({ item, p }: { item: Item; p: Palette }) {
 
 /** Content for kinds that size to their text; rendered again offscreen to measure. */
 export function MeasuredContent({ item, p }: { item: Item; p: Palette }) {
+  if (item.kind === "component") return <PartView item={item} />;
   if (menuOpen(item)) return item.kind === "splitButton" ? <SplitMenuContent item={item} p={p} /> : <FabMenuContent item={item} p={p} />;
   switch (item.kind) {
     case "button":
@@ -1788,7 +1791,7 @@ export type { Radii };
 /** Corner radii are driven continuously by the magnet; a stiff spring keeps them on the pointer. */
 const RADIUS_TWEEN = { type: "spring" as const, stiffness: 900, damping: 48, mass: 0.4 };
 
-export function M3Node({
+function LegacyNode({
   item,
   palette,
   radii,
@@ -1935,6 +1938,11 @@ export function M3Node({
   );
 }
 
+/** a part of the canvas: a real shadcn M3E component, or one of the older drawn kinds */
+export function M3Node(props: React.ComponentProps<typeof LegacyNode>) {
+  return props.item.kind === "component" ? <ComponentNode {...props} /> : <LegacyNode {...props} />;
+}
+
 /** Plain (non-animated) rendering of a part; used where frames must be deterministic. */
 export function M3Static({
   item,
@@ -1947,6 +1955,12 @@ export function M3Static({
   radii?: Radii;
   style?: React.CSSProperties;
 }) {
+  if (item.kind === "component")
+    return (
+      <div style={{ display: "inline-flex", flex: "0 0 auto", ...style }}>
+        <PartView item={item} />
+      </div>
+    );
   const r = radii ?? baseRadii(item);
   const size = sizeOf(item, {});
   const measured = isMeasured(item);

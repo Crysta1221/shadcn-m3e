@@ -2,7 +2,7 @@
 
 import { ReactNode, useMemo, useState } from "react";
 import { Reorder, useDragControls } from "motion/react";
-import { Frame, Group, Item, KIND_SPEC, Palette, explodeGroup, isPhoneFrame } from "@/lib/tokens";
+import { Frame, Group, Item, KIND_SPEC, Palette, explodeGroup, isPhoneFrame, paletteIconOf } from "@/lib/tokens";
 import { Icon } from "./M3Node";
 import { Select } from "./ui";
 import { Lang, KIND_TEXT, t, useLang } from "@/lib/i18n";
@@ -177,7 +177,7 @@ function RunParts({
           id={it.id}
           p={p}
           depth={depth}
-          icon={<Icon name={KIND_SPEC[it.kind].paletteIcon} size={16} />}
+          icon={<Icon name={paletteIconOf(it)} size={16} />}
           label={nameOf(it, lang)}
           on={sel.has(it.id)}
           onSelect={(add) => onSelect([it.id], add)}
@@ -259,7 +259,7 @@ export function LayersPanel({
               id={r.id}
               p={p}
               depth={depth}
-              icon={r.items.slice(0, 3).map((it, k) => <Icon key={k} name={KIND_SPEC[it.kind].paletteIcon} size={16} />)}
+              icon={r.items.slice(0, 3).map((it, k) => <Icon key={k} name={paletteIconOf(it)} size={16} />)}
               label={runLabel(r, lang)}
               on={r.items.some((it) => sel.has(it.id))}
               onSelect={(add) => onSelect(r.items.map((it) => it.id), add)}
@@ -322,7 +322,7 @@ export function LayersPanel({
                   id={g.id}
                   p={p}
                   depth={0}
-                  icon={g.free ? <Icon name="group_work" size={18} /> : g.items.slice(0, 3).map((it, k) => <Icon key={k} name={KIND_SPEC[it.kind].paletteIcon} size={18} />)}
+                  icon={g.free ? <Icon name="group_work" size={18} /> : g.items.slice(0, 3).map((it, k) => <Icon key={k} name={paletteIconOf(it)} size={18} />)}
                   label={runLabel(g, lang)}
                   on={g.items.some((it) => sel.has(it.id))}
                   onSelect={(add) => onSelect(g.items.map((it) => it.id), add)}

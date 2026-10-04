@@ -1,6 +1,7 @@
 import type { CSSProperties } from "react";
 import { FAB_MENU_TABS, KIND_TEXT, Lang, NAV_TABS, SPLIT_MENU_TABS, TAB_LABELS, getLang, t, SELECT_OPTIONS } from "./i18n";
 import { Contrast, isLightColor, schemeFromSeed } from "./color";
+import { partBySlug } from "../parts/registry";
 
 /* ---------- geometry ---------- */
 export const H = 56; // M3 medium button height (dp)
@@ -614,7 +615,9 @@ export type Kind =
   | "radio"
   | "carousel"
   | "datePicker"
-  | "timePicker";
+  | "timePicker"
+  /** a shadcn M3E component drawn for real: `Item.component` names it, `Item.props` configures it */
+  | "component";
 
 /** how a carousel arranges its items: M3's four layouts */
 export type CarouselLayout = "multiBrowse" | "uncontained" | "hero" | "fullScreen";
@@ -1472,6 +1475,21 @@ export const KIND_SPEC: Record<Kind, KindSpec> = {
     defIcon: null,
     defSize: 328,
   },
+  component: {
+    label: "Component",
+    noun: "部品",
+    category: "content",
+    paletteIcon: "widgets",
+    w: 120,
+    h: 40,
+    radius: 0,
+    hasVariant: false,
+    hasLabel: false,
+    hasSupporting: false,
+    hasIcon: false,
+    defLabel: "",
+    defIcon: null,
+  },
   timePicker: {
     label: "Time Picker",
     noun: "時刻ピッカー",
@@ -1616,6 +1634,7 @@ export const KIND_ORDER: Kind[] = [
   "loadingIndicator",
   "linearProgress",
   "circularProgress",
+  "component",
 ];
 
 /* ---------- screen data ---------- */
@@ -1690,6 +1709,10 @@ export type Item = {
   layout?: PartLayout;
   /** how many cards a carousel holds */
   count?: number;
+  /** kind "component": the docs slug of the shadcn M3E component this part is */
+  component?: string;
+  /** kind "component": the values the author set, over the part's own defaults */
+  props?: Record<string, unknown>;
   /** runtime-only: the editor is showing this FAB's menu open. Never written to JSON. */
   [fabOpen]?: boolean;
   /** runtime-only: the menu rises out of the part's top rather than dropping below it. */
@@ -1765,7 +1788,7 @@ export type FabKind = (typeof FAB_KINDS)[number];
 export const isFab = (k: Kind): k is FabKind => (FAB_KINDS as readonly string[]).includes(k);
 /** parts the palette does not list on their own: a FAB's other two shapes are reached from its
  *  own panel, where the three sit side by side. A saved sketch may still hold any of them. */
-export const PALETTE_HIDDEN: Kind[] = ["extendedFab", "fabMenu", "circularProgress"];
+export const PALETTE_HIDDEN: Kind[] = ["extendedFab", "fabMenu", "circularProgress", "component"];
 /** how tall an extended FAB is drawn, and what it is made of at that height */
 export const extendedFabHeight = (it: Item) => clamp(Math.round(it.size2 ?? 56), 56, FAB_H_MAX);
 export function extendedFabMetrics(h: number) {
@@ -1962,7 +1985,7 @@ export function actionsOf(it: Item): { slot: string; action: Action }[] {
 export const RIPPLE_KINDS: Kind[] = ["button", "iconButton", "chip", "fab", "extendedFab", "splitButton"];
 
 /** kinds a user can tap in the preview */
-export const TAPPABLE: Kind[] = ["button", "iconButton", "fab", "extendedFab", "chip", "listItem", "card", "image", "text", "splitButton", "radio", "datePicker", "timePicker"];
+export const TAPPABLE: Kind[] = ["button", "iconButton", "fab", "extendedFab", "chip", "listItem", "card", "image", "text", "splitButton", "radio", "datePicker", "timePicker", "component"];
 
 /** palette roles a user may pick as a background */
 export type ColorToken =
@@ -2370,7 +2393,11 @@ export function defaultTabsFor(kind: Kind): NavTab[] {
   }
 }
 
-export function makeItem(kind: Kind): Item {
+export function makeItem(kind: Kind, slug?: string): Item {
+  if (kind === "component") {
+    const def = partBySlug(slug);
+    return { id: uid(), kind, label: def?.name ?? "", icon: null, variant: "filled", component: slug, props: {} };
+  }
   const s = KIND_SPEC[kind];
   const text = KIND_TEXT[getLang()][kind];
   const it: Item = {
@@ -2418,7 +2445,16 @@ export function makeItem(kind: Kind): Item {
 }
 
 /** Content-sized kinds are measured in the DOM; the rest derive from spec + size. */
-export const MEASURED: Kind[] = ["button", "extendedFab", "chip", "switch", "checkbox", "text", "splitButton", "radio", "fabMenu"];
+export const MEASURED: Kind[] = ["button", "extendedFab", "chip", "switch", "checkbox", "text", "splitButton", "radio", "fabMenu", "component"];
+/** the icon a part is shown with in the palette and the layers: a component has its own */
+export const paletteIconOf = (it: Item) => (it.kind === "component" ? (partBySlug(it.component)?.icon ?? KIND_SPEC.component.paletteIcon) : KIND_SPEC[it.kind].paletteIcon);
+
+/** the color a sketch's scheme is generated from: the custom scheme's seed, or the preset's color */
+export function seedOf(key: string, custom?: Palette | null): string {
+  const base = (key === "custom" && custom) || PALETTES.find((p) => p.key === key) || PALETTES[0];
+  return base.seed ?? base.primary;
+}
+
 /** the part is as wide as its own content makes it, whatever kind it is */
 export const isMeasured = (it: Item) => (MEASURED.includes(it.kind) && !((it.kind === "switch" || it.kind === "button") && it.size)) || menuOpen(it);
 
@@ -2439,6 +2475,11 @@ export function sizeOf(it: Item, widths: Record<string, number>) {
   const s = KIND_SPEC[it.kind];
   const n = it.size ?? s.defSize ?? s.w;
   switch (it.kind) {
+    case "component": {
+      /* a real component is as big as it measures; until it has been measured, the part's own guess */
+      const def = partBySlug(it.component);
+      return { w: widths[it.id] ?? def?.w ?? s.w, h: widths[`${it.id}:h`] ?? def?.h ?? s.h };
+    }
     case "switch":
       return { w: it.size ?? widths[it.id] ?? s.w, h: s.h };
     case "button":

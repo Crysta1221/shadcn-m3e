@@ -344,6 +344,8 @@ export function AiIconBtn({ ai, p }: { ai: AiHooks; p: Palette }) {
 /** the title row: what the part is, and everything that can be done to it behind one button */
 export function PartHeader({
   kind,
+  title,
+  icon,
   p,
   locked,
   onDuplicate,
@@ -351,6 +353,9 @@ export function PartHeader({
   onDelete,
 }: {
   kind: Item["kind"];
+  /** the name and icon to show instead of the kind's: a real component has its own */
+  title?: string;
+  icon?: string;
   p: Palette;
   locked: boolean;
   onDuplicate: () => void;
@@ -361,8 +366,8 @@ export function PartHeader({
   const spec = KIND_SPEC[kind];
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6, padding: "0 2px 0 6px", color: p.onSurfaceVariant }}>
-      <Icon name={spec.paletteIcon} size={20} />
-      <span style={{ fontSize: 14, fontWeight: 600, flex: 1, minWidth: 0, color: p.onSurface }}>{KIND_TEXT[lang][kind]?.noun ?? spec.label}</span>
+      <Icon name={icon ?? spec.paletteIcon} size={20} />
+      <span style={{ fontSize: 14, fontWeight: 600, flex: 1, minWidth: 0, color: p.onSurface }}>{title ?? KIND_TEXT[lang][kind]?.noun ?? spec.label}</span>
       <PartMenu p={p} locked={locked} onDuplicate={onDuplicate} onToggleLock={onToggleLock} onDelete={onDelete} />
     </div>
   );

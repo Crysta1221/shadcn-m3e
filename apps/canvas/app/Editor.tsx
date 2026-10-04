@@ -85,6 +85,7 @@ import {
   NAV_BAR_H,
   Palette,
   paletteOf,
+  seedOf,
   PHONE_H,
   PHONE_MARGIN,
   PHONE_W,
@@ -130,6 +131,8 @@ import { ShareDialog } from "@/components/ShareMenu";
 import { ColorPanel } from "@/components/ColorPanel";
 import { MotionPanel, ShapePanel, TypePanel } from "@/components/ThemePanel";
 import { ThemeContext, ensureFontLoaded, ensureLangFontLoaded } from "@/lib/theme";
+import { PartThemeContext, PartThemeStyle, type PartTheme } from "@/parts/theme";
+import { partBySlug } from "@/parts/registry";
 import { BottomSheet, MobileActionBar, MobileInspector, MobileLang, MobileSettings } from "@/components/Mobile";
 import { ConfirmDialog, IconBtn, Segmented } from "@/components/ui";
 import { Lang, LangContext, SEED_TEXT, getLang, setGlobalLang, t, translateDefaultFrameName, translateDefaultText } from "@/lib/i18n";
@@ -282,7 +285,7 @@ function migrateGroups(groups: Group[], frames: Frame[]): Group[] {
   const oldNavH = KIND_SPEC.bottomNav.h - NAV_BAR_H;
   /* a badge was a part of its own once; it is gone, and a sketch that held one loses it */
   const kept = groups
-    .map((g) => ({ ...g, items: g.items.filter((it) => (it.kind as string) !== "badge") }))
+    .map((g) => ({ ...g, items: g.items.filter((it) => (it.kind as string) !== "badge" && (it.kind !== "component" || !!partBySlug(it.component))) }))
     .filter((g) => g.items.length > 0);
   /* a menu used to be a part of its own; now it is something a FAB is asked to open */
   let out = kept.map((g) => (g.items.some((it) => it.kind === "fabMenu") ? { ...g, items: g.items.map(migrateFabMenu) } : g));
@@ -343,59 +346,44 @@ function copiedIds(copies: Group[], primaryAt: number): string[] {
 /* shown when an edit is refused because the group is locked */
 const lockedGroupMsg = () => t("lockedGroup", getLang());
 
+/** a part that is a shadcn M3E component, with the values the author would have set */
+const partOf = (slug: string, props: Record<string, unknown>, id: string): Item => ({ ...makeItem("component", slug), id, props });
+
+/* The starter sketch: an app bar, two buttons, three list items, a FAB and a navigation bar, all
+ * of them the real components. Parts are as tall as they measure, so the rows sit apart on their own. */
 const seed = (lang: Lang = getLang()): Group[] => {
   const text = SEED_TEXT[lang];
   let n = 0;
   const sid = () => `seed${++n}`;
-  const mk = (k: Kind) => ({ ...makeItem(k), id: sid() });
-  const bar = mk("topAppBar");
-  const a = mk("button");
-  const b = mk("button");
-  a.label = text.favorite;
-  a.icon = "star";
-  b.label = text.share;
-  b.icon = "share";
-  b.variant = "tonal";
-  const rows = [text.inbox, text.starred, text.archive].map((t, i) => {
-    const it = mk("listItem");
-    it.label = t;
-    it.icon = ["inbox", "star", "archive"][i];
-    it.supporting = text.supporting;
-    return it;
-  });
-  const nav = mk("bottomNav");
-  const fab = mk("fab");
+  const content = PHONE_W - PHONE_MARGIN * 2;
+  const bar = partOf("app-bar", { title: text.inbox, width: PHONE_W }, sid());
+  const a = partOf("button", { label: text.favorite, icon: "star", size: "md" }, sid());
+  const b = partOf("button", { label: text.share, icon: "share", variant: "tonal", size: "md" }, sid());
+  const rows = [text.inbox, text.starred, text.archive].map((title, i) =>
+    partOf("item", { title, description: text.supporting, icon: ["inbox", "star", "archive"][i], width: content }, sid()),
+  );
+  const fab = partOf("fab", { icon: "edit" }, sid());
+  const nav = partOf("navigation-bar", { width: PHONE_W }, sid());
+  const navH = partBySlug("navigation-bar")?.h ?? 64;
   return [
     { id: sid(), x: 0, y: 0, axis: "x", items: [bar] },
-    { id: sid(), x: PHONE_MARGIN, y: 96, axis: "x", items: [a, b] },
-    { id: sid(), x: PHONE_MARGIN, y: 184, axis: "y", items: rows },
-    {
-      id: sid(),
-      x: PHONE_W - 56 - PHONE_MARGIN,
-      y: PHONE_H - KIND_SPEC.bottomNav.h - 56 - PHONE_MARGIN,
-      axis: "x",
-      items: [fab],
-    },
-    { id: sid(), x: 0, y: PHONE_H - KIND_SPEC.bottomNav.h, axis: "x", items: [nav] },
+    { id: sid(), x: PHONE_MARGIN, y: 88, axis: "x", items: [a] },
+    { id: sid(), x: PHONE_MARGIN + 150, y: 88, axis: "x", items: [b] },
+    ...rows.map((row, i) => ({ id: sid(), x: PHONE_MARGIN, y: 168 + i * 76, axis: "y" as const, items: [row] })),
+    { id: sid(), x: PHONE_W - 56 - PHONE_MARGIN, y: PHONE_H - navH - 56 - PHONE_MARGIN, axis: "x", items: [fab] },
+    { id: sid(), x: 0, y: PHONE_H - navH, axis: "x", items: [nav] },
   ];
 };
 
 /** The phone version starts with buttons only: that is all it edits. */
 const mobileSeed = (lang: Lang = getLang()): Group[] => {
   const text = SEED_TEXT[lang];
-  const mk = (k: Kind) => makeItem(k);
-  const a = mk("button");
-  const b = mk("button");
-  const c = mk("button");
-  a.label = text.favorite;
-  a.icon = "star";
-  b.label = text.share;
-  b.icon = "share";
-  b.variant = "tonal";
-  c.label = text.start;
-  c.icon = "arrow_forward";
+  const a = partOf("button", { label: text.favorite, icon: "star", size: "md" }, uid());
+  const b = partOf("button", { label: text.share, icon: "share", variant: "tonal", size: "md" }, uid());
+  const c = partOf("button", { label: text.start, icon: "arrow_forward", size: "md" }, uid());
   return [
-    { id: uid(), x: PHONE_MARGIN, y: 120, axis: "x", items: [a, b] },
+    { id: uid(), x: PHONE_MARGIN, y: 120, axis: "x", items: [a] },
+    { id: uid(), x: PHONE_MARGIN + 160, y: 120, axis: "x", items: [b] },
     { id: uid(), x: PHONE_MARGIN, y: 200, axis: "x", items: [c] },
   ];
 };
@@ -536,7 +524,7 @@ export default function Editor({ initialLang, onReady }: { initialLang: Lang; on
   const [layersFrameId, setLayersFrameId] = useState<string | null>(null);
   const [rightW, setRightW] = useState(320);
   const [rightTab, setRightTab] = useState<"edit" | "prompt">("edit");
-  const [favorites, setFavorites] = useState<Kind[]>([]);
+  const [favorites, setFavorites] = useState<string[]>([]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [selectedFrameId, setSelectedFrameId] = useState<string | null>(null);
   const [selectedLinkId, setSelectedLinkId] = useState<string | null>(null);
@@ -563,6 +551,11 @@ export default function Editor({ initialLang, onReady }: { initialLang: Lang; on
   const p = useMemo(() => paletteOf(paletteKey, customPalette, theme), [paletteKey, customPalette, theme]);
   /* corner helpers read the shape scale outside React; keep it current before anything renders */
   setGlobalShape(theme.shape);
+  /* the shadcn M3E components are drawn in the same scheme the code asks for: the sketch's seed color */
+  const partTheme = useMemo<PartTheme>(
+    () => ({ seed: seedOf(paletteKey, customPalette), dark: theme.dark, contrast: theme.contrast, shape: theme.shape === "square" ? 0.35 : theme.shape === "full" ? 1.6 : 1 }),
+    [paletteKey, customPalette, theme.dark, theme.contrast, theme.shape],
+  );
 
   const canvasRef = useRef<HTMLDivElement>(null);
   const measureEls = useRef<Map<string, HTMLElement>>(new Map());
@@ -777,7 +770,7 @@ export default function Editor({ initialLang, onReady }: { initialLang: Lang; on
         if (typeof ui.rightOpen === "boolean") setRightOpen(ui.rightOpen);
         if (ui.leftW) setLeftW(Math.max(RAIL_W + 244, ui.leftW));
         if (ui.rightW) setRightW(ui.rightW);
-        if (Array.isArray(ui.favorites)) setFavorites(ui.favorites);
+        if (Array.isArray(ui.favorites)) setFavorites(ui.favorites.filter((f: unknown): f is string => typeof f === "string" && !!partBySlug(f)));
         if (ui.mode) setMode(ui.mode);
       } else {
         queueMicrotask(() => fitRef.current());
@@ -932,7 +925,10 @@ export default function Editor({ initialLang, onReady }: { initialLang: Lang; on
   useLayoutEffect(() => {
     const next: Record<string, number> = {};
     measureEls.current.forEach((el, id) => {
-      next[id] = Math.ceil(el.getBoundingClientRect().width);
+      const box = el.getBoundingClientRect();
+      next[id] = Math.ceil(box.width);
+      /* a real component has a height of its own to measure too */
+      if (el.dataset.kind === "component") next[`${id}:h`] = Math.ceil(box.height);
     });
     const keys = Object.keys(next);
     const changed =
@@ -1403,12 +1399,12 @@ export default function Editor({ initialLang, onReady }: { initialLang: Lang; on
     return { ...pulled, x: held("x") ? pulled.x : onGrid(pulled.x, origin.x), y: held("y") ? pulled.y : onGrid(pulled.y, origin.y) };
   };
 
-  const onPartPointerDown = (e: React.PointerEvent, kind: Kind) => {
+  const onPartPointerDown = (e: React.PointerEvent, slug: string) => {
     if (e.button !== 0) return;
     e.preventDefault();
     e.stopPropagation();
     flushPending();
-    const item = makeItem(kind);
+    const item = makeItem("component", slug);
     const pt = toWorld(e.clientX, e.clientY);
     const sz = sizeOf(item, widthsRef.current);
     const offX = Math.min(sz.w / 2, 90);
@@ -2715,13 +2711,13 @@ export default function Editor({ initialLang, onReady }: { initialLang: Lang; on
    *  the view is looking, landing as a drop there would. Over a screen it is kept inside it and
    *  nudged down when that spot is already taken; over empty canvas it stays at the centre of
    *  the view, so the new part is always in sight */
-  const addPart = (kind: Kind) => {
+  const addPart = (slug: string) => {
     /* a snapped drop still settling is committed and rendered first, so the undo step taken
      * below sees it and the free-spot search counts it */
     if (pendingRef.current) flushSync(flushPending);
     const r = canvasRect();
     const v = viewRef.current;
-    const item = makeItem(kind);
+    const item = makeItem("component", slug);
     const sz = sizeOf(item, widthsRef.current);
     const cx = ((r?.width ?? 0) / 2 - v.x) / v.z;
     const cy = ((r?.height ?? 0) / 2 - v.y) / v.z;
@@ -3780,6 +3776,8 @@ export default function Editor({ initialLang, onReady }: { initialLang: Lang; on
   return (
     <LangContext.Provider value={lang}>
     <ThemeContext.Provider value={theme}>
+    <PartThemeContext.Provider value={partTheme}>
+      <PartThemeStyle seed={partTheme.seed} contrast={partTheme.contrast} />
       <div
         className={`app-root${revealing ? " m3e-reveal" : ""}${widthDragId || sizeEditId ? " m3-size-now" : ""}`}
         /* the preview sits outside this tree and owns the keyboard while it is up */
@@ -3815,6 +3813,7 @@ export default function Editor({ initialLang, onReady }: { initialLang: Lang; on
             .map((it) => (
               <div
                 key={it.id}
+                data-kind={it.kind}
                 ref={(el) => {
                   if (el) measureEls.current.set(it.id, el);
                   else measureEls.current.delete(it.id);
@@ -4846,6 +4845,7 @@ export default function Editor({ initialLang, onReady }: { initialLang: Lang; on
             </div>
         </div>
       )}
+    </PartThemeContext.Provider>
     </ThemeContext.Provider>
     </LangContext.Provider>
   );

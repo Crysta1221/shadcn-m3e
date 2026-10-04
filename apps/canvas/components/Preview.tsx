@@ -68,6 +68,7 @@ import {
   topBarHeightOf,
 } from "@/lib/tokens";
 import { Icon, M3Node, Ripples, contentColor, menuShutMs, rippleSize } from "./M3Node";
+import { PartView } from "./PartView";
 import type { Ripple } from "./M3Node";
 import { IconBtn } from "./ui";
 import { t, useLang } from "@/lib/i18n";
@@ -188,6 +189,20 @@ function sameShapes(a: Shape[], b: Shape[]): boolean {
 
 /** A part in the preview: a ripple spreads out of the point touched while the pointer is on it,
  *  then it fires its action on release, like a real widget. */
+/** A real shadcn M3E component in the preview: it works. A part the author sent somewhere is
+ *  covered by a button that goes there instead, since a tap on it means that. */
+function LivePart({ item, widths, onTap }: { item: Item; widths: Record<string, number>; onTap?: () => void }) {
+  const size = sizeOf(item, widths);
+  return (
+    <div style={{ position: "relative", display: "flex", flex: "0 0 auto", width: size.w, height: size.h }}>
+      <PartView item={item} live={!onTap} />
+      {onTap && (
+        <button type="button" aria-label={item.label} onClick={onTap} style={{ position: "absolute", inset: 0, border: "none", padding: 0, background: "transparent", cursor: "pointer" }} />
+      )}
+    </div>
+  );
+}
+
 function Tappable({
   item,
   p,
@@ -955,7 +970,9 @@ function Screen({
                   }
                 : undefined;
             const slotActions = it.actions;
-            const node = (
+            const node = it.kind === "component" ? (
+              <LivePart key={it.id} item={shown} widths={widths} onTap={tap} />
+            ) : (
               <Tappable
                 key={it.id}
                 item={shown}

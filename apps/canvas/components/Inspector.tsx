@@ -23,6 +23,7 @@ import {
   variantStyle,
 } from "@/lib/tokens";
 import { ButtonInspector } from "./ButtonInspector";
+import { ComponentInspector } from "./ComponentInspector";
 import { PartInspector } from "./PartInspector";
 import { AlignBox, PartMenu, PlaceFn } from "./PartPanel";
 import { Icon } from "./M3Node";
@@ -436,6 +437,26 @@ export function Inspector({
       >
         <Icon name="ads_click" size={44} />
       </div>
+    );
+  }
+
+  /* a shadcn M3E component is edited through its own props */
+  if (item.kind === "component") {
+    return (
+      <ComponentInspector
+        ai={ai}
+        item={item}
+        palette={p}
+        frame={frame ?? null}
+        onChange={onChange}
+        onDelete={onDelete}
+        onDuplicate={onDuplicate}
+        locked={locked}
+        onToggleLock={onToggleLock}
+        onPlace={onPlace}
+        selfRect={selfRect ?? null}
+        allFrames={allFrames ?? frames}
+      />
     );
   }
 

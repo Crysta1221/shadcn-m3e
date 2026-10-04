@@ -1,10 +1,14 @@
 // bun run check:codegen
 //
-// Generates code for a sketch holding one part of every kind and type-checks it
-// against the real shadcn M3E components in packages/m3e, so a wrong component
-// name, prop or prop value fails here rather than in someone's project.
+// Type-checks the code the canvas prints against the real shadcn M3E components in
+// packages/m3e, so a wrong component name, prop or prop value fails here rather than in
+// someone's project:
+//   1. a sketch holding one of every older part kind (lib/codegen.ts)
+//   2. every part of the registry (parts/): its default props, and one instance for every
+//      choice of every enum prop
+// It also checks that the registry lists the same components as the docs.
 //
-// The generated file is written into the docs app (its tsconfig already maps the
+// The generated files are written into the docs app (its tsconfig already maps the
 // `@/components/m3e/*` imports) and removed again afterwards.
 import { spawnSync } from "node:child_process";
 import { mkdirSync, rmSync, writeFileSync } from "node:fs";
@@ -14,33 +18,76 @@ import { fileURLToPath } from "node:url";
 import { buildCode } from "../lib/codegen";
 import { allKindsDoc } from "../lib/codegen.fixture";
 import { setGlobalLang } from "../lib/i18n";
+import { importLines, namesIn, printNode } from "../parts/print";
+import { PARTS, defaultValues, treeOf } from "../parts/registry";
 
 setGlobalLang("en");
 
 const repo = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
 const docs = join(repo, "apps", "docs");
 const dir = join(docs, "src", "__codegen__");
-const file = join(dir, "screens.tsx");
+const tag = `${process.pid}`;
+const sketchFile = join(dir, `sketch-${tag}.tsx`);
+const partsFile = join(dir, `parts-${tag}.tsx`);
 
-const { code } = buildCode(allKindsDoc(), {});
+/* --- the registry lists what the docs list --------------------------------------------- */
+const { DOCS } = (await import(join(docs, "src", "docs", "registry.ts"))) as { DOCS: { slug: string; name: string; category: string }[] };
+const have = new Map(PARTS.map((d) => [d.slug, d]));
+const problems: string[] = [];
+for (const d of DOCS) {
+  const part = have.get(d.slug);
+  if (!part) problems.push(`missing part: ${d.slug} (${d.name})`);
+  else if (part.name !== d.name || part.category !== d.category) problems.push(`${d.slug}: the docs call it "${d.name}" in ${d.category}, the part "${part.name}" in ${part.category}`);
+}
+for (const p of PARTS) if (!DOCS.some((d) => d.slug === p.slug)) problems.push(`not in the docs: ${p.slug}`);
+
+/* --- every part, with every choice of every enum --------------------------------------- */
+const pascal = (s: string) => s.replace(/(^|[-_ ])([a-z0-9])/g, (_, __, c: string) => c.toUpperCase()).replace(/[^A-Za-z0-9]/g, "");
+const names = new Set<string>();
+const bodies: string[] = [];
+let instances = 0;
+for (const d of PARTS) {
+  const base = defaultValues(d);
+  const variants: [string, Record<string, unknown>][] = [["Default", base]];
+  for (const p of d.props)
+    if (p.kind === "enum")
+      for (const o of p.options) {
+        const value = typeof o === "string" ? o : o.value;
+        if (value !== p.default) variants.push([`${pascal(p.key)}${pascal(value)}`, { ...base, [p.key]: value }]);
+      }
+    else if (p.kind === "bool") variants.push([`${pascal(p.key)}${p.default ? "Off" : "On"}`, { ...base, [p.key]: !p.default }]);
+  for (const [label, values] of variants) {
+    const tree = treeOf(d, values);
+    for (const n of namesIn(tree)) names.add(n);
+    bodies.push(`export function ${pascal(d.slug)}${label}() {\n  return (\n${printNode(tree, 2).join("\n")}\n  )\n}`);
+    instances++;
+  }
+}
+const partsCode = [...importLines(names), "", ...bodies, ""].join("\n");
+
+const { code: sketchCode } = buildCode(allKindsDoc(), {});
 mkdirSync(dir, { recursive: true });
-writeFileSync(file, code);
+writeFileSync(sketchFile, sketchCode);
+writeFileSync(partsFile, partsCode);
+
 let status = 1;
 try {
   const run = spawnSync("bun", ["run", "--cwd", docs, "typecheck"], { encoding: "utf8", shell: true });
   const out = `${run.stdout}${run.stderr}`;
-  const errors = out.split("\n").filter((l) => l.includes("__codegen__"));
-  if (errors.length) {
-    console.log(errors.join("\n"));
-    console.log(`${errors.length} problem(s) in the generated code (${file})`);
-  } else if (run.status !== 0) {
+  const errors = out.split("\n").filter((l) => l.includes(`-${tag}.tsx`));
+  for (const e of errors) problems.push(e.replace(/^.*__codegen__[\\/]/, ""));
+  if (problems.length) {
+    console.log(problems.join("\n"));
+    console.log(`${problems.length} problem(s)`);
+  } else if (run.status !== 0 && !out.includes("__codegen__")) {
     console.log(out);
     console.log("typecheck failed outside the generated code");
   } else {
-    console.log(`generated code type-checks (${code.split("\n").length} lines)`);
+    console.log(`${PARTS.length} parts match the docs; ${instances} part instances and the sketch type-check`);
     status = 0;
   }
 } finally {
-  rmSync(dir, { recursive: true, force: true });
+  rmSync(sketchFile, { force: true });
+  rmSync(partsFile, { force: true });
 }
 process.exit(status);

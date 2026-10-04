@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { motion, useDragControls } from "motion/react";
-import { CONTRASTS, Contrast, FONTS, Item, KIND_SPEC, NavTab, PALETTES, Palette, SHAPES, ShapeScale, Theme, defaultTabsFor, iconSlotsOf, setIconSlot } from "@/lib/tokens";
+import { CONTRASTS, Contrast, FONTS, Item, KIND_SPEC, NavTab, PALETTES, Palette, SHAPES, ShapeScale, Theme, defaultTabsFor, iconSlotsOf, paletteIconOf, setIconSlot } from "@/lib/tokens";
+import { partBySlug } from "@/parts/registry";
+import { ComponentProps } from "./ComponentInspector";
 import { ensureFontLoaded } from "@/lib/theme";
 import { KIND_TEXT, LANGS, Lang, t, useLang } from "@/lib/i18n";
 import { IconPicker } from "./IconPicker";
@@ -94,7 +96,7 @@ function Row({ icon, label, p, children }: { icon: string; label: string; p: Pal
 }
 
 /** The compact phone editor: text, icon, style, state and a one-line note. */
-export function MobileInspector({
+function LegacyMobileInspector({
   item,
   palette: p,
   onChange,
@@ -333,6 +335,30 @@ export function MobileInspector({
       <Row icon="bolt" label={t("behavior", lang)} p={p}>
         <Field value={item.note ?? ""} onChange={(note) => onChange({ note })} placeholder={["button", "fab", "iconButton", "extendedFab"].includes(item.kind) ? t("whenPressed", lang) : t("whatItDoes", lang)} p={p} icon="bolt" height={48} />
       </Row>
+    </div>
+  );
+}
+
+/** the editing sheet of a part on a phone: a real component is edited through its props */
+export function MobileInspector(props: React.ComponentProps<typeof LegacyMobileInspector>) {
+  return props.item.kind === "component" ? <MobileComponentInspector {...props} /> : <LegacyMobileInspector {...props} />;
+}
+
+function MobileComponentInspector({ item, palette: p, onChange, onDelete, onDuplicate, onClose }: React.ComponentProps<typeof LegacyMobileInspector>) {
+  const lang = useLang();
+  const def = partBySlug(item.component);
+  return (
+    <div>
+      <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 12 }}>
+        <div style={{ width: 40, height: 40, borderRadius: 20, background: p.secondaryContainer, color: p.onSecondaryContainer, display: "grid", placeItems: "center" }}>
+          <Icon name={paletteIconOf(item)} size={22} />
+        </div>
+        <span style={{ fontSize: 16, fontWeight: 700, color: p.onSurface, flex: 1 }}>{def?.name ?? item.label}</span>
+        <IconBtn icon="content_copy" p={p} onClick={onDuplicate} title={t("duplicate", lang)} size={44} />
+        <IconBtn icon="delete" p={p} danger onClick={onDelete} title={t("delete", lang)} size={44} />
+        <IconBtn icon="check" p={p} on onClick={onClose} title={t("done", lang)} size={44} />
+      </div>
+      <ComponentProps item={item} palette={p} onChange={onChange} />
     </div>
   );
 }

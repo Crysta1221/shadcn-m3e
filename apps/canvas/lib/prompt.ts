@@ -1,3 +1,5 @@
+import { partBySlug, treeOf } from "../parts/registry";
+import { inlineNode } from "../parts/print";
 import { KIND_TEXT, Lang, SWIPE_TEXT, TRANSITION_TEXT, getLang } from "./i18n";
 import { constrainModalRails } from "./rail";
 import {
@@ -671,7 +673,16 @@ function boxCorners(it: Item, lang: Lang): string {
   return `corner radius ${t}dp top / ${b}dp bottom`;
 }
 
-const itemText = (it: Item, lang: Lang) => (lang === "ja" ? itemJa(it) : lang === "zh" ? itemZh(it) : lang === "ko" ? itemKo(it) : itemEn(it));
+/** a part that is a shadcn M3E component is described by the code it stands for */
+function componentText(it: Item, lang: Lang): string {
+  const def = partBySlug(it.component);
+  if (!def) return it.label || "component";
+  const lead = { ja: `shadcn M3E の ${def.name}`, en: `the shadcn M3E ${def.name}`, zh: `shadcn M3E 的 ${def.name}`, ko: `shadcn M3E의 ${def.name}` }[lang];
+  return `${lead}: \`${inlineNode(treeOf(def, it.props))}\``;
+}
+
+const itemText = (it: Item, lang: Lang) =>
+  it.kind === "component" ? componentText(it, lang) : lang === "ja" ? itemJa(it) : lang === "zh" ? itemZh(it) : lang === "ko" ? itemKo(it) : itemEn(it);
 
 /* ================= connected runs ================= */
 
