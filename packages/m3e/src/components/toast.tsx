@@ -13,6 +13,7 @@ import {
 } from "@/components/m3e/symbols"
 
 import { Button } from "@/components/m3e/button"
+import { usePortalContainer } from "@/components/m3e/portal-container"
 
 const toast = ToastPrimitive.createToastManager()
 
@@ -21,7 +22,14 @@ function ToastProvider({ ...props }: ToastPrimitive.Provider.Props) {
 }
 
 function ToastPortal({ ...props }: ToastPrimitive.Portal.Props) {
-  return <ToastPrimitive.Portal data-slot="toast-portal" {...props} />
+  const container = usePortalContainer()
+  return (
+    <ToastPrimitive.Portal
+      container={container}
+      data-slot="toast-portal"
+      {...props}
+    />
+  )
 }
 
 function ToastViewport({ className, ...props }: ToastPrimitive.Viewport.Props) {

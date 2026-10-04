@@ -15,6 +15,7 @@ import {
   InputGroupButton,
   InputGroupInput,
 } from "@/components/m3e/input-group"
+import { usePortalContainer } from "@/components/m3e/portal-container"
 
 const Combobox = ComboboxPrimitive.Root
 
@@ -100,8 +101,9 @@ function ComboboxContent({
     ComboboxPrimitive.Positioner.Props,
     "side" | "align" | "sideOffset" | "alignOffset" | "anchor"
   >) {
+  const container = usePortalContainer()
   return (
-    <ComboboxPrimitive.Portal>
+    <ComboboxPrimitive.Portal container={container}>
       <ComboboxPrimitive.Positioner
         side={side}
         sideOffset={sideOffset}

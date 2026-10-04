@@ -303,6 +303,7 @@ export const REGISTRY_META: Record<string, RegistryMeta> = {
     "registryDependencies": [
       "button",
       "cn",
+      "portal-container",
       "styles"
     ],
     "icons": [],
@@ -702,6 +703,7 @@ export const REGISTRY_META: Record<string, RegistryMeta> = {
       "cn",
       "icon",
       "input-group",
+      "portal-container",
       "ripple",
       "styles"
     ],
@@ -765,6 +767,7 @@ export const REGISTRY_META: Record<string, RegistryMeta> = {
     "registryDependencies": [
       "cn",
       "icon",
+      "portal-container",
       "ripple",
       "styles"
     ],
@@ -841,6 +844,7 @@ export const REGISTRY_META: Record<string, RegistryMeta> = {
       "button",
       "cn",
       "icon",
+      "portal-container",
       "styles"
     ],
     "icons": [
@@ -864,6 +868,7 @@ export const REGISTRY_META: Record<string, RegistryMeta> = {
     ],
     "registryDependencies": [
       "cn",
+      "portal-container",
       "styles"
     ],
     "icons": [],
@@ -883,6 +888,7 @@ export const REGISTRY_META: Record<string, RegistryMeta> = {
     "registryDependencies": [
       "cn",
       "icon",
+      "portal-container",
       "ripple",
       "styles"
     ],
@@ -1015,6 +1021,7 @@ export const REGISTRY_META: Record<string, RegistryMeta> = {
     ],
     "registryDependencies": [
       "cn",
+      "portal-container",
       "styles"
     ],
     "icons": [],
@@ -1278,6 +1285,7 @@ export const REGISTRY_META: Record<string, RegistryMeta> = {
     "registryDependencies": [
       "cn",
       "icon",
+      "portal-container",
       "styles"
     ],
     "icons": [
@@ -1354,6 +1362,7 @@ export const REGISTRY_META: Record<string, RegistryMeta> = {
     ],
     "registryDependencies": [
       "cn",
+      "portal-container",
       "styles"
     ],
     "icons": [],
@@ -1361,6 +1370,21 @@ export const REGISTRY_META: Record<string, RegistryMeta> = {
       {
         "path": "src/components/m3e/popover.tsx",
         "target": "@components/m3e/popover.tsx"
+      }
+    ]
+  },
+  "portal-container": {
+    "title": "Portal Container",
+    "type": "registry:ui",
+    "dependencies": [],
+    "registryDependencies": [
+      "styles"
+    ],
+    "icons": [],
+    "files": [
+      {
+        "path": "src/components/m3e/portal-container.tsx",
+        "target": "@components/m3e/portal-container.tsx"
       }
     ]
   },
@@ -1519,6 +1543,7 @@ export const REGISTRY_META: Record<string, RegistryMeta> = {
     "registryDependencies": [
       "cn",
       "icon",
+      "portal-container",
       "ripple",
       "styles"
     ],
@@ -1575,6 +1600,7 @@ export const REGISTRY_META: Record<string, RegistryMeta> = {
       "button",
       "cn",
       "icon",
+      "portal-container",
       "styles"
     ],
     "icons": [
@@ -1692,6 +1718,7 @@ export const REGISTRY_META: Record<string, RegistryMeta> = {
       "button",
       "cn",
       "icon",
+      "portal-container",
       "styles"
     ],
     "icons": [
@@ -1877,6 +1904,7 @@ export const REGISTRY_META: Record<string, RegistryMeta> = {
       "button",
       "cn",
       "icon",
+      "portal-container",
       "styles"
     ],
     "icons": [
@@ -1980,6 +2008,7 @@ export const REGISTRY_META: Record<string, RegistryMeta> = {
     ],
     "registryDependencies": [
       "cn",
+      "portal-container",
       "styles"
     ],
     "icons": [],
@@ -2072,6 +2101,7 @@ export const REGISTRY_META: Record<string, RegistryMeta> = {
       "navigation-menu",
       "pagination",
       "popover",
+      "portal-container",
       "progress",
       "questionnaire",
       "radio-group",

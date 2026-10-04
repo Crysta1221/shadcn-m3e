@@ -4,6 +4,7 @@ import { cn } from "@/lib/m3e/cn"
 import { CloseIcon } from "@/components/m3e/symbols"
 
 import { Button } from "@/components/m3e/button"
+import { usePortalContainer } from "@/components/m3e/portal-container"
 
 function Sheet({ ...props }: SheetPrimitive.Root.Props) {
   return <SheetPrimitive.Root data-slot="sheet" {...props} />
@@ -18,7 +19,14 @@ function SheetClose({ ...props }: SheetPrimitive.Close.Props) {
 }
 
 function SheetPortal({ ...props }: SheetPrimitive.Portal.Props) {
-  return <SheetPrimitive.Portal data-slot="sheet-portal" {...props} />
+  const container = usePortalContainer()
+  return (
+    <SheetPrimitive.Portal
+      container={container}
+      data-slot="sheet-portal"
+      {...props}
+    />
+  )
 }
 
 function SheetOverlay({ className, ...props }: SheetPrimitive.Backdrop.Props) {

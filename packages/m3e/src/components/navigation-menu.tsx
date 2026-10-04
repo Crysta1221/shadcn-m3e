@@ -2,6 +2,7 @@ import { NavigationMenu as NavigationMenuPrimitive } from "@base-ui/react/naviga
 import { cva } from "class-variance-authority"
 import { cn } from "@/lib/m3e/cn"
 import { KeyboardArrowDownIcon } from "@/components/m3e/symbols"
+import { usePortalContainer } from "@/components/m3e/portal-container"
 
 function NavigationMenu({
   align = "start",
@@ -103,8 +104,9 @@ function NavigationMenuPositioner({
   alignOffset = 0,
   ...props
 }: NavigationMenuPrimitive.Positioner.Props) {
+  const container = usePortalContainer()
   return (
-    <NavigationMenuPrimitive.Portal>
+    <NavigationMenuPrimitive.Portal container={container}>
       <NavigationMenuPrimitive.Positioner
         side={side}
         sideOffset={sideOffset}

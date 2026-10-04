@@ -6,6 +6,7 @@ import { cn } from "@/lib/m3e/cn"
 import { CloseIcon } from "@/components/m3e/symbols"
 
 import { Button } from "@/components/m3e/button"
+import { usePortalContainer } from "@/components/m3e/portal-container"
 
 function Dialog({ ...props }: DialogPrimitive.Root.Props) {
   return <DialogPrimitive.Root data-slot="dialog" {...props} />
@@ -16,7 +17,14 @@ function DialogTrigger({ ...props }: DialogPrimitive.Trigger.Props) {
 }
 
 function DialogPortal({ ...props }: DialogPrimitive.Portal.Props) {
-  return <DialogPrimitive.Portal data-slot="dialog-portal" {...props} />
+  const container = usePortalContainer()
+  return (
+    <DialogPrimitive.Portal
+      container={container}
+      data-slot="dialog-portal"
+      {...props}
+    />
+  )
 }
 
 function DialogClose({ ...props }: DialogPrimitive.Close.Props) {

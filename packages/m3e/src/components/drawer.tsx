@@ -3,6 +3,7 @@
 import * as React from "react"
 import { Drawer as DrawerPrimitive } from "@base-ui/react/drawer"
 import { cn } from "@/lib/m3e/cn"
+import { usePortalContainer } from "@/components/m3e/portal-container"
 
 type DrawerContextProps = {
   hasSnapPoints: boolean
@@ -56,7 +57,14 @@ function DrawerTrigger({ ...props }: DrawerPrimitive.Trigger.Props) {
 }
 
 function DrawerPortal({ ...props }: DrawerPrimitive.Portal.Props) {
-  return <DrawerPrimitive.Portal data-slot="drawer-portal" {...props} />
+  const container = usePortalContainer()
+  return (
+    <DrawerPrimitive.Portal
+      container={container}
+      data-slot="drawer-portal"
+      {...props}
+    />
+  )
 }
 
 function DrawerClose({ ...props }: DrawerPrimitive.Close.Props) {

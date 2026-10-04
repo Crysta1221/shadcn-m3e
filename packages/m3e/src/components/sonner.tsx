@@ -6,6 +6,7 @@ import { createPortal } from "react-dom"
 import { Button } from "@/components/m3e/button"
 import { CloseIcon } from "@/components/m3e/symbols"
 import { cn } from "@/lib/m3e/cn"
+import { usePortalContainer } from "@/components/m3e/portal-container"
 
 /*
  * M3 snackbar with the sonner-style `toast()` API.
@@ -460,6 +461,7 @@ function Toaster({
   style,
   ...props
 }: ToasterProps) {
+  const container = usePortalContainer()
   const { current } = React.useSyncExternalStore(
     subscribe,
     getSnapshot,
@@ -510,7 +512,7 @@ function Toaster({
         ) : null}
       </div>
     </div>,
-    document.body
+    container ?? document.body
   )
 }
 
