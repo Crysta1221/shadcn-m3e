@@ -81,21 +81,35 @@ export function numberValue(d: NumberDef, values: PropValues | undefined): numbe
   return typeof v === "number" && Number.isFinite(v) ? Math.min(d.max, Math.max(d.min, v)) : d.default;
 }
 
-/** the first single-line text a part shows: what the layers and the prompt call it instead of its type */
+/** text a part carries beside its main words: these name it only when nothing else does */
+const ASIDE = new Set(["description", "subtitle", "supporting", "placeholder", "caption", "message"]);
+
+const short = (text: string) => (text.length > 24 ? `${text.slice(0, 23)}…` : text);
+
+/** the first single-line text a part shows: what the layers and the prompt call it instead of its type.
+ *  The words of a heading or a label come first, then the first row it lists (an item's title, a
+ *  chip group's first chip), and a description or a placeholder only when there is nothing else. */
 export function labelOfPart(def: PartDef | undefined, values: PropValues | undefined): string {
   if (!def) return "";
-  for (const d of def.props) {
-    if (d.kind !== "text" || d.multiline) continue;
+  const textOf = (d: PropDef) => {
+    if (d.kind !== "text" || d.multiline) return "";
     const v = values?.[d.key];
-    const text = (typeof v === "string" ? v : d.default).trim();
-    if (text) return text.length > 24 ? `${text.slice(0, 23)}…` : text;
+    return (typeof v === "string" ? v : d.default).trim();
+  };
+  for (const d of def.props) {
+    const text = ASIDE.has(d.key) ? "" : textOf(d);
+    if (text) return short(text);
   }
-  /* a part with no words of its own is called by the first row it lists (a chip group's first chip) */
+  /* a part with no words of its own is called by the first row it lists */
   for (const d of def.props) {
     if (d.kind !== "list") continue;
     const v = values?.[d.key];
     const first = (Array.isArray(v) && v.length ? (v as { label?: string }[])[0]?.label : d.default[0]?.label)?.trim();
-    if (first) return first.length > 24 ? `${first.slice(0, 23)}…` : first;
+    if (first) return short(first);
+  }
+  for (const d of def.props) {
+    const text = ASIDE.has(d.key) ? textOf(d) : "";
+    if (text) return short(text);
   }
   return "";
 }
