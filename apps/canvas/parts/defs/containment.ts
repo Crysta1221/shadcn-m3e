@@ -34,23 +34,40 @@ export const containment: PartDef[] = [
     category: "Containment",
     icon: "list_alt",
     role: "listLike",
-    appearance: { radius: 16 },
+    /* the paint goes on each row, not the group they share */
+    appearance: { target: "Item", radius: 16 },
     w: 280,
     h: 64,
     props: [
-      { key: "title", label: "Title", kind: "text", default: "Inbox" },
+      { key: "items", label: "Rows", kind: "list", default: [{ label: "Inbox", icon: "inbox" }], min: 1, max: 6, icons: true },
       { key: "description", label: "Supporting text", kind: "text", default: "12 new messages" },
-      { key: "icon", label: "Leading icon", kind: "icon", default: "inbox" },
       { key: "variant", label: "Variant", kind: "enum", default: "default", options: ["default", "outline", "muted", "segmented"] },
+      { key: "size", label: "Size", kind: "enum", default: "default", options: ["default", "sm", "xs"] },
+      { key: "trailing", label: "Trailing", kind: "enum", default: "none", options: ["none", "icon", "switch"] },
+      { key: "trailingIcon", label: "Trailing icon", kind: "icon", default: "chevron_right", when: (p) => p.s("trailing") === "icon" },
+      { key: "checked", label: "Switch on", kind: "bool", default: false, when: (p) => p.s("trailing") === "switch" },
       { key: "width", label: "Width", kind: "number", default: 280, min: 160, max: 520, step: 4, unit: "px" },
     ],
-    tree: (p) =>
-      h(
-        "Item",
-        { variant: p.s("variant") === "default" ? undefined : p.s("variant"), style: { width: Math.round(p.n("width")) } },
-        p.s("icon") && h("ItemMedia", { variant: "icon" }, ic(p.s("icon"))),
-        h("ItemContent", null, h("ItemTitle", null, p.s("title")), p.s("description") && h("ItemDescription", null, p.s("description"))),
-      ),
+    slots: (p) => p.list("items").map((it, i) => ({ key: `tab:${i}`, label: it.label || `${i + 1}`, icon: it.icon })),
+    tree: (p) => {
+      const trailing = p.s("trailing");
+      const end =
+        trailing === "switch"
+          ? h("ItemActions", null, h("Switch", { defaultChecked: p.b("checked") || undefined }))
+          : trailing === "icon" && p.s("trailingIcon")
+            ? h("ItemActions", null, h("Button", { variant: "text", size: "icon", "aria-label": "Open" }, ic(p.s("trailingIcon"))))
+            : null;
+      const row = (it: { label: string; icon?: string }, i: number) =>
+        h(
+          "Item",
+          { variant: p.s("variant") === "default" ? undefined : p.s("variant"), size: p.s("size") === "default" ? undefined : p.s("size"), "data-tap": `tab:${i}` },
+          it.icon && h("ItemMedia", { variant: "icon" }, ic(it.icon)),
+          h("ItemContent", null, h("ItemTitle", null, it.label), p.s("description") && h("ItemDescription", null, p.s("description"))),
+          end,
+        );
+      const rows = p.list("items").map(row);
+      return h("div", { style: { width: Math.round(p.n("width")) } }, rows.length === 1 ? rows[0] : h("ItemGroup", null, ...rows));
+    },
   },
   {
     slug: "dialog",
@@ -69,6 +86,9 @@ export const containment: PartDef[] = [
       { key: "confirm", label: "Confirm action", kind: "text", default: "Accept" },
       { key: "stacked", label: "Stacked actions", kind: "bool", default: false, when: (p) => p.s("style") === "basic" },
       { key: "closeButton", label: "Close button", kind: "bool", default: false, when: (p) => p.s("style") === "basic" },
+      /* the basic style sizes its card too, under its own key — the `axis` mark still
+       *  makes it the prop the width handle pulls */
+      { key: "dialogWidth", label: "Width", kind: "number", default: 412, min: 280, max: 560, step: 4, unit: "px", axis: "width", when: (p) => p.s("style") === "basic" },
       { key: "width", label: "Width", kind: "number", default: 412, min: 280, max: 1280, step: 4, unit: "px", when: (p) => p.s("style") === "fullscreen" },
       { key: "height", label: "Height", kind: "number", default: 640, min: 320, max: 900, step: 4, unit: "px", when: (p) => p.s("style") === "fullscreen" },
     ],
@@ -102,7 +122,7 @@ export const containment: PartDef[] = [
         trigger,
         h(
           "DialogContent",
-          { showCloseButton: p.b("closeButton") ? undefined : false },
+          { showCloseButton: p.b("closeButton") ? undefined : false, style: p.n("dialogWidth") === 412 ? undefined : { width: Math.min(560, Math.round(p.n("dialogWidth"))) } },
           p.s("icon") && h("DialogIcon", null, ic(p.s("icon"))),
           h("DialogHeader", null, h("DialogTitle", null, p.s("title")), p.s("description") && h("DialogDescription", null, p.s("description"))),
           (p.s("dismiss") || p.s("confirm")) &&
@@ -219,13 +239,14 @@ export const containment: PartDef[] = [
       { key: "description", label: "Description", kind: "text", default: "Choose where to send this.", multiline: true },
       { key: "close", label: "Close action", kind: "text", default: "Close" },
       { key: "swipeHandle", label: "Swipe handle", kind: "bool", default: true },
+      { key: "inline", label: "Inline (standard sheet)", kind: "bool", default: false },
     ],
     appearance: { target: "DrawerContent", radius: 28 },
     open: { box: () => ({ w: 412, h: 560 }), trigger: "hide", fit: true },
     tree: (p) =>
       h(
         "Drawer",
-        { showSwipeHandle: p.b("swipeHandle") || undefined },
+        { showSwipeHandle: p.b("swipeHandle") || undefined, modal: p.b("inline") ? false : undefined },
         h("DrawerTrigger", { render: h("Button", { variant: "tonal" }) }, "Open drawer"),
         h(
           "DrawerContent",

@@ -746,6 +746,7 @@ export function EntryList({
   labels = true,
   selectable = false,
   clearable = false,
+  fields,
 }: {
   item: Item;
   onChange: (patch: Partial<Item>) => void;
@@ -758,6 +759,8 @@ export function EntryList({
   selectable?: boolean;
   /** the current one may be unmarked again: a dropdown may start with nothing chosen */
   clearable?: boolean;
+  /** one more choice per row, as a small run under its words (a button group's per-row variant) */
+  fields?: { key: string; label: string; options: { key: string; label: string }[] }[];
 }) {
   const lang = useLang();
   /* the row whose icon is being picked, by the name the row keeps through a reorder */
@@ -809,6 +812,8 @@ export function EntryList({
             open={pick === names[i]}
             onPick={() => setPick(pick === names[i] ? null : names[i])}
             onLabel={(label) => set(i, { label })}
+            fields={fields}
+            onField={(key, v) => set(i, { [key]: v } as Partial<NavTab>)}
             onDragStart={() => setDragging(i)}
             onDrag={(e) => setOverBin(canRemove && onBin(e))}
             onDragEnd={(e) => {
@@ -985,6 +990,8 @@ function EntryRow({
   open,
   onPick,
   onLabel,
+  fields,
+  onField,
   onDragStart,
   onDrag,
   onDragEnd,
@@ -999,6 +1006,8 @@ function EntryRow({
   open: boolean;
   onPick: () => void;
   onLabel: (v: string) => void;
+  fields?: { key: string; label: string; options: { key: string; label: string }[] }[];
+  onField?: (key: string, v: string) => void;
   onDragStart: () => void;
   onDrag: (e: { clientX: number; clientY: number }) => void;
   onDragEnd: (e: { clientX: number; clientY: number }) => void;
@@ -1024,8 +1033,9 @@ function EntryRow({
       onDragStart={onDragStart}
       onDrag={(e) => onDrag(e as PointerEvent)}
       onDragEnd={(e) => onDragEnd(e as PointerEvent)}
-      style={{ listStyle: "none", display: "flex", gap: 6, alignItems: "center", position: "relative" }}
+      style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: 4, position: "relative" }}
     >
+      <div style={{ display: "flex", gap: 6, alignItems: "center", position: "relative", width: "100%" }}>
       {labels ? (
         <div style={{ position: "relative", flex: 1, minWidth: 0 }}>
           {/* the mark that says which entry is the current one stands inside the field, right
@@ -1042,6 +1052,19 @@ function EntryRow({
         </div>
       )}
       {icons && <IconCell icon={tab.icon || null} open={open} title={t("changeIcon", lang)} onClick={onPick} p={p} />}
+      </div>
+      {fields?.map((f) => (
+        <Segmented<string>
+          key={f.key}
+          options={f.options}
+          value={(tab[f.key as keyof NavTab] as string | undefined) || f.options[0]?.key || ""}
+          onChange={(v) => onField?.(f.key, v)}
+          p={p}
+          height={28}
+          tight
+          label={f.label}
+        />
+      ))}
     </Reorder.Item>
   );
 }

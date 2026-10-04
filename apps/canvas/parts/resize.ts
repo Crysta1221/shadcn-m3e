@@ -38,7 +38,7 @@ export function resizeOf(def: PartDef | undefined, values?: PropValues): ResizeA
   if (!def) return null;
   const p = reader(def, values);
   const axisFor = (key: string) => {
-    const d = def.props.find((x) => x.key === key && (!x.when || x.when(p)));
+    const d = def.props.find((x) => (!x.when || x.when(p)) && (x.kind === "number" ? (x.axis ?? x.key) === key : x.key === key));
     return d ? axisOf(d) : undefined;
   };
   const width = axisFor("width");
@@ -89,6 +89,13 @@ export function labelOfPart(def: PartDef | undefined, values: PropValues | undef
     const v = values?.[d.key];
     const text = (typeof v === "string" ? v : d.default).trim();
     if (text) return text.length > 24 ? `${text.slice(0, 23)}…` : text;
+  }
+  /* a part with no words of its own is called by the first row it lists (a chip group's first chip) */
+  for (const d of def.props) {
+    if (d.kind !== "list") continue;
+    const v = values?.[d.key];
+    const first = (Array.isArray(v) && v.length ? (v as { label?: string }[])[0]?.label : d.default[0]?.label)?.trim();
+    if (first) return first.length > 24 ? `${first.slice(0, 23)}…` : first;
   }
   return "";
 }

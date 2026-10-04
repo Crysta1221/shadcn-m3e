@@ -108,29 +108,36 @@ export const content: PartDef[] = [
     w: 320,
     h: 200,
     props: [
-      { key: "count", label: "Slides", kind: "number", default: 5, min: 3, max: 5, step: 1 },
+      { key: "count", label: "Slides", kind: "number", default: 5, min: 2, max: 8, step: 1 },
       { key: "arrows", label: "Arrows", kind: "bool", default: true },
       { key: "orientation", label: "Orientation", kind: "enum", default: "horizontal", options: ["horizontal", "vertical"] },
+      { key: "itemWidth", label: "Slide width (0: full)", kind: "number", default: 0, min: 0, max: 480, step: 4, unit: "px" },
+      { key: "gap", label: "Gap", kind: "number", default: 16, min: 0, max: 32, step: 2, unit: "px" },
+      { key: "image", label: "Image", kind: "image" },
       { key: "width", label: "Width", kind: "number", default: 320, min: 160, max: 640, step: 4, unit: "px" },
       { key: "height", label: "Slide height", kind: "number", default: 200, min: 80, max: 400, step: 4, unit: "px" },
     ],
     slots: (p) => Array.from({ length: px(p.n("count")) }, (_, i) => ({ key: `tab:${i}`, label: `${i + 1}` })),
     tree: (p) => {
       const vertical = p.s("orientation") === "vertical";
+      const gap = px(p.n("gap"));
+      const slideW = px(p.n("itemWidth"));
+      const src = p.s("image");
+      const pad = vertical ? { paddingTop: gap } : { paddingLeft: gap };
       return h(
         "Carousel",
         { orientation: vertical ? "vertical" : undefined, className: "mx-auto", style: { width: px(p.n("width")) } },
         h(
           "CarouselContent",
-          null,
+          { style: vertical ? { marginTop: -gap } : { marginLeft: -gap } },
           ...Array.from({ length: px(p.n("count")) }, (_, i) =>
             h(
               "CarouselItem",
-              null,
+              { style: { ...pad, ...(slideW > 0 ? { flexBasis: slideW } : {}) } },
               h(
                 "div",
-                { className: `flex items-center justify-center rounded-2xl text-headline-large ${TONES[i % 3]}`, style: { height: px(p.n("height")) }, "data-tap": `tab:${i}` },
-                String(i + 1),
+                { className: `flex items-center justify-center overflow-hidden rounded-2xl text-headline-large ${src ? "bg-surface-container-highest" : TONES[i % 3]}`, style: { height: px(p.n("height")) }, "data-tap": `tab:${i}` },
+                src ? h("img", { src, alt: `Slide ${i + 1}`, className: "size-full object-cover" }) : String(i + 1),
               ),
             ),
           ),
@@ -159,6 +166,8 @@ export const content: PartDef[] = [
         min: 3,
         max: 8,
       },
+      { key: "itemWidth", label: "Slide width", kind: "number", default: 186, min: 120, max: 400, step: 4, unit: "px" },
+      { key: "gap", label: "Gap", kind: "number", default: 8, min: 0, max: 24, step: 2, unit: "px" },
       { key: "height", label: "Height", kind: "number", default: 180, min: 100, max: 320, step: 4, unit: "px" },
       { key: "width", label: "Width", kind: "number", default: 420, min: 240, max: 800, step: 4, unit: "px" },
     ],
@@ -166,7 +175,7 @@ export const content: PartDef[] = [
     tree: (p) =>
       h(
         "ExpressiveCarousel",
-        { variant: p.s("variant"), height: px(p.n("height")), style: { width: px(p.n("width")) } },
+        { variant: p.s("variant"), itemWidth: px(p.n("itemWidth")), gap: px(p.n("gap")), height: px(p.n("height")), style: { width: px(p.n("width")) } },
         ...p.list("slides").map((s, i) => h("CarouselSlide", { className: TONES[i % 3], "data-tap": `tab:${i}` }, h("span", { className: "text-title-large" }, s.label))),
       ),
   },

@@ -12,6 +12,7 @@ export const textInputs: PartDef[] = [
     h: 56,
     props: [
       { key: "label", label: "Label", kind: "text", default: "Label" },
+      { key: "value", label: "Value", kind: "text", default: "" },
       { key: "supporting", label: "Supporting text", kind: "text", default: "" },
       { key: "variant", label: "Variant", kind: "enum", default: "outlined", options: ["outlined", "filled"] },
       { key: "leadingIcon", label: "Leading icon", kind: "icon", default: "" },
@@ -26,6 +27,7 @@ export const textInputs: PartDef[] = [
         { style: { width: Math.round(p.n("width")) } },
         h("TextField", {
           label: p.s("label"),
+          defaultValue: p.s("value") || undefined,
           variant: p.s("variant") === "filled" ? "filled" : undefined,
           supportingText: p.s("supporting") || undefined,
           leadingIcon: p.s("leadingIcon") ? ic(p.s("leadingIcon")) : undefined,

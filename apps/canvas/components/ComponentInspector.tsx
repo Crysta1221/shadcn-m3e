@@ -18,8 +18,9 @@ import { Field, ImageRow, NamedSizes, PanelShell, Section, Segmented, Select, Sl
 const choices = (def: Extract<PropDef, { kind: "enum" }>, lang: Lang) => def.options.map((o) => ({ key: typeof o === "string" ? o : o.value, label: choiceLabelOf(o, lang) }));
 
 /** a list prop is edited as the rows the entry list knows: a label, and an icon when the part has them */
-const toRows = (list: ListItem[]): NavTab[] => list.map((x) => ({ icon: x.icon ?? "", label: x.label }));
-const fromRows = (rows: NavTab[], icons: boolean): ListItem[] => rows.map((x) => (icons && x.icon ? { label: x.label, icon: x.icon } : { label: x.label }));
+const toRows = (list: ListItem[]): NavTab[] => list.map((x) => ({ icon: x.icon ?? "", label: x.label, variant: x.variant, width: x.width }));
+const fromRows = (rows: NavTab[], icons: boolean): ListItem[] =>
+  rows.map((x) => ({ label: x.label, ...(icons && x.icon ? { icon: x.icon } : {}), ...(x.variant ? { variant: x.variant } : {}), ...(x.width ? { width: x.width } : {}) }));
 
 function PropRow({ def, value, onChange, item, p, frameW, lang }: { def: PropDef; value: unknown; onChange: (v: unknown) => void; item: Item; p: Palette; frameW: number; lang: Lang }) {
   const labelText = labelOf(def, lang);
@@ -60,7 +61,7 @@ function PropRow({ def, value, onChange, item, p, frameW, lang }: { def: PropDef
       return <Toggle on={value === true} onChange={onChange} p={p} label={labelText} grow />;
     case "number":
       /* a width is set the way every other part's is: the slider, and the widths of the screen under it */
-      if (def.key === "width") {
+      if (def.key === "width" || def.axis === "width") {
         const clamp = (v: number) => Math.min(def.max, Math.max(def.min, v));
         return <WidthRows value={Number(value)} min={def.min} max={def.max} step={def.step ?? 4} frameW={frameW} onChange={(v) => v !== undefined && onChange(clamp(v))} p={p} />;
       }
@@ -96,6 +97,7 @@ function PropRow({ def, value, onChange, item, p, frameW, lang }: { def: PropDef
           <EntryList
             item={rows}
             icons={icons}
+            fields={def.fields?.map((f) => ({ key: f.key, label: labelOf(f, lang), options: f.options.map((o) => ({ key: typeof o === "string" ? o : o.value, label: choiceLabelOf(o, lang) })) }))}
             onChange={(patch) => {
               if (!patch.tabs) return;
               const next = fromRows(patch.tabs, icons);

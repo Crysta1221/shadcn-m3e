@@ -10,7 +10,11 @@ export type Labels = Partial<Record<PartLang, string>>;
 export type Choice = string | { value: string; label: string; labels?: Labels };
 
 /** one row of a `list` prop: a tab, a menu entry, a destination */
-export type ListItem = { label: string; icon?: string };
+export type ListItem = { label: string; icon?: string; variant?: string; width?: string };
+
+/** a per-row choice of a `list` prop: one more column beside the icon and the words
+ *  (a button group's per-row variant, say) */
+export type ListField = { key: "variant" | "width"; label: string; options: Choice[] };
 
 /** One editable prop of a part. The panel builds its controls from these, and `tree` reads the values back. */
 export type PropDef = {
@@ -24,13 +28,24 @@ export type PropDef = {
   | { kind: "text"; default: string; multiline?: boolean; /** the seed in each language; `default` stays English */ defaults?: Labels }
   | { kind: "enum"; default: string; options: Choice[] }
   | { kind: "bool"; default: boolean }
-  | { kind: "number"; default: number; min: number; max: number; step?: number; unit?: string }
+  | {
+      kind: "number";
+      default: number;
+      min: number;
+      max: number;
+      step?: number;
+      unit?: string;
+      /** the measure the canvas handles pull when it is not the prop's name (a basic
+       *  dialog's `dialogWidth` is still a width) */
+      axis?: "width" | "height";
+    }
   /** a Material Symbols name; "" means no icon */
   | { kind: "icon"; default: string }
   /** an image the author picks or links: a `data:` URL or an http(s) address; "" is none */
   | { kind: "image"; default?: string }
-  /** rows the author adds and removes; `icons` gives each row an icon as well */
-  | { kind: "list"; default: ListItem[]; min?: number; max?: number; icons?: boolean }
+  /** rows the author adds and removes; `icons` gives each row an icon as well,
+   *  `fields` one more choice per row */
+  | { kind: "list"; default: ListItem[]; min?: number; max?: number; icons?: boolean; fields?: ListField[] }
 );
 
 /** the prop values of one part, read by key with the part's own defaults filled in */

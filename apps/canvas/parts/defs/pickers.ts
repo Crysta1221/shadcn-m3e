@@ -33,10 +33,12 @@ export const pickers: PartDef[] = [
     props: [
       { key: "variant", label: "Variant", kind: "enum", default: "docked", options: ["docked", "modal"] },
       { key: "label", label: "Label", kind: "text", default: "Birthday" },
-      { key: "placeholder", label: "Placeholder (docked)", kind: "text", default: "mm/dd/yyyy" },
-      { key: "mode", label: "Mode (modal)", kind: "enum", default: "single", options: ["single", "range"] },
-      { key: "title", label: "Title (modal)", kind: "text", default: "Select date" },
-      { key: "disabled", label: "Disabled (docked)", kind: "bool", default: false },
+      { key: "placeholder", label: "Placeholder (docked)", kind: "text", default: "mm/dd/yyyy", when: (p) => p.s("variant") === "docked" },
+      { key: "width", label: "Width (docked)", kind: "number", default: 256, min: 160, max: 480, step: 4, unit: "px", when: (p) => p.s("variant") === "docked" },
+      { key: "mode", label: "Mode (modal)", kind: "enum", default: "single", options: ["single", "range"], when: (p) => p.s("variant") === "modal" },
+      { key: "title", label: "Title (modal)", kind: "text", default: "Select date", when: (p) => p.s("variant") === "modal" },
+      { key: "defaultView", label: "Opens on (modal)", kind: "enum", default: "calendar", options: ["calendar", "input"], when: (p) => p.s("variant") === "modal" },
+      { key: "disabled", label: "Disabled (docked)", kind: "bool", default: false, when: (p) => p.s("variant") === "docked" },
     ],
     // the docked picker is the text field; the modal is drawn closed, as the button that opens it
     // the real popup is a portal with its own state; the canvas draws its field and the calendar it opens
@@ -46,7 +48,7 @@ export const pickers: PartDef[] = [
         { className: "flex w-fit flex-col gap-2" },
         p.s("variant") === "modal"
           ? h("Button", { variant: "tonal" }, ic("calendar_today"), p.s("label") || "Pick a date")
-          : h("DatePicker", { label: p.s("label") || undefined, placeholder: p.s("placeholder") || undefined }),
+          : h("DatePicker", { label: p.s("label") || undefined, placeholder: p.s("placeholder") || undefined, className: `w-[${Math.round(p.n("width"))}px]` }),
         h(
           "div",
           { className: "w-fit rounded-xl bg-surface-container-high p-3 shadow-elevation-3" },
@@ -60,10 +62,11 @@ export const pickers: PartDef[] = [
         return h("DatePickerModal", {
           mode: range ? "range" : undefined,
           title: p.s("title") || undefined,
+          defaultView: p.s("defaultView") === "input" ? "input" : undefined,
           trigger: h("Button", { variant: "tonal" }, ic(range ? "date_range" : "calendar_today"), p.s("label") || "Pick a date"),
         });
       }
-      return h("DatePicker", { label: p.s("label") || undefined, placeholder: p.s("placeholder") || undefined, disabled: p.b("disabled") || undefined });
+      return h("DatePicker", { label: p.s("label") || undefined, placeholder: p.s("placeholder") || undefined, disabled: p.b("disabled") || undefined, className: `w-[${Math.round(p.n("width"))}px]` });
     },
   },
   {
@@ -79,6 +82,7 @@ export const pickers: PartDef[] = [
       { key: "minutes", label: "Minutes", kind: "number", default: 30, min: 0, max: 59, step: 1 },
       { key: "hour24", label: "24-hour clock", kind: "bool", default: false },
       { key: "mode", label: "Mode", kind: "enum", default: "dial", options: ["dial", "input"] },
+      { key: "width", label: "Width", kind: "number", default: 328, min: 296, max: 560, step: 4, unit: "px" },
     ],
     tree: (p) =>
       h("TimePicker", {
@@ -86,6 +90,7 @@ export const pickers: PartDef[] = [
         defaultValue: { hours: Math.round(p.n("hours")), minutes: Math.round(p.n("minutes")) },
         hour24: p.b("hour24") || undefined,
         mode: p.s("mode") === "input" ? "input" : undefined,
+        style: { width: Math.round(p.n("width")) },
       }),
   },
 ];

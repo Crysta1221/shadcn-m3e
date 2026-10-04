@@ -15,13 +15,15 @@ export const selection: PartDef[] = [
       { key: "checked", label: "On", kind: "bool", default: true },
       { key: "size", label: "Size", kind: "enum", default: "default", options: ["default", "sm"] },
       { key: "disabled", label: "Disabled", kind: "bool", default: false },
+      { key: "width", label: "Width", kind: "number", default: 140, min: 52, max: 520, step: 4, unit: "px", when: (p) => !!p.s("label") },
     ],
+    /* a labeled switch spreads its words and its track to the row's ends like the old sketch */
     tree: (p) =>
       h(
         "Label",
-        null,
-        h("Switch", { defaultChecked: p.b("checked") || undefined, size: p.s("size") === "sm" ? "sm" : undefined, disabled: p.b("disabled") || undefined }),
+        { style: p.s("label") && p.n("width") !== 140 ? { width: Math.round(p.n("width")), justifyContent: "space-between" } : undefined },
         p.s("label"),
+        h("Switch", { defaultChecked: p.b("checked") || undefined, size: p.s("size") === "sm" ? "sm" : undefined, disabled: p.b("disabled") || undefined }),
       ),
   },
   {

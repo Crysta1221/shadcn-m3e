@@ -13,12 +13,13 @@ const listSlots = (items: ListItem[]): PartSlot[] => items.map((it, i) => ({ key
 
 /** the search bar or view; `open` draws a view with its results showing */
 function searchTree(p: P, open: boolean): PNode {
+  const leading = p.s("leading") ? ic(p.s("leading")) : undefined;
   const trailing = p.s("trailing") ? ic(p.s("trailing"), { "data-tap": "icon" }) : undefined;
   const style = { width: Math.round(p.n("width")) };
-  if (p.s("kind") === "bar") return h("SearchBar", { placeholder: p.s("placeholder") || undefined, trailing, style });
+  if (p.s("kind") === "bar") return h("SearchBar", { placeholder: p.s("placeholder") || undefined, leading, trailing, style });
   return h(
     "SearchView",
-    { placeholder: p.s("placeholder") || undefined, trailing, size: p.s("size") === "sm" ? "sm" : undefined, style, open: open || undefined },
+    { placeholder: p.s("placeholder") || undefined, leading, trailing, size: p.s("size") === "sm" ? "sm" : undefined, style, open: open || undefined },
     ...p.list("results").map((r, i) => h("SearchResult", { icon: r.icon || undefined, "data-tap": `tab:${i}` }, r.label)),
   );
 }
@@ -36,6 +37,10 @@ export const navigation: PartDef[] = [
       { key: "items", label: "Destinations", kind: "list", default: DESTINATIONS, min: 3, max: 5, icons: true },
       { key: "selected", label: "Selected", kind: "number", default: 0, min: 0, max: 4, step: 1 },
       { key: "tall", label: "Tall", kind: "bool", default: false },
+      { key: "layout", label: "Layout", kind: "enum", default: "vertical", options: [{ value: "vertical", label: "Stacked" }, { value: "horizontal", label: "Side by side" }] },
+      { key: "elevated", label: "Elevated", kind: "bool", default: false },
+      { key: "badge", label: "Badge count (0: none)", kind: "number", default: 0, min: 0, max: 99, step: 1 },
+      { key: "badgeOn", label: "Badge on destination", kind: "number", default: 2, min: 1, max: 5, step: 1, when: (p) => p.n("badge") > 0 },
       { key: "width", label: "Width", kind: "number", default: 412, min: 240, max: 1280, step: 4, unit: "px" },
     ],
     slots: (p) => listSlots(p.list("items")),
@@ -43,8 +48,15 @@ export const navigation: PartDef[] = [
     tree: (p) =>
       h(
         "NavigationBar",
-        { height: p.b("tall") ? "tall" : undefined, style: { width: Math.round(p.n("width")) } },
-        ...p.list("items").map((it, i) => h("NavigationBarItem", { icon: it.icon || "circle", label: it.label, active: i === p.n("selected") || undefined, "data-tap": `tab:${i}` })),
+        {
+          height: p.b("tall") ? "tall" : undefined,
+          layout: p.s("layout") === "horizontal" ? "horizontal" : undefined,
+          elevated: p.b("elevated") || undefined,
+          style: { width: Math.round(p.n("width")) },
+        },
+        ...p.list("items").map((it, i) =>
+          h("NavigationBarItem", { icon: it.icon || "circle", label: it.label, badge: i === p.n("badgeOn") - 1 && p.n("badge") > 0 ? p.n("badge") : undefined, active: i === p.n("selected") || undefined, "data-tap": `tab:${i}` }),
+        ),
       ),
   },
   {
@@ -61,22 +73,29 @@ export const navigation: PartDef[] = [
       { key: "size", label: "Size", kind: "enum", default: "small", options: ["small", "medium", "large"] },
       { key: "leading", label: "Leading icon", kind: "icon", default: "menu" },
       { key: "trailing", label: "Trailing icon", kind: "icon", default: "more_vert" },
+      { key: "trailing2", label: "Second trailing icon", kind: "icon", default: "" },
       { key: "centered", label: "Centered (small)", kind: "bool", default: false },
+      { key: "scrolled", label: "Scrolled", kind: "bool", default: false },
       { key: "width", label: "Width", kind: "number", default: 412, min: 240, max: 1280, step: 4, unit: "px" },
     ],
     slots: (p) => [
       ...(p.s("leading") ? [{ key: "icon", label: "Leading icon", icon: p.s("leading") }] : []),
       ...(p.s("trailing") ? [{ key: "icon2", label: "Trailing icon", icon: p.s("trailing") }] : []),
+      ...(p.s("trailing2") ? [{ key: "icon3", label: "Second trailing icon", icon: p.s("trailing2") }] : []),
     ],
     tree: (p) => {
       const slot = (name: string, aria: string, key: string) => (name ? h("Button", { variant: "text", size: "icon", "aria-label": aria, "data-tap": key }, ic(name)) : undefined);
+      const one = slot(p.s("trailing"), "More", "icon2");
+      const two = slot(p.s("trailing2"), "Action", "icon3");
       return h("AppBar", {
         size: p.s("size"),
         title: p.s("title"),
         subtitle: p.s("subtitle") || undefined,
         leading: slot(p.s("leading"), "Navigate", "icon"),
-        trailing: slot(p.s("trailing"), "More", "icon2"),
+        /* two actions ride as a small row inside the bar's trailing spot */
+        trailing: one && two ? h("span", { className: "flex items-center" }, one, two) : (one ?? two),
         centered: p.b("centered") || undefined,
+        scrolled: p.b("scrolled") || undefined,
         style: { width: Math.round(p.n("width")) },
       });
     },
@@ -90,19 +109,34 @@ export const navigation: PartDef[] = [
     w: 360,
     h: 48,
     props: [
-      { key: "items", label: "Tabs", kind: "list", default: [{ label: "Flights" }, { label: "Trips" }, { label: "Explore" }], min: 2, max: 8 },
+      { key: "items", label: "Tabs", kind: "list", default: [{ label: "Flights" }, { label: "Trips" }, { label: "Explore" }], min: 2, max: 8, icons: true },
       { key: "selected", label: "Selected", kind: "number", default: 0, min: 0, max: 7, step: 1 },
       { key: "variant", label: "Variant", kind: "enum", default: "primary", options: ["primary", "secondary", "segmented"] },
       { key: "width", label: "Width", kind: "number", default: 360, min: 160, max: 1280, step: 4, unit: "px" },
     ],
     slots: (p) => listSlots(p.list("items")),
     selectKey: "selected",
-    tree: (p) =>
-      h(
+    tree: (p) => {
+      const items = p.list("items");
+      /* M3 fixes up to 5 tabs; a longer row scrolls in 96dp steps instead of sharing the width */
+      const scroll = items.length > 5 && items.length * 96 > p.n("width");
+      return h(
         "Tabs",
-        { defaultValue: `tab-${Math.min(p.n("selected"), p.list("items").length - 1) + 1}`, style: { width: Math.round(p.n("width")) } },
-        h("TabsList", { variant: p.s("variant") }, ...p.list("items").map((it, i) => h("TabsTrigger", { value: `tab-${i + 1}`, "data-tap": `tab:${i}` }, it.label))),
-      ),
+        { defaultValue: `tab-${Math.min(p.n("selected"), items.length - 1) + 1}`, style: { width: Math.round(p.n("width")) } },
+        h(
+          "TabsList",
+          { variant: p.s("variant"), className: scroll ? "overflow-x-auto scrollbar-none" : undefined },
+          ...items.map((it, i) =>
+            h(
+              "TabsTrigger",
+              { value: `tab-${i + 1}`, className: scroll ? "w-24 flex-none" : undefined, "data-tap": `tab:${i}` },
+              it.icon && ic(it.icon, { "data-icon": "inline-start" }),
+              it.label,
+            ),
+          ),
+        ),
+      );
+    },
   },
   {
     slug: "navigation-rail",
@@ -117,6 +151,8 @@ export const navigation: PartDef[] = [
       { key: "selected", label: "Selected", kind: "number", default: 0, min: 0, max: 6, step: 1 },
       { key: "expanded", label: "Expanded", kind: "bool", default: false },
       { key: "narrow", label: "Narrow (80dp)", kind: "bool", default: false },
+      { key: "modal", label: "Modal (expanded over content)", kind: "bool", default: false },
+      { key: "compact", label: "Compact items", kind: "bool", default: false },
       { key: "menu", label: "Menu button", kind: "bool", default: true },
       { key: "fab", label: "Compose button", kind: "bool", default: true },
       { key: "height", label: "Height", kind: "number", default: 400, min: 240, max: 800, step: 8, unit: "px" },
@@ -132,7 +168,7 @@ export const navigation: PartDef[] = [
       const header = menu || fab ? h("NavigationRailHeader", null, menu, fab) : null;
       return h(
         "NavigationRail",
-        { expanded: expanded || undefined, narrow: (!expanded && p.b("narrow")) || undefined, style: { height: Math.round(p.n("height")) } },
+        { expanded: expanded || undefined, narrow: (!expanded && p.b("narrow")) || undefined, modal: (expanded && p.b("modal")) || undefined, compact: p.b("compact") || undefined, style: { height: Math.round(p.n("height")) } },
         header,
         ...p.list("items").map((it, i) => h("NavigationRailItem", { icon: it.icon || "circle", label: it.label, active: i === p.n("selected") || undefined, "data-tap": `tab:${i}` })),
       );
@@ -361,6 +397,7 @@ export const navigation: PartDef[] = [
     props: [
       { key: "kind", label: "Kind", kind: "enum", default: "view", options: [{ value: "view", label: "Search view" }, { value: "bar", label: "Search bar" }] },
       { key: "placeholder", label: "Placeholder", kind: "text", default: "Search songs" },
+      { key: "leading", label: "Leading icon", kind: "icon", default: "search" },
       { key: "trailing", label: "Trailing icon", kind: "icon", default: "mic" },
       { key: "size", label: "Size (view)", kind: "enum", default: "default", options: ["default", "sm"] },
       {

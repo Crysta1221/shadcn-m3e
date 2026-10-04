@@ -31,6 +31,11 @@ function buttonTree(p: P) {
   const label = p.s("label");
   const icon = p.s("icon");
   const iconOnly = !label && !!icon;
+  /* a labeled button takes a set width like any other part; an icon-only one takes the
+   *  button's own narrow/wide instead of a number of pixels */
+  const width = !iconOnly
+    ? { style: p.n("width") === 96 ? undefined : { width: Math.round(p.n("width")) } }
+    : { width: p.s("iconWidth") === "default" ? undefined : p.s("iconWidth") };
   if (p.b("toggle")) {
     const onIcon = p.s("onIcon");
     const onLabel = p.s("onLabel");
@@ -45,6 +50,7 @@ function buttonTree(p: P) {
         selectedIcon: onIcon ? ic(onIcon, { fill: "auto" }) : onLabel && icon ? ic(icon, { fill: "auto" }) : undefined,
         selectedLabel: onLabel || (onIcon && label ? label : undefined),
         "aria-label": iconOnly && !onIcon ? icon : undefined,
+        ...width,
       },
       icon && ic(icon, { fill: "auto" }),
       label,
@@ -58,6 +64,7 @@ function buttonTree(p: P) {
       shape: p.s("shape") === "square" ? "square" : undefined,
       disabled: p.b("disabled") || undefined,
       "aria-label": iconOnly ? icon : undefined,
+      ...width,
     },
     icon && ic(icon),
     label,
@@ -78,6 +85,8 @@ export const actions: PartDef[] = [
       { key: "variant", label: "Variant", kind: "enum", default: "filled", options: VARIANTS },
       { key: "size", label: "Size", kind: "enum", default: "sm", options: SIZES },
       { key: "shape", label: "Shape", kind: "enum", default: "round", options: ["round", "square"] },
+      { key: "width", label: "Width", kind: "number", default: 96, min: 48, max: 640, step: 4, unit: "px", when: (p) => !!p.s("label") },
+      { key: "iconWidth", label: "Width", kind: "enum", default: "default", options: ["default", "narrow", "wide"], when: (p) => !p.s("label") && !!p.s("icon") },
       { key: "disabled", label: "Disabled", kind: "bool", default: false },
       ...TOGGLE_PROPS,
     ],
@@ -102,13 +111,15 @@ export const actions: PartDef[] = [
         default: "primary-container",
         options: ["primary-container", "secondary-container", "tertiary-container", "primary", "secondary", "tertiary", "surface"],
       },
+      { key: "lowered", label: "Lowered", kind: "bool", default: false },
+      { key: "collapsed", label: "Collapsed (extended)", kind: "bool", default: false, when: (p) => !!p.s("label") },
       ...TOGGLE_PROPS,
     ],
     tree: (p) => {
       const color = p.s("color");
       const size = p.s("size");
       const label = p.s("label");
-      const common = { color: color === "primary-container" ? undefined : color, size: size === "default" ? undefined : size };
+      const common = { color: color === "primary-container" ? undefined : color, size: size === "default" ? undefined : size, lowered: p.b("lowered") || undefined };
       /* a FAB that flips on tap keeps its look but swaps what it shows (add ↔ close,
        * play ↔ pause); the on-state fills its icon even when it stays the same */
       const toggle = p.b("toggle")
@@ -117,7 +128,7 @@ export const actions: PartDef[] = [
             selectedLabel: p.s("onLabel") || label || undefined,
           }
         : undefined;
-      if (label) return h("ExtendedFab", { ...common, icon: p.s("icon") ? ic(p.s("icon")) : undefined, ...toggle }, label);
+      if (label) return h("ExtendedFab", { ...common, collapsed: p.b("collapsed") || undefined, icon: p.s("icon") ? ic(p.s("icon")) : undefined, ...toggle }, label);
       return h("Fab", { ...common, "aria-label": p.s("icon") || "Action", selectedIcon: toggle?.selectedIcon }, ic(p.s("icon") || "add"));
     },
   },
@@ -130,17 +141,25 @@ export const actions: PartDef[] = [
     w: 80,
     h: 32,
     props: [
-      { key: "label", label: "Label", kind: "text", default: "Chip" },
-      { key: "icon", label: "Icon", kind: "icon", default: "" },
-      { key: "kind", label: "Kind", kind: "enum", default: "assist", options: ["assist", "filter"] },
-      { key: "selected", label: "Selected (filter)", kind: "bool", default: false },
+      { key: "items", label: "Chips", kind: "list", default: [{ label: "Chip" }], min: 1, max: 8, icons: true },
+      { key: "kind", label: "Kind", kind: "enum", default: "assist", options: ["assist", "filter", "input"] },
+      { key: "selected", label: "Selected (filter, -1: none)", kind: "number", default: 0, min: -1, max: 7, step: 1, when: (p) => p.s("kind") === "filter" },
       { key: "variant", label: "Variant", kind: "enum", default: "flat", options: ["flat", "elevated"] },
     ],
+    slots: (p) => listSlots(p.list("items")),
     tree: (p) => {
       const variant = p.s("variant") === "elevated" ? "elevated" : undefined;
-      const icon = p.s("icon") || undefined;
-      if (p.s("kind") === "filter") return h("FilterChip", { variant, icon, defaultPressed: p.b("selected") || undefined }, p.s("label"));
-      return h("Chip", { variant, icon }, p.s("label"));
+      const items = p.list("items");
+      /* an input chip's remove button does nothing in the sketch; the code it prints
+       *  calls the handler it is given a name for */
+      const chip = (it: { label: string; icon?: string }, i: number) => {
+        const props = { variant, icon: it.icon || undefined, "data-tap": `tab:${i}` };
+        if (p.s("kind") === "filter") return h("FilterChip", { ...props, defaultPressed: i === p.n("selected") || undefined }, it.label);
+        if (p.s("kind") === "input") return h("InputChip", { ...props, onRemove: raw("() => {}") }, it.label);
+        return h("Chip", props, it.label);
+      };
+      if (items.length === 1) return chip(items[0], 0);
+      return h("div", { className: "flex flex-wrap gap-2" }, ...items.map(chip));
     },
   },
   {
@@ -230,6 +249,11 @@ export const actions: PartDef[] = [
         min: 2,
         max: 5,
         icons: true,
+        /* a button in a row may take its own look and width over the group's */
+        fields: [
+          { key: "variant", label: "Variant", options: [{ value: "", label: "Group" }, ...VARIANTS] },
+          { key: "width", label: "Width", options: [{ value: "", label: "Group" }, "narrow", "wide"] },
+        ],
       },
       { key: "variant", label: "Group", kind: "enum", default: "connected", options: ["connected", "standard"] },
       { key: "orientation", label: "Orientation", kind: "enum", default: "horizontal", options: ["horizontal", "vertical"] },
@@ -245,7 +269,13 @@ export const actions: PartDef[] = [
           const iconOnly = !it.label && !!it.icon;
           return h(
             "Button",
-            { variant: p.s("buttonVariant"), size: iconOnly ? `icon-${p.s("size")}` : p.s("size"), "aria-label": iconOnly ? it.icon : undefined, "data-tap": `tab:${i}` },
+            {
+              variant: it.variant || p.s("buttonVariant"),
+              width: it.width || undefined,
+              size: iconOnly ? `icon-${p.s("size")}` : p.s("size"),
+              "aria-label": iconOnly ? it.icon : undefined,
+              "data-tap": `tab:${i}`,
+            },
             !!it.icon && ic(it.icon),
             it.label,
           );
@@ -265,7 +295,7 @@ export const actions: PartDef[] = [
       { key: "variant", label: "Variant", kind: "enum", default: "filled", options: VARIANTS },
       { key: "size", label: "Size", kind: "enum", default: "sm", options: SIZES },
       { key: "menu", label: "Menu", kind: "bool", default: true },
-      { key: "menuItems", label: "Menu items", kind: "list", default: [{ label: "Duplicate" }, { label: "Share" }, { label: "Delete" }], min: 1, max: 6 },
+      { key: "menuItems", label: "Menu items", kind: "list", default: [{ label: "Duplicate", icon: "content_copy" }, { label: "Share", icon: "share" }, { label: "Delete", icon: "delete" }], min: 1, max: 6, icons: true },
     ],
     open: { box: (p) => ({ w: 220, h: 40 + 8 + p.list("menuItems").length * 44 + 16, ax: "end" }) },
     slots: (p) => listSlots(p.list("menuItems")),
@@ -288,7 +318,7 @@ export const actions: PartDef[] = [
         "DropdownMenu",
         null,
         split,
-        h("DropdownMenuContent", { align: "end", className: "w-48" }, ...items.map((it, i) => h("DropdownMenuItem", { "data-tap": `tab:${i}` }, it.label))),
+        h("DropdownMenuContent", { align: "end", className: "w-48" }, ...items.map((it, i) => h("DropdownMenuItem", { "data-tap": `tab:${i}` }, !!it.icon && ic(it.icon), it.label))),
       );
     },
   },
