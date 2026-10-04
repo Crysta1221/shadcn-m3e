@@ -118,7 +118,10 @@ export const selection: PartDef[] = [
     props: [
       { key: "items", label: "Options", kind: "list", default: [{ label: "Apple" }, { label: "Banana" }, { label: "Cherry" }], min: 1, max: 8 },
       { key: "selected", label: "Selected (-1: none)", kind: "number", default: 0, min: -1, max: 7, step: 1 },
+      { key: "variant", label: "Variant", kind: "enum", default: "outlined", options: ["outlined", "filled"] },
+      { key: "label", label: "Label", kind: "text", default: "" },
       { key: "placeholder", label: "Placeholder", kind: "text", default: "Select a fruit" },
+      { key: "supporting", label: "Supporting text", kind: "text", default: "" },
       { key: "size", label: "Size", kind: "enum", default: "default", options: ["default", "sm"] },
       { key: "disabled", label: "Disabled", kind: "bool", default: false },
       { key: "width", label: "Width", kind: "number", default: 224, min: 120, max: 520, step: 4, unit: "px" },
@@ -132,7 +135,13 @@ export const selection: PartDef[] = [
         { items: items.map((it) => ({ value: it.label, label: it.label })), defaultValue: selected?.label, disabled: p.b("disabled") || undefined },
         h(
           "SelectTrigger",
-          { size: p.s("size") === "sm" ? "sm" : undefined, style: { width: Math.round(p.n("width")) } },
+          {
+            size: p.s("size") === "sm" ? "sm" : undefined,
+            variant: p.s("variant") === "filled" ? "filled" : undefined,
+            label: p.s("label") || undefined,
+            supporting: p.s("supporting") || undefined,
+            style: { width: Math.round(p.n("width")) },
+          },
           h("SelectValue", { placeholder: p.s("placeholder") || undefined }),
         ),
         h("SelectContent", null, ...items.map((it) => h("SelectItem", { value: it.label }, it.label))),

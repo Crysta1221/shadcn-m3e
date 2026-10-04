@@ -18,6 +18,11 @@ const AMPLITUDE = 1.6
 const WAVELENGTH = 15
 const WAVY_INDETERMINATE_DURATION = 1575
 
+/* A ring can only be so thick before its gap swallows it: a sixth of the
+ * diameter, never under the 4dp standard and never over 16. */
+const maxRingThickness = (diameter: number) =>
+  Math.max(STROKE, Math.min(16, Math.floor(diameter / 6)))
+
 type Geometry = { diameter: number; stroke: number; amplitude: number }
 
 function circle(g: Geometry, padding = g.amplitude) {
@@ -95,6 +100,8 @@ type CircularProgressProps = Omit<React.ComponentProps<"div">, "children"> & {
   variant?: "flat" | "wavy"
   /** diameter in px (40 flat / 48 wavy) */
   size?: number
+  /** stroke width in px, capped at a sixth of the diameter */
+  thickness?: number
   children?: React.ReactNode
 }
 
@@ -104,16 +111,21 @@ function CircularProgress({
   max = 100,
   variant = "flat",
   size,
+  thickness,
   children,
   style,
   ...props
 }: CircularProgressProps) {
   const wavy = variant === "wavy"
   const diameter = size ?? (wavy ? 48 : 40)
+  const stroke = Math.min(
+    Math.max(1, Math.round(thickness ?? STROKE)),
+    maxRingThickness(diameter)
+  )
   const g: Geometry = {
     diameter,
-    stroke: STROKE,
-    amplitude: wavy ? AMPLITUDE : 0,
+    stroke,
+    amplitude: wavy ? AMPLITUDE * (stroke / STROKE) : 0,
   }
   const indeterminate = value == null
   const maskId = React.useId()
@@ -146,7 +158,7 @@ function CircularProgress({
     : (Math.min(max, Math.max(0, value)) / max) * 360
   if (degrees > 0) degrees = Math.max(minDegrees, degrees)
   const amplitude =
-    !wavy || degrees <= minDegrees * 1.5 || degrees === 360 ? 0 : AMPLITUDE
+    !wavy || degrees <= minDegrees * 1.5 || degrees === 360 ? 0 : g.amplitude
   const activeArc = arc(g, { end: degrees, gap: degrees < 360 ? g.stroke : 0 })
   const trackArc = arc(g, { start: degrees, gap: degrees > 0 ? g.stroke : 0 })
   const vb = viewBox(g)
@@ -161,7 +173,7 @@ function CircularProgress({
           d={arc(g, { start, end })}
           fill="none"
           stroke="currentColor"
-          strokeWidth={STROKE}
+          strokeWidth={g.stroke}
           strokeLinecap="round"
         />
       </svg>
@@ -170,10 +182,10 @@ function CircularProgress({
       <div className="m3-cp-rotate absolute inset-0">
         <div className="m3-cp-spinner absolute inset-0">
           <div className="m3-cp-left absolute inset-y-0 right-1/2 left-0 overflow-hidden">
-            {half(-45, 90 + STROKE)}
+            {half(-45, 90 + g.stroke)}
           </div>
           <div className="m3-cp-right absolute inset-y-0 right-0 left-1/2 overflow-hidden">
-            {half(-STROKE, 135)}
+            {half(-g.stroke, 135)}
           </div>
         </div>
       </div>
@@ -185,21 +197,21 @@ function CircularProgress({
           ref={activeRef}
           fill="none"
           stroke="currentColor"
-          strokeWidth={STROKE}
+          strokeWidth={g.stroke}
           strokeLinecap="round"
           strokeLinejoin="round"
         />
         <path
           ref={trackRef}
           fill="none"
-          strokeWidth={STROKE}
+          strokeWidth={g.stroke}
           strokeLinecap="round"
           className="stroke-secondary-container"
         />
       </svg>
     )
   } else {
-    const pad = amplitude > 0 ? amplitude + STROKE / 2 : STROKE
+    const pad = amplitude > 0 ? amplitude + g.stroke / 2 : g.stroke
     body = (
       <svg viewBox={vb} className="absolute inset-0 size-full">
         {degrees > 0 && amplitude > 0 && (
@@ -208,7 +220,7 @@ function CircularProgress({
               <path
                 d={activeArc}
                 stroke="white"
-                strokeWidth={STROKE + pad}
+                strokeWidth={g.stroke + pad}
                 fill="none"
                 strokeLinecap="round"
               />
@@ -222,7 +234,7 @@ function CircularProgress({
                 d={wavyArc(g, { amplitude })}
                 fill="none"
                 stroke="currentColor"
-                strokeWidth={STROKE}
+                strokeWidth={g.stroke}
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 className="m3-cp-wave"
@@ -234,7 +246,7 @@ function CircularProgress({
               d={activeArc}
               fill="none"
               stroke="currentColor"
-              strokeWidth={STROKE}
+              strokeWidth={g.stroke}
               strokeLinecap="round"
             />
           ))}
@@ -242,7 +254,7 @@ function CircularProgress({
           <path
             d={trackArc}
             fill="none"
-            strokeWidth={STROKE}
+            strokeWidth={g.stroke}
             strokeLinecap="round"
             className="stroke-secondary-container"
           />

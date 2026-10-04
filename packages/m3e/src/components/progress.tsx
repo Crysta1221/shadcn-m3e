@@ -19,6 +19,11 @@ const INDETERMINATE_WAVELENGTH = 20
 
 type Variant = "flat" | "wavy"
 
+/* Material's bars are 4dp; the track takes any thickness and the wavy
+ * amplitude scales with it. */
+const trackThickness = (thickness?: number) =>
+  Math.max(1, Math.round(thickness ?? THICKNESS))
+
 /** a sine wave of quadratic segments, starting at x = 0 */
 export function wavePath(
   width: number,
@@ -58,8 +63,9 @@ function Progress({
   value,
   max = 100,
   variant = "flat",
+  thickness,
   ...props
-}: ProgressPrimitive.Root.Props & { variant?: Variant }) {
+}: ProgressPrimitive.Root.Props & { variant?: Variant; thickness?: number }) {
   return (
     <ProgressPrimitive.Root
       value={value}
@@ -70,7 +76,12 @@ function Progress({
       {...props}
     >
       {children}
-      <ProgressTrack variant={variant} value={value} max={max} />
+      <ProgressTrack
+        variant={variant}
+        value={value}
+        max={max}
+        thickness={thickness}
+      />
     </ProgressPrimitive.Root>
   )
 }
@@ -80,16 +91,21 @@ function ProgressTrack({
   variant = "flat",
   value,
   max = 100,
+  thickness,
   ...props
 }: ProgressPrimitive.Track.Props & {
   variant?: Variant
   value?: number | null
   max?: number
+  /** track height in px (the wave scales with it) */
+  thickness?: number
 }) {
   const ref = React.useRef<HTMLDivElement>(null)
   const width = useWidth(ref)
   const wavy = variant === "wavy"
-  const height = wavy ? THICKNESS + AMPLITUDE * 2 : THICKNESS
+  const t = trackThickness(thickness)
+  const amplitude = AMPLITUDE * (t / THICKNESS)
+  const height = wavy ? t + amplitude * 2 : t
   const indeterminate = value == null
   const fraction = indeterminate ? 0 : Math.min(1, Math.max(0, value / max))
   const maskId = React.useId()
@@ -120,22 +136,17 @@ function ProgressTrack({
               </mask>
             </defs>
             <rect
-              y={(height - THICKNESS) / 2}
+              y={(height - t) / 2}
               width={width}
-              height={THICKNESS}
-              rx={THICKNESS / 2}
+              height={t}
+              rx={t / 2}
               className="fill-secondary-container"
             />
             <path
-              d={wavePath(
-                width,
-                INDETERMINATE_WAVELENGTH,
-                AMPLITUDE,
-                THICKNESS
-              )}
+              d={wavePath(width, INDETERMINATE_WAVELENGTH, amplitude, t)}
               mask={`url(#${CSS.escape(maskId)})`}
               className="fill-none stroke-primary"
-              strokeWidth={THICKNESS}
+              strokeWidth={t}
               strokeLinecap="round"
             />
           </svg>
@@ -163,19 +174,19 @@ function ProgressTrack({
                     d={wavePath(
                       fraction * width + WAVELENGTH * 2,
                       WAVELENGTH,
-                      AMPLITUDE,
-                      THICKNESS
+                      amplitude,
+                      t
                     )}
                     className="fill-none stroke-primary"
-                    strokeWidth={THICKNESS}
+                    strokeWidth={t}
                     strokeLinecap="round"
-                    transform={`translate(${THICKNESS / 2} 0)`}
+                    transform={`translate(${t / 2} 0)`}
                   />
                 </svg>
               ) : (
                 <div
                   className="absolute inset-x-0 top-1/2 -translate-y-1/2 rounded-full bg-primary"
-                  style={{ height: THICKNESS }}
+                  style={{ height: t }}
                 />
               )}
             </div>
@@ -185,12 +196,12 @@ function ProgressTrack({
               {fraction > 0 && <div className="shrink basis-1" />}
               <div
                 className="min-w-0 flex-1 rounded-full bg-secondary-container"
-                style={{ height: THICKNESS }}
+                style={{ height: t }}
               />
               <div className="shrink basis-1" />
               <div
                 className="shrink-0 rounded-full bg-primary"
-                style={{ width: THICKNESS, height: THICKNESS }}
+                style={{ width: t, height: t }}
               />
             </>
           )}

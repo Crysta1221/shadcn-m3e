@@ -8,6 +8,7 @@ import { cn } from "@/lib/m3e/cn"
  *                  what is next; items resize continuously while scrolling
  *   hero         — one large item with small items beside it
  *   uncontained  — fixed-width items that scroll to the edge
+ *   full-screen  — one item fills the width and the rest snap past it
  *
  * Items are 28dp-cornered (extra large) with 8dp between; small items are
  * 40–56dp wide. Multi-browse and hero draw their items from the scroll
@@ -16,7 +17,7 @@ import { cn } from "@/lib/m3e/cn"
  * keeps its large size and is masked by the shrinking item, like Compose's
  * carousel.
  */
-type Variant = "multi-browse" | "hero" | "uncontained"
+type Variant = "multi-browse" | "hero" | "uncontained" | "full-screen"
 
 const SMALL = 56
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t
@@ -120,7 +121,10 @@ function ExpressiveCarousel({
     layout(scrollerRef.current?.scrollLeft ?? 0)
   }, [layout])
 
-  if (variant === "uncontained") {
+  if (variant === "uncontained" || variant === "full-screen") {
+    // full-screen items take the whole track width; before the first
+    // measurement 100% already puts them there
+    const slide = variant === "full-screen" ? (width ?? 0) || "100%" : itemWidth
     return (
       <div
         role="region"
@@ -143,7 +147,7 @@ function ExpressiveCarousel({
               key={i}
               data-slot="carousel-item"
               className="shrink-0 snap-start overflow-hidden rounded-2xl"
-              style={{ width: itemWidth }}
+              style={{ width: slide }}
             >
               {child}
             </div>

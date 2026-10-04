@@ -145,15 +145,17 @@ export const actions: PartDef[] = [
       { key: "kind", label: "Kind", kind: "enum", default: "assist", options: ["assist", "filter", "input"] },
       { key: "selected", label: "Selected (filter, -1: none)", kind: "number", default: 0, min: -1, max: 7, step: 1, when: (p) => p.s("kind") === "filter" },
       { key: "variant", label: "Variant", kind: "enum", default: "flat", options: ["flat", "elevated"] },
+      { key: "size", label: "Size", kind: "enum", default: "default", options: [{ value: "default", label: "32" }, { value: "md", label: "40" }, { value: "lg", label: "56" }] },
     ],
     slots: (p) => listSlots(p.list("items")),
     tree: (p) => {
       const variant = p.s("variant") === "elevated" ? "elevated" : undefined;
+      const size = p.s("size") === "default" ? undefined : p.s("size");
       const items = p.list("items");
       /* an input chip's remove button does nothing in the sketch; the code it prints
        *  calls the handler it is given a name for */
       const chip = (it: { label: string; icon?: string }, i: number) => {
-        const props = { variant, icon: it.icon || undefined, "data-tap": `tab:${i}` };
+        const props = { variant, size, icon: it.icon || undefined, "data-tap": `tab:${i}` };
         if (p.s("kind") === "filter") return h("FilterChip", { ...props, defaultPressed: i === p.n("selected") || undefined }, it.label);
         if (p.s("kind") === "input") return h("InputChip", { ...props, onRemove: raw("() => {}") }, it.label);
         return h("Chip", props, it.label);

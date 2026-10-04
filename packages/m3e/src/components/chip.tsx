@@ -9,7 +9,8 @@ import { cn } from "@/lib/m3e/cn"
 
 /*
  * M3 chips (Compose AssistChip / FilterChip / InputChip / SuggestionChip
- * tokens): 32dp, small (8dp) corners, label large, 18dp icons.
+ * tokens): 32dp, small (8dp) corners, label large, 18dp icons; the
+ * expressive 40dp and 56dp sizes widen the padding and icon with them.
  *   flat:     1dp outline-variant outline
  *   elevated: surface-container-low, elevation 1
  *   selected: secondary-container, no outline
@@ -22,8 +23,13 @@ const chipVariants = cva(
         flat: "border border-outline-variant",
         elevated: "bg-surface-container-low shadow-elevation-1",
       },
+      size: {
+        default: "",
+        md: "h-10 px-5 has-data-[slot=chip-leading]:pl-3 has-data-[slot=chip-trailing]:pr-3",
+        lg: "h-14 px-6 text-title-medium has-data-[slot=chip-leading]:pl-4 has-data-[slot=chip-trailing]:pr-4",
+      },
     },
-    defaultVariants: { variant: "flat" },
+    defaultVariants: { variant: "flat", size: "default" },
   }
 )
 
@@ -35,11 +41,19 @@ type ChipBaseProps = VariantProps<typeof chipVariants> & {
   icon?: React.ReactNode
 }
 
-function leading(icon: React.ReactNode) {
+/** icons step up with the height: 18dp at 32, 20 at 40, 24 at 56 */
+const iconSizeOf = (size: ChipBaseProps["size"]) =>
+  size === "lg" ? 24 : size === "md" ? 20 : 18
+
+function leading(icon: React.ReactNode, size: ChipBaseProps["size"]) {
   if (!icon) return null
   return (
     <span data-slot="chip-leading" className="inline-flex">
-      {typeof icon === "string" ? <Icon name={icon} size={18} /> : icon}
+      {typeof icon === "string" ? (
+        <Icon name={icon} size={iconSizeOf(size)} />
+      ) : (
+        icon
+      )}
     </span>
   )
 }
@@ -48,6 +62,7 @@ function leading(icon: React.ReactNode) {
 function Chip({
   className,
   variant,
+  size,
   icon,
   children,
   ...props
@@ -55,11 +70,15 @@ function Chip({
   return (
     <ButtonPrimitive
       data-slot="chip"
-      className={cn(chipVariants({ variant }), "text-on-surface", className)}
+      className={cn(
+        chipVariants({ variant, size }),
+        "text-on-surface",
+        className
+      )}
       {...props}
     >
       <Ripple />
-      {leading(icon)}
+      {leading(icon, size)}
       {children}
     </ButtonPrimitive>
   )
@@ -69,6 +88,7 @@ function Chip({
 function FilterChip({
   className,
   variant,
+  size,
   icon,
   children,
   ...props
@@ -76,7 +96,12 @@ function FilterChip({
   return (
     <TogglePrimitive
       data-slot="filter-chip"
-      className={cn(chipVariants({ variant }), SELECTED, "group", className)}
+      className={cn(
+        chipVariants({ variant, size }),
+        SELECTED,
+        "group",
+        className
+      )}
       {...props}
     >
       <Ripple />
@@ -91,10 +116,14 @@ function FilterChip({
       >
         <span className="flex overflow-hidden">
           <span className="hidden group-data-pressed:flex">
-            <Icon name="check" size={18} />
+            <Icon name="check" size={iconSizeOf(size)} />
           </span>
           <span className="flex group-data-pressed:hidden">
-            {typeof icon === "string" ? <Icon name={icon} size={18} /> : icon}
+            {typeof icon === "string" ? (
+              <Icon name={icon} size={iconSizeOf(size)} />
+            ) : (
+              icon
+            )}
           </span>
         </span>
       </span>
@@ -107,6 +136,7 @@ function FilterChip({
 function InputChip({
   className,
   variant,
+  size,
   icon,
   children,
   onRemove,
@@ -118,13 +148,13 @@ function InputChip({
     <span
       data-slot="input-chip"
       className={cn(
-        chipVariants({ variant }),
+        chipVariants({ variant, size }),
         "cursor-default before:hidden",
         className
       )}
       {...props}
     >
-      {leading(icon)}
+      {leading(icon, size)}
       {children}
       {onRemove && (
         <button
@@ -134,7 +164,7 @@ function InputChip({
           onClick={onRemove}
           className="state-layer relative -mr-1 inline-grid size-6 cursor-pointer place-items-center rounded-full focus-ring"
         >
-          <Icon name="close" size={18} />
+          <Icon name="close" size={iconSizeOf(size)} />
         </button>
       )}
     </span>

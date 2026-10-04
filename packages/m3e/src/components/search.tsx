@@ -29,6 +29,8 @@ type SearchViewProps = Omit<React.ComponentProps<"div">, "onChange"> & {
   /** actions shown in the header (a clear button is added for you) */
   trailing?: React.ReactNode
   variant?: "docked" | "fullscreen"
+  /** 1dp outline on surface instead of the elevated container */
+  outlined?: boolean
   /** slim 44dp bar for dense headers */
   size?: "default" | "sm"
   onSubmit?: (value: string) => void
@@ -44,6 +46,7 @@ function SearchView({
   leading,
   trailing,
   variant = "docked",
+  outlined = false,
   size = "default",
   onSubmit,
   className,
@@ -201,7 +204,9 @@ function SearchView({
         className={cn(
           open
             ? "fixed inset-0 z-50 bg-surface-container-high"
-            : "relative rounded-full bg-surface-container-high shadow-elevation-3",
+            : outlined
+              ? "relative rounded-full border border-outline bg-surface"
+              : "relative rounded-full bg-surface-container-high shadow-elevation-3",
           "transition-shape motion-spatial-default",
           className
         )}
@@ -220,7 +225,10 @@ function SearchView({
       data-variant="docked"
       data-open={open || undefined}
       className={cn(
-        "relative w-full overflow-hidden rounded-2xl bg-surface-container-high shadow-elevation-3 transition-shape motion-spatial-default",
+        "relative w-full overflow-hidden rounded-2xl transition-shape motion-spatial-default",
+        outlined
+          ? "border border-outline bg-surface"
+          : "bg-surface-container-high shadow-elevation-3",
         className
       )}
       {...props}
@@ -245,18 +253,24 @@ function SearchBar({
   placeholder = "Search",
   leading,
   trailing,
+  outlined = false,
   ...props
 }: React.ComponentProps<"button"> & {
   placeholder?: string
   leading?: React.ReactNode
   trailing?: React.ReactNode
+  /** 1dp outline on surface instead of the elevated container */
+  outlined?: boolean
 }) {
   return (
     <button
       type="button"
       data-slot="search-bar"
       className={cn(
-        "state-layer relative flex h-14 w-full cursor-text items-center gap-1 overflow-hidden rounded-full bg-surface-container-high px-1 text-left text-body-large shadow-elevation-3 focus-ring outline-none",
+        "state-layer relative flex h-14 w-full cursor-text items-center gap-1 overflow-hidden rounded-full px-1 text-left text-body-large focus-ring outline-none",
+        outlined
+          ? "border border-outline bg-surface"
+          : "bg-surface-container-high shadow-elevation-3",
         className
       )}
       {...props}

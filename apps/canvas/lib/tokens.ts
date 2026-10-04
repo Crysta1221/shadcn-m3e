@@ -1645,7 +1645,7 @@ export const KIND_ORDER: Kind[] = [
 /* ---------- screen data ---------- */
 /** an entry in a bar, a menu or a carousel: what it shows, and -- on a carousel card -- the
  *  picture put on it */
-export type NavTab = { icon: string; label: string; src?: string };
+export type NavTab = { icon: string; label: string; src?: string; variant?: string; width?: string };
 
 export type Item = {
   id: string;

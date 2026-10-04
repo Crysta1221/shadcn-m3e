@@ -11,6 +11,7 @@ export default function Demo() {
   return (
     <div className="flex min-h-72 max-w-lg flex-col gap-4">
       <SearchBar trailing={<Icon name="mic" />} />
+      <SearchBar outlined placeholder="Search mail" />
       <SearchView placeholder="Search songs">
         <SearchResult icon="history">Recent search</SearchResult>
         <SearchResult icon="history">Another recent search</SearchResult>

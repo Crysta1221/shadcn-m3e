@@ -60,6 +60,13 @@ export const communication: DocEntry[] = [
             description:
               "Wavy has a 3dp-amplitude, 40dp-wavelength wave (20dp while indeterminate).",
           },
+          {
+            name: "thickness",
+            type: "number",
+            default: "4",
+            description:
+              "Track height in px; the wavy amplitude scales with it.",
+          },
         ],
       },
     ],
@@ -93,6 +100,13 @@ export const communication: DocEntry[] = [
             name: "size",
             type: "number",
             description: "Diameter in px.",
+          },
+          {
+            name: "thickness",
+            type: "number",
+            default: "4",
+            description:
+              "Stroke width in px, capped at a sixth of the diameter.",
           },
         ],
       },

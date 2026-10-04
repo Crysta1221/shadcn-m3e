@@ -34,24 +34,66 @@ function SelectValue({ className, ...props }: SelectPrimitive.Value.Props) {
   )
 }
 
+/*
+ * M3 select (Compose ExposedDropdownMenuBox / text field tokens). The
+ * trigger is a 56dp field in the two field styles:
+ *   outlined — 1dp outline, extra-small corners; the label floats into a
+ *              notch on the border
+ *   filled   — surface-container-highest, extra-small top corners, 1dp
+ *              active indicator; the label floats to the top inside
+ * `supporting` is the helper text under the field.
+ */
 function SelectTrigger({
   className,
   size = "default",
+  variant = "outlined",
+  label,
+  supporting,
   children,
   ...props
 }: SelectPrimitive.Trigger.Props & {
   size?: "sm" | "default"
+  variant?: "outlined" | "filled"
+  /** floats above the field, the text field's label position */
+  label?: React.ReactNode
+  /** helper text under the field */
+  supporting?: React.ReactNode
 }) {
-  return (
+  const filled = variant === "filled"
+  const trigger = (
     <SelectPrimitive.Trigger
       data-slot="select-trigger"
       data-size={size}
+      data-variant={variant}
       className={cn(
-        "group/select-trigger flex w-fit min-w-40 items-center justify-between gap-2 rounded-xs border border-outline bg-transparent px-4 py-2 text-body-large whitespace-nowrap text-on-surface transition-shape outline-none hover:border-on-surface focus-visible:border-primary focus-visible:shadow-[inset_0_0_0_1px_var(--md-sys-color-primary)] disabled:cursor-not-allowed disabled:border-on-surface/12 disabled:text-on-surface/38 aria-invalid:border-error data-placeholder:text-on-surface-variant data-popup-open:border-primary data-popup-open:shadow-[inset_0_0_0_1px_var(--md-sys-color-primary)] data-[size=default]:h-14 data-[size=sm]:h-10 data-[size=sm]:px-3 data-[size=sm]:text-body-medium *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-1.5 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-5",
+        "group/select-trigger flex w-fit min-w-40 items-center justify-between gap-2 text-body-large whitespace-nowrap text-on-surface transition-shape outline-none disabled:cursor-not-allowed data-placeholder:text-on-surface-variant data-[size=default]:h-14 data-[size=sm]:h-10 data-[size=sm]:text-body-medium *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-1.5 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-5",
+        filled
+          ? "rounded-t-xs border-b border-on-surface-variant bg-surface-container-highest hover:border-on-surface focus-visible:border-primary focus-visible:shadow-[inset_0_-1px_0_0_var(--md-sys-color-primary)] disabled:border-on-surface/12 disabled:text-on-surface/38 aria-invalid:border-error data-popup-open:border-primary data-popup-open:shadow-[inset_0_-1px_0_0_var(--md-sys-color-primary)]"
+          : "rounded-xs border border-outline bg-transparent hover:border-on-surface focus-visible:border-primary focus-visible:shadow-[inset_0_0_0_1px_var(--md-sys-color-primary)] disabled:border-on-surface/12 disabled:text-on-surface/38 aria-invalid:border-error data-popup-open:border-primary data-popup-open:shadow-[inset_0_0_0_1px_var(--md-sys-color-primary)]",
+        label && filled
+          ? size === "sm"
+            ? "px-3 pt-4 pb-1"
+            : "px-4 pt-6 pb-2"
+          : "px-4 py-2 data-[size=sm]:px-3",
+        label && "relative",
         className
       )}
       {...props}
     >
+      {label && (
+        <span
+          data-slot="select-label"
+          aria-hidden
+          className={cn(
+            "pointer-events-none absolute text-label-small text-on-surface-variant",
+            filled
+              ? "top-1.5 left-4 group-data-[size=sm]/select-trigger:top-1"
+              : "top-0 left-3 -translate-y-1/2 bg-surface px-1"
+          )}
+        >
+          {label}
+        </span>
+      )}
       {children}
       <SelectPrimitive.Icon
         render={
@@ -59,6 +101,18 @@ function SelectTrigger({
         }
       />
     </SelectPrimitive.Trigger>
+  )
+  if (!supporting) return trigger
+  return (
+    <span data-slot="select-field" className="inline-flex w-fit flex-col gap-1">
+      {trigger}
+      <span
+        data-slot="select-supporting"
+        className="px-4 text-body-small text-on-surface-variant"
+      >
+        {supporting}
+      </span>
+    </span>
   )
 }
 

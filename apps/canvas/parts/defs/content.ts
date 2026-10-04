@@ -157,7 +157,7 @@ export const content: PartDef[] = [
     w: 420,
     h: 180,
     props: [
-      { key: "variant", label: "Variant", kind: "enum", default: "multi-browse", options: ["multi-browse", "hero", "uncontained"] },
+      { key: "variant", label: "Variant", kind: "enum", default: "multi-browse", options: ["multi-browse", "hero", "uncontained", "full-screen"] },
       {
         key: "slides",
         label: "Slides",
@@ -166,7 +166,7 @@ export const content: PartDef[] = [
         min: 3,
         max: 8,
       },
-      { key: "itemWidth", label: "Slide width", kind: "number", default: 186, min: 120, max: 400, step: 4, unit: "px" },
+      { key: "itemWidth", label: "Slide width", kind: "number", default: 186, min: 120, max: 400, step: 4, unit: "px", when: (p) => p.s("variant") !== "full-screen" },
       { key: "gap", label: "Gap", kind: "number", default: 8, min: 0, max: 24, step: 2, unit: "px" },
       { key: "height", label: "Height", kind: "number", default: 180, min: 100, max: 320, step: 4, unit: "px" },
       { key: "width", label: "Width", kind: "number", default: 420, min: 240, max: 800, step: 4, unit: "px" },
@@ -175,7 +175,7 @@ export const content: PartDef[] = [
     tree: (p) =>
       h(
         "ExpressiveCarousel",
-        { variant: p.s("variant"), itemWidth: px(p.n("itemWidth")), gap: px(p.n("gap")), height: px(p.n("height")), style: { width: px(p.n("width")) } },
+        { variant: p.s("variant"), itemWidth: p.s("variant") === "full-screen" ? undefined : px(p.n("itemWidth")), gap: px(p.n("gap")), height: px(p.n("height")), style: { width: px(p.n("width")) } },
         ...p.list("slides").map((s, i) => h("CarouselSlide", { className: TONES[i % 3], "data-tap": `tab:${i}` }, h("span", { className: "text-title-large" }, s.label))),
       ),
   },

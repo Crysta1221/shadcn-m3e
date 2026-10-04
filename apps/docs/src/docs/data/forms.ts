@@ -71,7 +71,7 @@ export const forms: DocEntry[] = [
     icon: "arrow_drop_down_circle",
     origin: "shadcn",
     description:
-      "An outlined field that opens a menu of options. The chosen option is highlighted in tertiary-container.",
+      "A field that opens a menu of options, outlined or filled, with an optional floating label and supporting text. The chosen option is highlighted in tertiary-container.",
     spec: "https://m3.material.io/components/menus/overview",
     imports: [
       {
@@ -87,6 +87,37 @@ export const forms: DocEntry[] = [
     ],
     notes: [
       "Give Select an items array so SelectValue can show the label of the chosen value.",
+    ],
+    props: [
+      {
+        title: "SelectTrigger",
+        rows: [
+          {
+            name: "variant",
+            type: '"outlined" | "filled"',
+            default: '"outlined"',
+            description:
+              "Outlined is a 1dp outline; filled is surface-container-highest with a bottom active indicator.",
+          },
+          {
+            name: "label",
+            type: "ReactNode",
+            description:
+              "Floats above the field — in the border notch (outlined) or at the top inside (filled).",
+          },
+          {
+            name: "supporting",
+            type: "ReactNode",
+            description: "Helper text under the field.",
+          },
+          {
+            name: "size",
+            type: '"default" | "sm"',
+            default: '"default"',
+            description: "56dp or 40dp.",
+          },
+        ],
+      },
     ],
   },
   {

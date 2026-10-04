@@ -41,6 +41,7 @@ export const communication: PartDef[] = [
       { key: "value", label: "Value", kind: "number", default: 60, min: 0, max: 100, step: 1, unit: "%" },
       { key: "indeterminate", label: "Indeterminate", kind: "bool", default: false },
       { key: "variant", label: "Variant", kind: "enum", default: "flat", options: ["flat", "wavy"] },
+      { key: "thickness", label: "Thickness", kind: "number", default: 4, min: 2, max: 16, step: 1, unit: "px" },
       { key: "label", label: "Label", kind: "text", default: "" },
       { key: "showValue", label: "Show value", kind: "bool", default: false },
       { key: "width", label: "Width", kind: "number", default: 280, min: 80, max: 560, step: 4, unit: "px" },
@@ -54,6 +55,7 @@ export const communication: PartDef[] = [
           // null prints as `value={null}`; the canvas has no value, which is just as indeterminate
           value: p.b("indeterminate") ? raw("null") : Math.round(p.n("value")),
           variant: p.s("variant") === "flat" ? undefined : p.s("variant"),
+          thickness: Math.round(p.n("thickness")) === 4 ? undefined : Math.round(p.n("thickness")),
           style: { width: Math.round(p.n("width")) },
         },
         label && h("ProgressLabel", null, label),
@@ -73,12 +75,14 @@ export const communication: PartDef[] = [
       { key: "indeterminate", label: "Indeterminate", kind: "bool", default: false },
       { key: "variant", label: "Variant", kind: "enum", default: "flat", options: ["flat", "wavy"] },
       { key: "size", label: "Size", kind: "number", default: 40, min: 24, max: 120, step: 2, unit: "px" },
+      { key: "thickness", label: "Thickness", kind: "number", default: 4, min: 2, max: 16, step: 1, unit: "px" },
     ],
     tree: (p) =>
       h("CircularProgress", {
         value: p.b("indeterminate") ? undefined : Math.round(p.n("value")),
         variant: p.s("variant") === "flat" ? undefined : p.s("variant"),
         size: Math.round(p.n("size")),
+        thickness: Math.round(p.n("thickness")) === 4 ? undefined : Math.round(p.n("thickness")),
       }),
   },
   {

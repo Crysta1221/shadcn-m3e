@@ -16,10 +16,11 @@ function searchTree(p: P, open: boolean): PNode {
   const leading = p.s("leading") ? ic(p.s("leading")) : undefined;
   const trailing = p.s("trailing") ? ic(p.s("trailing"), { "data-tap": "icon" }) : undefined;
   const style = { width: Math.round(p.n("width")) };
-  if (p.s("kind") === "bar") return h("SearchBar", { placeholder: p.s("placeholder") || undefined, leading, trailing, style });
+  const outlined = p.s("style") === "outlined" || undefined;
+  if (p.s("kind") === "bar") return h("SearchBar", { placeholder: p.s("placeholder") || undefined, leading, trailing, outlined, style });
   return h(
     "SearchView",
-    { placeholder: p.s("placeholder") || undefined, leading, trailing, size: p.s("size") === "sm" ? "sm" : undefined, style, open: open || undefined },
+    { placeholder: p.s("placeholder") || undefined, leading, trailing, outlined, size: p.s("size") === "sm" ? "sm" : undefined, style, open: open || undefined },
     ...p.list("results").map((r, i) => h("SearchResult", { icon: r.icon || undefined, "data-tap": `tab:${i}` }, r.label)),
   );
 }
@@ -396,6 +397,7 @@ export const navigation: PartDef[] = [
     h: 56,
     props: [
       { key: "kind", label: "Kind", kind: "enum", default: "view", options: [{ value: "view", label: "Search view" }, { value: "bar", label: "Search bar" }] },
+      { key: "style", label: "Style", kind: "enum", default: "elevated", options: ["elevated", "outlined"] },
       { key: "placeholder", label: "Placeholder", kind: "text", default: "Search songs" },
       { key: "leading", label: "Leading icon", kind: "icon", default: "search" },
       { key: "trailing", label: "Trailing icon", kind: "icon", default: "mic" },

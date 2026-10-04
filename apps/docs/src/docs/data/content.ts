@@ -79,7 +79,7 @@ export const content: DocEntry[] = [
     icon: "view_carousel",
     origin: "m3e",
     description:
-      "Multi-browse, hero and uncontained carousels. Items are 28dp-cornered, 8dp apart, and resize continuously between large, medium and small (40–56dp) while you scroll.",
+      "Multi-browse, hero, uncontained and full-screen carousels. Items are 28dp-cornered, 8dp apart, and resize continuously between large, medium and small (40–56dp) while you scroll; full-screen slides take the whole track width.",
     spec: "https://m3.material.io/components/carousel/overview",
     imports: [
       {
@@ -96,15 +96,17 @@ export const content: DocEntry[] = [
         rows: [
           {
             name: "variant",
-            type: '"multi-browse" | "hero" | "uncontained"',
+            type: '"multi-browse" | "hero" | "uncontained" | "full-screen"',
             default: '"multi-browse"',
-            description: "Layout.",
+            description:
+              "Layout. Full-screen items fill the track width and scroll one at a time.",
           },
           {
             name: "itemWidth",
             type: "number",
             default: "186",
-            description: "Preferred width of a large item, in px.",
+            description:
+              "Preferred width of a large item, in px (not full-screen).",
           },
           {
             name: "height",

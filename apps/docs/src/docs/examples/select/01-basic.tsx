@@ -18,17 +18,36 @@ export const meta = {
 
 export default function Demo() {
   return (
-    <Select defaultValue="apple" items={fruits}>
-      <SelectTrigger className="w-56">
-        <SelectValue />
-      </SelectTrigger>
-      <SelectContent>
-        {fruits.map((f) => (
-          <SelectItem key={f.value} value={f.value}>
-            {f.label}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+    <div className="flex flex-wrap items-start gap-4">
+      <Select defaultValue="apple" items={fruits}>
+        <SelectTrigger className="w-56">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {fruits.map((f) => (
+            <SelectItem key={f.value} value={f.value}>
+              {f.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <Select items={fruits}>
+        <SelectTrigger
+          variant="filled"
+          label="Fruit"
+          supporting="Pick a snack for the afternoon."
+          className="w-56"
+        >
+          <SelectValue placeholder="Select a fruit" />
+        </SelectTrigger>
+        <SelectContent>
+          {fruits.map((f) => (
+            <SelectItem key={f.value} value={f.value}>
+              {f.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
   )
 }

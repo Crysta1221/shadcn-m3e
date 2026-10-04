@@ -345,6 +345,12 @@ export const navigation: DocEntry[] = [
             description: "How the view opens.",
           },
           {
+            name: "outlined",
+            type: "boolean",
+            description:
+              "1dp outline on surface instead of the elevated container (SearchBar too).",
+          },
+          {
             name: "value / onValueChange",
             type: "string / (v) => void",
             description: "The query.",

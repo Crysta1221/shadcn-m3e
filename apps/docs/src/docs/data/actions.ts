@@ -317,6 +317,13 @@ export const actions: DocEntry[] = [
             description: "Leading icon: a Material Symbols name or a node.",
           },
           {
+            name: "size",
+            type: '"default" | "md" | "lg"',
+            default: '"default"',
+            description:
+              "Height: 32dp, 40dp or 56dp; padding and icon size follow it.",
+          },
+          {
             name: "onRemove",
             type: "() => void",
             description: "InputChip only: shows a remove button.",
