@@ -56,33 +56,61 @@ export const containment: PartDef[] = [
     w: 120,
     h: 40,
     props: [
+      { key: "style", label: "Style", kind: "enum", default: "basic", options: [{ value: "basic", label: "Basic" }, { value: "fullscreen", label: "Full-screen" }] },
       { key: "trigger", label: "Button label", kind: "text", default: "Open dialog" },
       { key: "variant", label: "Button variant", kind: "enum", default: "tonal", options: BUTTON_VARIANTS },
+      { key: "icon", label: "Icon (basic)", kind: "icon", default: "" },
       { key: "title", label: "Title", kind: "text", default: "Reset settings?" },
       { key: "description", label: "Description", kind: "text", default: "This will reset your app preferences back to their default settings.", multiline: true },
-      { key: "dismiss", label: "Dismiss action", kind: "text", default: "Cancel" },
+      { key: "dismiss", label: "Dismiss action (basic)", kind: "text", default: "Cancel" },
       { key: "confirm", label: "Confirm action", kind: "text", default: "Accept" },
-      { key: "closeButton", label: "Close button", kind: "bool", default: false },
+      { key: "stacked", label: "Stacked actions (basic)", kind: "bool", default: false },
+      { key: "closeButton", label: "Close button (basic)", kind: "bool", default: false },
+      { key: "width", label: "Width (full-screen)", kind: "number", default: 412, min: 280, max: 1280, step: 4, unit: "px" },
+      { key: "height", label: "Height (full-screen)", kind: "number", default: 640, min: 320, max: 900, step: 4, unit: "px" },
     ],
-    open: { box: () => ({ w: 420, h: 260 }), trigger: "hide" },
-    tree: (p) =>
-      h(
+    // a basic dialog is the card; a full-screen one fills the box it is drawn in
+    open: { box: (p) => (p.s("style") === "fullscreen" ? { w: p.n("width"), h: p.n("height") } : { w: 420, h: p.b("stacked") ? 300 : 260 }), trigger: "hide" },
+    tree: (p) => {
+      const trigger = h("DialogTrigger", { render: h("Button", { variant: p.s("variant") }) }, p.s("trigger"));
+      if (p.s("style") === "fullscreen") {
+        return h(
+          "Dialog",
+          null,
+          trigger,
+          h(
+            "DialogContent",
+            { variant: "fullscreen" },
+            h(
+              "DialogTopBar",
+              { divider: true },
+              h("DialogClose", { render: h("Button", { variant: "text", size: "icon", "aria-label": "Close" }) }, ic("close")),
+              h("DialogTitle", null, p.s("title")),
+              p.s("confirm") && h("DialogClose", { render: h("Button", { variant: "text" }) }, p.s("confirm")),
+            ),
+            h("DialogBody", null, p.s("description") && h("DialogDescription", null, p.s("description"))),
+          ),
+        );
+      }
+      return h(
         "Dialog",
         null,
-        h("DialogTrigger", { render: h("Button", { variant: p.s("variant") }) }, p.s("trigger")),
+        trigger,
         h(
           "DialogContent",
           { showCloseButton: p.b("closeButton") ? undefined : false },
+          p.s("icon") && h("DialogIcon", null, ic(p.s("icon"))),
           h("DialogHeader", null, h("DialogTitle", null, p.s("title")), p.s("description") && h("DialogDescription", null, p.s("description"))),
           (p.s("dismiss") || p.s("confirm")) &&
             h(
               "DialogFooter",
-              null,
+              { stacked: p.b("stacked") || undefined },
               p.s("dismiss") && h("DialogClose", { render: h("Button", { variant: "text" }) }, p.s("dismiss")),
               p.s("confirm") && h("DialogClose", { render: h("Button", { variant: "text" }) }, p.s("confirm")),
             ),
         ),
-      ),
+      );
+    },
   },
   {
     slug: "alert-dialog",

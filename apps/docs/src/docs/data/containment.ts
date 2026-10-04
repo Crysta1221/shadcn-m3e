@@ -56,8 +56,8 @@ export const containment: DocEntry[] = [
     icon: "web_asset",
     origin: "shadcn",
     description:
-      "A modal window for a task or a decision. surface-container-high, 28dp corners, elevation 3; it scales in on the spatial spring.",
-    spec: "https://m3.material.io/components/dialogs/overview",
+      "A modal window for a task or a decision, in the two M3 styles: the basic dialog (surface-container-high, 28dp corners, elevation 3, optional icon and divider) and the full-screen dialog. It scales in on the spatial spring.",
+    spec: "https://m3.material.io/components/dialogs/specs",
     imports: [
       {
         from: "dialog",
@@ -70,11 +70,49 @@ export const containment: DocEntry[] = [
           "DialogDescription",
           "DialogFooter",
           "DialogClose",
+          "DialogIcon",
+          "DialogBody",
+          "DialogDivider",
+          "DialogTopBar",
+        ],
+      },
+    ],
+    props: [
+      {
+        title: "DialogContent",
+        rows: [
+          {
+            name: "variant",
+            type: '"basic" | "fullscreen"',
+            default: '"basic"',
+            description:
+              "basic is the centered card; fullscreen fills the whole screen and has no scrim or corners.",
+          },
+          {
+            name: "showCloseButton",
+            type: "boolean",
+            default: "true for basic, false for fullscreen",
+            description:
+              "A close button in the corner. A full-screen dialog has its own in DialogTopBar.",
+          },
+        ],
+      },
+      {
+        title: "DialogTopBar",
+        rows: [
+          {
+            name: "divider",
+            type: "boolean",
+            default: "false",
+            description: "A 1dp divider under the 56dp header.",
+          },
         ],
       },
     ],
     notes: [
       "Put actions in DialogFooter as text buttons. Use showCloseButton={false} when the dialog has its own actions.",
+      "Basic dialog: DialogIcon above the header (24dp, secondary) centers the headline. Wrap long content in DialogBody: it scrolls, and a divider shows on each edge that has more behind it.",
+      'Full-screen dialog: variant="fullscreen" with a DialogTopBar (close icon, headline, text button) and a DialogBody. A DialogFooter becomes the 56dp bottom action bar. M3 uses it on compact windows only; on a larger one prefer the basic dialog.',
     ],
   },
   {
@@ -84,8 +122,8 @@ export const containment: DocEntry[] = [
     icon: "report",
     origin: "shadcn",
     description:
-      "A dialog that interrupts the user for a decision. It cannot be dismissed by clicking outside.",
-    spec: "https://m3.material.io/components/dialogs/overview",
+      "A basic dialog that interrupts the user for a decision. It cannot be dismissed by clicking outside. AlertDialogMedia is the optional 24dp icon, which centers the headline.",
+    spec: "https://m3.material.io/components/dialogs/specs",
     imports: [
       {
         from: "alert-dialog",
