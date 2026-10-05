@@ -9,7 +9,7 @@ import { t, useLang } from "@/lib/i18n";
 
 export type Mode = "select" | "hand";
 
-const REPO_URL = "https://github.com/lnkiai/m3e-canvas";
+const REPO_URL = "https://github.com/Crysta1221/shadcn-m3e";
 
 export function GitHubLink({ p, size = 40 }: { p: Palette; size?: number }) {
   return (
