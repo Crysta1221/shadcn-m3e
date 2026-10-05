@@ -23,13 +23,31 @@ bun run dev:canvas      # the Playground (apps/canvas) on http://localhost:3000
 
 Before you finish a change: `typecheck`, `lint`, `format`, and `registry:build` when a file in `packages/m3e/src` changed. There is no test runner; UI is verified in the browser (see "Verifying").
 
+## Deployment (Cloudflare)
+
+Each app deploys as its own Worker via Workers Builds (repo connected once per Worker; see the dashboard settings below — root directory, commands and watch paths live in the dashboard, not in the repo).
+
+- `apps/docs` → Worker `shadcn-m3e-docs`. Configured for `cf` (the new CLI, beta): `apps/docs/cloudflare.config.ts` (Worker name, SPA `notFoundHandling`, observability) plus `apps/docs/wrangler.config.ts` (`assetsDirectory: "dist"` — cf has no `assets.directory` field; static sites keep that in the Wrangler build config). `cf`/`wrangler` are devDependencies of `apps/docs`. Deploys `bun run --cwd apps/docs deploy` (`cf deploy`), previews `deploy:preview` (`cf previews deploy`).
+- `apps/canvas` → Worker `m3e-canvas`. A Vite+ SPA (`vp build` → `dist/`) deployed with the Wrangler CLI: `apps/canvas/wrangler.jsonc` + `bun run deploy:canvas` (root script). No entrypoint — assets only, SPA fallback.
+- `cf` runs under Node.js (loading `cloudflare.config.ts` on Bun fails) and requires Node 22.18+. On Windows, `cf deploy` currently fails at `spawn EFTYPE` — a cf beta bug: it spawns `wrangler/bin/cf-wrangler.js` directly instead of through `node`. Works on Linux, so Workers Builds is unaffected; locally `node node_modules/wrangler/bin/cf-wrangler.js build` produces `.cloudflare/output/v0` the same way.
+- `devEngines` pins bun, which makes `npm`/`npx` fail inside the repo — CI commands must go through `bun run` scripts, never `npx`.
+
+Workers Builds dashboard settings:
+
+| Worker | Root directory | Build command | Deploy / preview command | Build watch paths (includes) |
+| --- | --- | --- | --- | --- |
+| shadcn-m3e-docs | `/` | `bun run registry:build && bun run build` | `bun run --cwd apps/docs deploy` / `bun run --cwd apps/docs deploy:preview` | `apps/docs/*`, `packages/m3e/*`, `package.json`, `bun.lock`, `tsconfig.json` |
+| m3e-canvas | `/` | `bun run build:canvas` | `bun run deploy:canvas` | `apps/canvas/*`, `package.json`, `bun.lock`, `tsconfig.json` |
+
+The root directory stays at `/` because `bun install` runs at the workspace root. Watch paths use dashboard wildcards (`*` crosses `/`, so nested paths are covered); `packages/m3e` is included for docs because the site builds against it.
+
 ## Repository layout
 
 A bun workspace. `apps/*` are applications, `packages/*` is the code that ships.
 
 ```
 apps/docs/       the documentation site; it also serves the registry at /r/{name}.json
-apps/canvas/     the Playground: a git subtree of lnkiai/m3e-canvas (Next.js, own deps)
+apps/canvas/     the Playground: TanStack Router + Vite+, forked from lnkiai/m3e-canvas
 packages/m3e/    the M3E components, library code and tokens (the registry source)
 videos/          a separate Remotion project, not part of the workspace
 ```
@@ -38,24 +56,24 @@ The code in `packages/m3e` imports its own files as `@/components/m3e/x`, `@/lib
 
 ## Directories
 
-| Path                                             | Rule                                                                                                                                                                                                                                                               |
-| ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `packages/m3e/src/components/`                   | Every M3E component, flat: one `kebab-case.tsx` per component (hooks `use-*.ts`). M3E-ized shadcn components and M3E-only ones live side by side.                                                                                                                  |
-| `packages/m3e/reference/ui/`                     | The shadcn originals (`shadcn add` output), kept for reference. **Never edit, import or lint.** Excluded from `tsc` and the linter.                                                                                                                                |
-| `packages/m3e/src/lib/`                          | Library code that ships with the registry: `cn`, color schemes, shapes, Vibrant. `apps/docs/src/lib/utils.ts` is shadcn's and stays untouched.                                                                                                                     |
-| `packages/m3e/src/hooks/`                        | Shared hooks that ship with items (`use-mobile`). Import as `@/hooks/<name>`.                                                                                                                                                                                      |
-| `packages/m3e/src/styles/m3e.css`                | Hand-written tokens and utilities (`state-layer`, `focus-ring`, `motion-*`, shape/type/elevation scales).                                                                                                                                                          |
-| `packages/m3e/src/styles/m3e.generated.css`      | Generated by `gen:tokens`. Do not edit.                                                                                                                                                                                                                            |
-| `packages/m3e/scripts/`                          | `build-registry.mjs`, `icons.mjs`, `gen-tokens.ts`.                                                                                                                                                                                                                |
-| `apps/docs/src/docs/`                            | The documentation site's own code. Nothing in `packages/m3e` may import from it.                                                                                                                                                                                   |
-| `apps/docs/src/docs/content/*.md`                | Guide pages; list each one in `apps/docs/src/docs/outline.ts`.                                                                                                                                                                                                     |
-| `apps/docs/src/docs/data/*.ts`                   | One entry per component page (description, imports, notes, props table), by category.                                                                                                                                                                              |
-| `apps/docs/src/docs/examples/<slug>/NN-name.tsx` | Live demos. The file is run and also shown as its own source, so it must be a copy-pasteable example (`default` export plus `meta`).                                                                                                                               |
-| `apps/docs/src/docs/showcases/*.tsx`             | Page-scale demos for the Examples page (app shells and other `position: fixed` layouts), same format as an example; `meta.frame` is the preview height. A component can point to one with `showcase` in its data entry.                                            |
-| `apps/docs/src/routes/`                          | TanStack Router file routes. `routeTree.gen.ts` is generated.                                                                                                                                                                                                      |
-| `apps/docs/public/r/`                            | Registry output. Generated, git-ignored.                                                                                                                                                                                                                           |
-| `apps/canvas/`                                   | A git subtree of lnkiai/m3e-canvas (MIT). Own `package.json`, excluded from lint, format and the root `tsc`. Update with `git subtree pull --prefix=apps/canvas https://github.com/lnkiai/m3e-canvas main --squash`; keep our changes in new files where possible. |
-| `videos/`                                        | A separate Remotion project (own `package.json`, see its README). Excluded from lint and format.                                                                                                                                                                   |
+| Path | Rule |
+| --- | --- |
+| `packages/m3e/src/components/` | Every M3E component, flat: one `kebab-case.tsx` per component (hooks `use-*.ts`). M3E-ized shadcn components and M3E-only ones live side by side. |
+| `packages/m3e/reference/ui/` | The shadcn originals (`shadcn add` output), kept for reference. **Never edit, import or lint.** Excluded from `tsc` and the linter. |
+| `packages/m3e/src/lib/` | Library code that ships with the registry: `cn`, color schemes, shapes, Vibrant. `apps/docs/src/lib/utils.ts` is shadcn's and stays untouched. |
+| `packages/m3e/src/hooks/` | Shared hooks that ship with items (`use-mobile`). Import as `@/hooks/<name>`. |
+| `packages/m3e/src/styles/m3e.css` | Hand-written tokens and utilities (`state-layer`, `focus-ring`, `motion-*`, shape/type/elevation scales). |
+| `packages/m3e/src/styles/m3e.generated.css` | Generated by `gen:tokens`. Do not edit. |
+| `packages/m3e/scripts/` | `build-registry.mjs`, `icons.mjs`, `gen-tokens.ts`. |
+| `apps/docs/src/docs/` | The documentation site's own code. Nothing in `packages/m3e` may import from it. |
+| `apps/docs/src/docs/content/*.md` | Guide pages; list each one in `apps/docs/src/docs/outline.ts`. |
+| `apps/docs/src/docs/data/*.ts` | One entry per component page (description, imports, notes, props table), by category. |
+| `apps/docs/src/docs/examples/<slug>/NN-name.tsx` | Live demos. The file is run and also shown as its own source, so it must be a copy-pasteable example (`default` export plus `meta`). |
+| `apps/docs/src/docs/showcases/*.tsx` | Page-scale demos for the Examples page (app shells and other `position: fixed` layouts), same format as an example; `meta.frame` is the preview height. A component can point to one with `showcase` in its data entry. |
+| `apps/docs/src/routes/` | TanStack Router file routes. `routeTree.gen.ts` is generated. |
+| `apps/docs/public/r/` | Registry output. Generated, git-ignored. |
+| `apps/canvas/` | The Playground, forked from lnkiai/m3e-canvas (MIT) and migrated off Next.js to TanStack Router + Vite+ — it is no longer a subtree, so no `git subtree pull`. Still excluded from lint, format and the root `tsc` for now; it has its own `typecheck`/`test` (vitest) scripts. |
+| `videos/` | A separate Remotion project (own `package.json`, see its README). Excluded from lint and format. |
 
 Generated files (`*.generated.*`, `routeTree.gen.ts`, `icon-data*.ts`, `apps/docs/public/r`) are never edited by hand.
 

@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="app/icon.svg" width="72" alt="" />
+  <img src="public/icon.svg" width="72" alt="" />
 </p>
 
 <h1 align="center">M3E Canvas</h1>
@@ -10,11 +10,10 @@
 
 <p align="center">
   <a href="https://lnkiai.github.io/m3e-canvas/"><img alt="Live demo" src="https://img.shields.io/badge/demo-lnkiai.github.io%2Fm3e--canvas-6750A4?logo=googlechrome&logoColor=white" /></a>
-  <a href="https://github.com/lnkiai/m3e-canvas/actions/workflows/deploy.yml"><img alt="Deploy" src="https://github.com/lnkiai/m3e-canvas/actions/workflows/deploy.yml/badge.svg" /></a>
   <a href="https://github.com/lnkiai/m3e-canvas/stargazers"><img alt="GitHub stars" src="https://img.shields.io/github/stars/lnkiai/m3e-canvas?style=flat&logo=github&color=6750A4" /></a>
   <a href="LICENSE"><img alt="MIT License" src="https://img.shields.io/badge/license-MIT-blue.svg" /></a>
   <a href="https://github.com/sponsors/lnkiai"><img alt="Sponsor" src="https://img.shields.io/badge/sponsor-%E2%9D%A4-EA4AAA?logo=githubsponsors&logoColor=white" /></a>
-  <img alt="Next.js" src="https://img.shields.io/badge/Next.js-16-black?logo=nextdotjs" />
+  <img alt="Vite" src="https://img.shields.io/badge/Vite-TanStack%20Router-black?logo=vite" />
   <img alt="React" src="https://img.shields.io/badge/React-19-20232a?logo=react&logoColor=61DAFB" />
   <img alt="Material 3 Expressive" src="https://img.shields.io/badge/Material%203-Expressive-EADDFF?logo=materialdesign&logoColor=6750A4" />
   <img alt="No backend" src="https://img.shields.io/badge/backend-none%20(localStorage)-2E6A45" />
@@ -64,27 +63,27 @@ Works with any AI coding tool that takes a prompt, such as Claude Code, Codex, G
 
 ## Keyboard
 
-| Key | Action |
-| --- | --- |
-| `V` / `H` | Select / hand tool (hold `Space` to pan) |
-| Wheel, `Ctrl` + wheel | Pan, zoom |
-| `+` `-` `0` | Zoom in, zoom out, fit |
-| `Ctrl+Z` / `Ctrl+Shift+Z` | Undo / redo |
-| `Ctrl+D` | Duplicate |
-| Arrows (`Shift` = 8dp) | Nudge |
-| `Ctrl` + drag | Move without snapping (no guides, no 4dp grid) |
-| `Delete` | Delete part or screen |
-| `P` | Preview |
+| Key                       | Action                                         |
+| ------------------------- | ---------------------------------------------- |
+| `V` / `H`                 | Select / hand tool (hold `Space` to pan)       |
+| Wheel, `Ctrl` + wheel     | Pan, zoom                                      |
+| `+` `-` `0`               | Zoom in, zoom out, fit                         |
+| `Ctrl+Z` / `Ctrl+Shift+Z` | Undo / redo                                    |
+| `Ctrl+D`                  | Duplicate                                      |
+| Arrows (`Shift` = 8dp)    | Nudge                                          |
+| `Ctrl` + drag             | Move without snapping (no guides, no 4dp grid) |
+| `Delete`                  | Delete part or screen                          |
+| `P`                       | Preview                                        |
 
 ## Develop
 
 ```bash
-npm install
-npm run dev        # http://localhost:3000
-npm run build      # static export to ./out
+bun install        # at the workspace root
+bun run dev        # http://localhost:3000
+bun run build      # static build to ./dist
 ```
 
-The app is a static Next.js export. To host it under a sub-path (for example a GitHub Pages project site), set `NEXT_PUBLIC_BASE_PATH=/your-repo` at build time. `.github/workflows/deploy.yml` does this automatically and publishes `out/` to GitHub Pages on every push to `main`.
+The app is a Vite SPA (TanStack Router) deployed to Cloudflare Workers as static assets. To host it under a sub-path, set `VITE_BASE_PATH=/your-repo` at build time.
 
 ## Contributing
 
