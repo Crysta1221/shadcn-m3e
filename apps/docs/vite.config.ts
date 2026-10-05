@@ -6,6 +6,7 @@ import react from "@vitejs/plugin-react"
 import { defineConfig, lazyPlugins } from "vite-plus"
 import type { Plugin } from "vite-plus"
 
+import { writeCards } from "./og/card"
 import { PAGE_PATHS, headTags, pageMeta } from "./src/docs/page-meta"
 
 // The shipped code lives in packages/m3e; its `@/…` import specifiers are the
@@ -31,20 +32,23 @@ ${headTags(pageMeta(pathname))}
  * route (dist/docs/color/index.html, …): Workers Assets serves a file before
  * its single-page-app fallback, so crawlers, which do not run scripts, get the
  * right text for each page. Anything without a file still gets the home tags
- * and the client updates them (see usePageMeta).
+ * and the client updates them (see usePageMeta). Each page also gets its own
+ * preview image, dist/og/<route>.png (og/card.ts).
  */
 function seo(): Plugin {
+  let root = process.cwd()
   let outDir = "dist"
   return {
     name: "m3e-seo",
     configResolved(config) {
-      outDir = path.resolve(config.root, config.build.outDir)
+      root = config.root
+      outDir = path.resolve(root, config.build.outDir)
     },
     transformIndexHtml: {
       order: "pre",
       handler: (html) => fill(html, "/"),
     },
-    closeBundle() {
+    async closeBundle() {
       const indexPath = path.join(outDir, "index.html")
       if (!fs.existsSync(indexPath)) return
       const html = fs.readFileSync(indexPath, "utf8")
@@ -56,6 +60,7 @@ function seo(): Plugin {
         fs.mkdirSync(path.dirname(file), { recursive: true })
         fs.writeFileSync(file, fill(html, pathname))
       }
+      await writeCards(root, outDir)
     },
   }
 }

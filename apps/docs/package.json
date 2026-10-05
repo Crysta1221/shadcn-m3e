@@ -34,6 +34,8 @@
     "tw-animate-css": "^1.4.0"
   },
   "devDependencies": {
+    "@fontsource/roboto": "^5.3.0",
+    "@resvg/resvg-js": "^2.6.2",
     "@tanstack/react-router-devtools": "^1.167.2",
     "@tanstack/router-plugin": "^1.168.41",
     "@types/node": "^20",
@@ -42,6 +44,7 @@
     "@vitejs/plugin-react": "^6",
     "cf": "^1.0.0-beta.12",
     "puppeteer-core": "^25.12.0",
+    "satori": "^0.35.0",
     "wrangler": "^4.147.0"
   }
 }
