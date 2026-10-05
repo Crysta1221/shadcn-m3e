@@ -1,8 +1,0 @@
-blank_issues_enabled: false
-contact_links:
-  - name: Questions and ideas
-    url: https://github.com/lnkiai/m3e-canvas/discussions
-    about: Ask how something works, share what you built, or float an idea before it becomes an issue.
-  - name: Security report
-    url: https://github.com/lnkiai/m3e-canvas/security/advisories/new
-    about: Report a vulnerability privately.
