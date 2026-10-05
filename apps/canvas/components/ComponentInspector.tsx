@@ -1,4 +1,3 @@
-"use client";
 
 import { useState } from "react";
 import { Frame, Item, NavTab, PHONE_W, Palette, actionSlotsOf, frameSizeOf } from "@/lib/tokens";

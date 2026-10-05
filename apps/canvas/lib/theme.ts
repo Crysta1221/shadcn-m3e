@@ -1,4 +1,3 @@
-"use client";
 
 import { createContext, useContext } from "react";
 import { DEFAULT_THEME, FONTS, FontKey, LANG_FONT, Theme } from "./tokens";

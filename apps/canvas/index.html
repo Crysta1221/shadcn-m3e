@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#6750A4" />
+    <title>M3E Canvas</title>
+    <meta
+      name="description"
+      content="Sketch Material 3 Expressive screens in the browser and turn them into vibe-coding prompts. / Material 3 Expressive の画面をブラウザで組み立てて、そのままプロンプトに。"
+    />
+    <link rel="canonical" href="%SITE_ORIGIN%%BASE%/" />
+    <meta property="og:title" content="M3E Canvas" />
+    <meta
+      property="og:description"
+      content="Design Material 3 Expressive screens, link them, preview them, and copy a prompt for your AI coding tool."
+    />
+    <meta property="og:image" content="%SITE_ORIGIN%%BASE%/og.png" />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content="%SITE_ORIGIN%%BASE%/og.png" />
+    <link rel="icon" href="%BASE%/favicon.ico" sizes="any" />
+    <link rel="icon" type="image/svg+xml" href="%BASE%/icon.svg" />
+    <link rel="apple-touch-icon" href="%BASE%/apple-icon.png" />
+    <link rel="manifest" href="%BASE%/manifest.webmanifest" />
+    <!-- before the first paint: the panel widths and the theme colours the last
+         visit left, so the shell drawn while the editor loads is the one that
+         appears. The editor reads the same key itself; only well-formed hex
+         colours are taken from it. -->
+    <script>
+      try{var u=JSON.parse(localStorage.getItem('m3e:ui')||'null')||{};var s=document.documentElement.style;var n=function(v){return typeof v==='number'&&isFinite(v)};if(u.leftOpen===false)s.setProperty('--skel-left','52px');else if(n(u.leftW))s.setProperty('--skel-left',Math.min(480,Math.max(296,u.leftW))+'px');if(u.rightOpen===false)s.setProperty('--skel-right','0px');else if(n(u.rightW))s.setProperty('--skel-right',Math.min(480,Math.max(280,u.rightW))+'px');var b=u.boot||{};var ok=function(c){return typeof c==='string'&&/^#[0-9a-fA-F]{6}$/.test(c)};['surface','container','low','high','primary','canvas'].forEach(function(k){if(ok(b[k]))s.setProperty('--skel-'+k,b[k])});}catch(e){}
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400..700,0..1,0&display=block"
+    />
+  </head>
+  <body style="font-family: Roboto, system-ui, sans-serif">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

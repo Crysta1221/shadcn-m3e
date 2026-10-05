@@ -1,4 +1,3 @@
-"use client";
 
 import { useEffect, useState } from "react";
 import { CONTRASTS, Contrast, PALETTES, Palette, Theme } from "@/lib/tokens";

@@ -1,4 +1,3 @@
-"use client";
 
 import { createContext, useContext } from "react";
 import { t, useLang } from "@/lib/i18n";

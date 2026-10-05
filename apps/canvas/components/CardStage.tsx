@@ -1,4 +1,3 @@
-"use client";
 
 import { useEffect, useRef, useState } from "react";
 import { CARD_IMAGE_MIN, CARD_MEDIA_GAP, CARD_PADDING, CardAlign, CardImagePos, Item, Palette, cardContentAlignOf, cardImageMaxOf, cardImagePosOf, cardImageSizeOf, cardTextAlignOf, sizeOf } from "@/lib/tokens";

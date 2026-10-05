@@ -1,4 +1,3 @@
-"use client";
 
 import { Item, Palette, sizeOf } from "@/lib/tokens";
 import type { Screen } from "@/parts/types";

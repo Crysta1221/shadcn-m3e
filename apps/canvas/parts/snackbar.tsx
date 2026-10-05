@@ -1,4 +1,3 @@
-"use client";
 
 import { useEffect } from "react";
 import { Toaster, toast } from "@/components/m3e/sonner";

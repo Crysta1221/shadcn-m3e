@@ -1,4 +1,3 @@
-"use client";
 
 import {
   CARD_PADDING,
@@ -66,7 +65,6 @@ export function CarouselBody({ item, p, scroll = 0 }: { item: Item; p: Palette; 
           >
             {src ? (
               /* the picture fills its card, however the card is shaped */
-              // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={src}
                 alt=""

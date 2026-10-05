@@ -1,4 +1,3 @@
-"use client";
 
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Palette } from "@/lib/tokens";
@@ -64,7 +63,7 @@ export function IconPicker({
      * so the next opening asks again */
     const ctl = new AbortController();
     let alive = true;
-    fetch(`${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/material-symbols.json`, { signal: ctl.signal })
+    fetch(`${import.meta.env.VITE_BASE_PATH ?? ""}/material-symbols.json`, { signal: ctl.signal })
       .then((r) => r.json())
       .then((d: IconMeta[]) => {
         cache = d;

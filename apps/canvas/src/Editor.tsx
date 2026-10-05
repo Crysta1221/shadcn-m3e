@@ -1,4 +1,3 @@
-"use client";
 
 import {
   useCallback,
@@ -143,7 +142,7 @@ import { ConfirmDialog, IconBtn, Segmented } from "@/components/ui";
 import { Lang, LangContext, SEED_TEXT, getLang, setGlobalLang, t, translateDefaultFrameName, translateDefaultText } from "@/lib/i18n";
 
 /** the screens while a model drafts: primary, tertiary and primary container, drifting */
-const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+const BASE_PATH = import.meta.env.VITE_BASE_PATH ?? "";
 
 /** the dragged part's own travel: a little lag reads as weight */
 const CARRY = {

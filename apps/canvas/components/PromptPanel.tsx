@@ -1,4 +1,3 @@
-"use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { buildCode } from "@/lib/codegen";

@@ -1,4 +1,3 @@
-"use client";
 
 import { useEffect, useState } from "react";
 import {
@@ -206,7 +205,6 @@ function CardStrip({ item, selected, onSelect, p }: { item: Item; selected: numb
         dot: !!item.actions?.[`tab:${i}`],
         node: card.src ? (
           <span aria-hidden style={{ position: "absolute", inset: 0, borderRadius: "inherit", overflow: "hidden" }}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={card.src} alt="" draggable={false} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
             {/* the picture covers the cell, so the one picked out wears a ring of its own */}
             {i === selected && <span style={{ position: "absolute", inset: 0, borderRadius: "inherit", border: `3px solid ${p.primary}`, boxSizing: "border-box" }} />}

@@ -1,4 +1,3 @@
-"use client";
 
 import { labelOfPart } from "@/parts/resize";
 import { partBySlug } from "@/parts/registry";

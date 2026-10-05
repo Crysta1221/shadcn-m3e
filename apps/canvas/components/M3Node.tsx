@@ -1,4 +1,3 @@
-"use client";
 
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
@@ -982,7 +981,6 @@ function Body({ item, p, tabScroll, menuShown, screen }: { item: Item; p: Palett
       const ink = cardTextColorOf(item, p);
       const body = cardBodyColorOf(item, p);
       const picture = item.src ? (
-        // eslint-disable-next-line @next/next/no-img-element
         <img src={item.src} alt="" draggable={false} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
       ) : (
         item.icon && <Icon name={item.icon} size={34} />
@@ -1320,7 +1318,6 @@ function Body({ item, p, tabScroll, menuShown, screen }: { item: Item; p: Palett
     case "image":
       if (item.src) {
         return (
-          // eslint-disable-next-line @next/next/no-img-element
           <img
             src={item.src}
             alt=""

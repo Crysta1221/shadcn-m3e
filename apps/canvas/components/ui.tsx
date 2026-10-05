@@ -1,4 +1,3 @@
-"use client";
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { COLOR_TOKENS, ColorToken, PLACES, Palette, Place, R_INNER, SETTLE_MS, clamp, draftGradient } from "@/lib/tokens";

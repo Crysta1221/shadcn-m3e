@@ -1,4 +1,3 @@
-"use client";
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { Item, Kind } from "@/lib/tokens";

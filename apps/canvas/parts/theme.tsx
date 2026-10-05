@@ -1,4 +1,3 @@
-"use client";
 
 import { createContext, useContext, type CSSProperties, type ReactNode } from "react";
 import { themeCss } from "@/lib/m3e/color";

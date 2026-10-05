@@ -1,4 +1,3 @@
-"use client";
 
 import { createElement, type ReactNode } from "react";
 import { COMPONENTS } from "./components";

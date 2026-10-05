@@ -1,4 +1,3 @@
-"use client";
 
 import { useRef } from "react";
 import { Palette } from "@/lib/tokens";
@@ -60,7 +59,7 @@ export function AiWriteBtn({ p, busy, disabled, onClick, onCancel, label, title 
   );
 }
 
-const BASE = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+const BASE = import.meta.env.VITE_BASE_PATH ?? "";
 
 const field = (p: Palette): React.CSSProperties => ({
   width: "100%",
