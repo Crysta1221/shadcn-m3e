@@ -15,6 +15,7 @@ import {
   NavigationRailItem,
 } from "@/components/m3e/navigation"
 import { useColorMode } from "@/components/m3e/color-mode-provider"
+import { usePageMeta } from "@/docs/use-page-meta"
 import { DocsSearch } from "@/docs/search"
 
 const NAV = [
@@ -68,6 +69,7 @@ function Root() {
   const path = useRouterState({ select: (s) => s.location.pathname })
   const active = (to: string) =>
     to === "/" ? path === "/" : path.startsWith(to)
+  usePageMeta(path)
 
   return (
     <div className="flex min-h-svh flex-col md:flex-row">

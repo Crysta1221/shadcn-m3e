@@ -1,5 +1,5 @@
-/** Where the hosted site, and its shadcn registry at `/r`, are served from. */
-export const SITE_ORIGIN = "https://shadcn-m3e.crystaworld.dev"
+// kept in its own file so vite.config.ts can read it without `import.meta.env`
+export { SITE_ORIGIN } from "./origin"
 
 /**
  * Where the Playground (apps/canvas, a static Next.js export) is hosted. Set
