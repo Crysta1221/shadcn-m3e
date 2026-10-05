@@ -18,6 +18,8 @@ export type PageMeta = {
   /** absolute URL of its preview image */
   image: string
   imageAlt: string
+  /** a page that should stay out of search results: the 404 page */
+  noindex?: boolean
 }
 
 /** What the generated preview image of a page shows. */
@@ -84,6 +86,9 @@ const STATIC_PAGES: Record<
     icon: "grid_view",
   },
 }
+
+/** a path that no page has: its meta is the "not found" one, for dist/404.html */
+export const NOT_FOUND_PATH = "/404"
 
 /** every path that has its own page, for prerendering */
 export const PAGE_PATHS: string[] = [
@@ -153,7 +158,7 @@ export function pageCard(pathname: string): Card | undefined {
   return undefined
 }
 
-/** Meta for a pathname; unknown paths get the site defaults. */
+/** Meta for a pathname; an unknown path gets the "not found" meta. */
 export function pageMeta(pathname: string): PageMeta {
   const path = normalize(pathname)
   const url = `${SITE_ORIGIN}${path === "/" ? "" : path}`
@@ -178,11 +183,12 @@ export function pageMeta(pathname: string): PageMeta {
     }
   }
   return {
-    title: SITE_TITLE,
-    description: SITE_DESCRIPTION,
+    title: titled("Page not found"),
+    description: "This page does not exist, or it has moved.",
     url: SITE_ORIGIN,
     image: OG_IMAGE.url,
     imageAlt: OG_IMAGE.alt,
+    noindex: true,
   }
 }
 
@@ -200,6 +206,7 @@ export function headTags(meta: PageMeta): string {
   return [
     `    <title>${esc(meta.title)}</title>`,
     m("name", "description", meta.description),
+    ...(meta.noindex ? [m("name", "robots", "noindex")] : []),
     `    <link rel="canonical" href="${esc(meta.url)}" />`,
     m("property", "og:type", "website"),
     m("property", "og:site_name", SITE_NAME),

@@ -7,7 +7,12 @@ import { defineConfig, lazyPlugins } from "vite-plus"
 import type { Plugin } from "vite-plus"
 
 import { writeCards } from "./og/card"
-import { PAGE_PATHS, headTags, pageMeta } from "./src/docs/page-meta"
+import {
+  NOT_FOUND_PATH,
+  PAGE_PATHS,
+  headTags,
+  pageMeta,
+} from "./src/docs/page-meta"
 
 // The shipped code lives in packages/m3e; its `@/…` import specifiers are the
 // ones consumers get from shadcn, so they are mapped here (and in
@@ -25,6 +30,27 @@ const fill = (html: string, pathname: string) =>
 ${headTags(pageMeta(pathname))}
     ${end}`
   )
+
+/**
+ * Unknown paths get dist/404.html with a 404 status, so every page of the
+ * site must have its own file. Fail the build when a static route in the
+ * generated route tree is missing from PAGE_PATHS (page-meta.ts), which would
+ * otherwise answer 404 in production.
+ */
+function assertEveryRouteIsPrerendered(root: string) {
+  const tree = fs.readFileSync(path.join(root, "src/routeTree.gen.ts"), "utf8")
+  const block = /fullPaths:([^]*?)fileRoutesByTo:/.exec(tree)?.[1] ?? ""
+  const routes = [...block.matchAll(/'([^']+)'/g)]
+    .map((m) => m[1] ?? "")
+    .filter((p) => !p.includes("$"))
+    .map((p) => (p.length > 1 ? p.replace(/\/$/, "") : p))
+  const missing = routes.filter((p) => !PAGE_PATHS.includes(p))
+  if (missing.length > 0) {
+    throw new Error(
+      `Routes missing from PAGE_PATHS in src/docs/page-meta.ts (they would 404): ${missing.join(", ")}`
+    )
+  }
+}
 
 /**
  * Fills the `seo` block of index.html with the page title, description and
@@ -49,6 +75,7 @@ function seo(): Plugin {
       handler: (html) => fill(html, "/"),
     },
     async closeBundle() {
+      assertEveryRouteIsPrerendered(root)
       const indexPath = path.join(outDir, "index.html")
       if (!fs.existsSync(indexPath)) return
       const html = fs.readFileSync(indexPath, "utf8")
@@ -60,6 +87,11 @@ function seo(): Plugin {
         fs.mkdirSync(path.dirname(file), { recursive: true })
         fs.writeFileSync(file, fill(html, pathname))
       }
+      // what Workers Assets serves, with a 404 status, for every other path
+      fs.writeFileSync(
+        path.join(outDir, "404.html"),
+        fill(html, NOT_FOUND_PATH)
+      )
       await writeCards(root, outDir)
     },
   }

@@ -4,6 +4,7 @@ import { Button } from "@/components/m3e/button"
 import { Icon } from "@/components/m3e/icon"
 import { CONTENT } from "@/docs/content"
 import { Markdown } from "@/docs/markdown"
+import { NotFound } from "@/docs/not-found"
 import { headingsOf } from "@/docs/markdown-utils"
 import { Toc } from "@/docs/toc"
 import { GUIDE_PAGES, OUTLINE } from "@/docs/outline"
@@ -20,14 +21,9 @@ function DocPage() {
 
   if (!page || source === undefined) {
     return (
-      <div className="mx-auto flex max-w-3xl flex-col items-start gap-4 p-6 py-16">
-        <h1 className="text-headline-medium text-on-surface">
-          No page called “{slug}”
-        </h1>
-        <Button render={<Link to="/docs" />} nativeButton={false}>
-          Back to the docs
-        </Button>
-      </div>
+      <NotFound title={`No page called “${slug}”`}>
+        Pick one from the docs navigation.
+      </NotFound>
     )
   }
 

@@ -5,11 +5,11 @@ export default defineConfig({
     name: "shadcn-m3e-docs",
     compatibilityDate: "2026-10-01",
     assets: {
-      // the build writes dist/<route>/index.html per page (the seo plugin in
-      // vite.config.ts); serve them at /<route> like the router's own URLs
+      // serve dist/<route>/index.html at /<route>, like the router's own URLs
       htmlHandling: "drop-trailing-slash",
-      // TanStack Router handles client-side routing; unknown paths serve index.html
-      notFoundHandling: "single-page-application",
+      // every page is prerendered (see the seo plugin), so a path without a
+      // file is a real 404: serve dist/404.html with that status
+      notFoundHandling: "404-page",
     },
     observability: {
       enabled: true,

@@ -33,5 +33,17 @@ export function usePageMeta(pathname: string) {
     for (const [selector, attr, key] of TAGS) {
       document.head.querySelector(selector)?.setAttribute(attr, meta[key])
     }
+    // only the 404 page asks to stay out of search results
+    let robots = document.head.querySelector('meta[name="robots"]')
+    if (meta.noindex) {
+      if (!robots) {
+        robots = document.createElement("meta")
+        robots.setAttribute("name", "robots")
+        document.head.append(robots)
+      }
+      robots.setAttribute("content", "noindex")
+    } else {
+      robots?.remove()
+    }
   }, [pathname])
 }

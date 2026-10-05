@@ -15,6 +15,7 @@ import {
   NavigationRailItem,
 } from "@/components/m3e/navigation"
 import { useColorMode } from "@/components/m3e/color-mode-provider"
+import { NotFound } from "@/docs/not-found"
 import { usePageMeta } from "@/docs/use-page-meta"
 import { DocsSearch } from "@/docs/search"
 
@@ -112,4 +113,7 @@ function Root() {
   )
 }
 
-export const Route = createRootRoute({ component: Root })
+export const Route = createRootRoute({
+  component: Root,
+  notFoundComponent: () => <NotFound />,
+})

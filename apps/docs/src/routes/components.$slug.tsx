@@ -4,6 +4,7 @@ import { Badge } from "@/components/m3e/badge"
 import { Button } from "@/components/m3e/button"
 import { Icon } from "@/components/m3e/icon"
 import { CodeBlock } from "@/docs/code-block"
+import { NotFound } from "@/docs/not-found"
 import { ExampleView } from "@/docs/example-view"
 import { loadExamples } from "@/docs/examples"
 import { PropsTable } from "@/docs/props-table"
@@ -24,14 +25,9 @@ function ComponentPage() {
 
   if (!doc) {
     return (
-      <div className="mx-auto flex max-w-3xl flex-col items-start gap-4 p-6 py-16">
-        <h1 className="text-headline-medium text-on-surface">
-          No component called “{slug}”
-        </h1>
-        <Button render={<Link to="/components" />} nativeButton={false}>
-          Back to components
-        </Button>
-      </div>
+      <NotFound title={`No component called “${slug}”`}>
+        Pick one from the list of components.
+      </NotFound>
     )
   }
 
