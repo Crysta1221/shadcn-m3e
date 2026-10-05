@@ -1,0 +1,429 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>shadcn M3E — preview card</title>
+    <!--
+      The source of public/og.png, the Open Graph / Twitter card.
+      `bun run --cwd apps/docs gen:og` renders it with Chrome.
+      ?w=&h= set the card size (default 1200x630).
+      Colors are the M3 baseline scheme (light #6750A4, dark #D0BCFF).
+    -->
+    <style>
+      @font-face {
+        font-family: "Roboto Flex Variable";
+        src: url("../node_modules/@fontsource-variable/roboto-flex/files/roboto-flex-latin-wght-normal.woff2")
+          format("woff2");
+        font-weight: 100 1000;
+      }
+      :root {
+        --primary: #6750a4;
+        --on-primary: #fff;
+        --primary-container: #eaddff;
+        --on-primary-container: #21005d;
+        --secondary-container: #e8def8;
+        --on-secondary-container: #1d192b;
+        --tertiary-container: #ffd8e4;
+        --on-tertiary-container: #31111d;
+        --surface: #fef7ff;
+        --on-surface: #1d1b20;
+        --on-surface-variant: #49454f;
+        --outline: #79747e;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+      }
+      html,
+      body {
+        width: var(--w);
+        height: var(--h);
+        overflow: hidden;
+        font-family: "Roboto Flex Variable", system-ui, sans-serif;
+        color: var(--on-surface);
+      }
+      .card {
+        position: relative;
+        width: var(--w);
+        height: var(--h);
+        overflow: hidden;
+        background:
+          radial-gradient(
+            60% 90% at 0% 0%,
+            #e6dcff 0%,
+            rgb(230 220 255 / 0) 70%
+          ),
+          radial-gradient(
+            50% 70% at 100% 100%,
+            #ffdbe8 0%,
+            rgb(255 219 232 / 0) 70%
+          ),
+          linear-gradient(135deg, #faf3ff, #fef7ff 55%, #fdf0f6);
+      }
+      .shape {
+        position: absolute;
+        pointer-events: none;
+      }
+
+      .copy {
+        position: absolute;
+        left: 72px;
+        top: 0;
+        bottom: 0;
+        width: 570px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 22px;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        font-size: 24px;
+        font-weight: 500;
+        color: var(--on-surface-variant);
+      }
+      .brand svg {
+        width: 44px;
+        height: 44px;
+      }
+      h1 {
+        font-size: 124px;
+        line-height: 0.95;
+        font-weight: 500;
+        letter-spacing: -0.02em;
+      }
+      h1 span {
+        color: var(--primary);
+      }
+      .tagline {
+        font-size: 32px;
+        line-height: 1.3;
+        font-weight: 400;
+        color: var(--on-surface-variant);
+      }
+      .chips {
+        display: flex;
+        gap: 8px;
+      }
+      .chip {
+        height: 40px;
+        padding: 0 17px;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        white-space: nowrap;
+        font-size: 19px;
+        font-weight: 500;
+        background: var(--secondary-container);
+        color: var(--on-secondary-container);
+      }
+      .chip:first-child {
+        background: var(--primary);
+        color: var(--on-primary);
+      }
+      .panel {
+        position: absolute;
+        border-radius: 32px;
+        padding: 26px 28px 30px;
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+      }
+      .panel.light {
+        background: var(--surface);
+        box-shadow:
+          0 1px 3px rgb(0 0 0 / 0.08),
+          0 18px 44px rgb(80 50 140 / 0.2);
+      }
+      .panel.dark {
+        background: #141218;
+        color: #e6e0e9;
+        box-shadow: 0 22px 50px rgb(40 20 80 / 0.4);
+        --primary: #d0bcff;
+        --on-primary: #381e72;
+        --secondary-container: #4a4458;
+        --on-secondary-container: #e8def8;
+        --tertiary-container: #633b48;
+        --on-tertiary-container: #ffd8e4;
+        --outline: #938f99;
+      }
+      .panel h2 {
+        font-size: 22px;
+        font-weight: 450;
+        opacity: 0.9;
+      }
+      .row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        height: 48px;
+        padding: 0 24px;
+        border-radius: 24px;
+        font-size: 18px;
+        font-weight: 500;
+        background: var(--primary);
+        color: var(--on-primary);
+        white-space: nowrap;
+      }
+      .btn.tonal {
+        background: var(--secondary-container);
+        color: var(--on-secondary-container);
+      }
+      .btn.outlined {
+        background: none;
+        color: var(--primary);
+        box-shadow: inset 0 0 0 1.5px var(--outline);
+      }
+      .btn.lg {
+        height: 96px;
+        padding: 0 40px;
+        border-radius: 48px;
+        font-size: 30px;
+      }
+      .btn.extended {
+        height: 80px;
+        padding: 0 28px;
+        font-size: 22px;
+        border-radius: 24px;
+      }
+      .btn svg {
+        width: 1.3em;
+        height: 1.3em;
+        fill: currentColor;
+      }
+      .fab {
+        display: grid;
+        place-items: center;
+        width: 80px;
+        height: 80px;
+        border-radius: 24px;
+        background: var(--tertiary-container);
+        color: var(--on-tertiary-container);
+        box-shadow: 0 3px 8px rgb(0 0 0 / 0.25);
+      }
+      .fab svg {
+        width: 32px;
+        height: 32px;
+        fill: currentColor;
+      }
+      .fab.round {
+        border-radius: 40px;
+        background: var(--primary);
+        color: var(--on-primary);
+      }
+      .icon-btn {
+        display: grid;
+        place-items: center;
+        width: 48px;
+        height: 48px;
+        border-radius: 24px;
+        background: var(--secondary-container);
+        color: var(--on-secondary-container);
+      }
+      .icon-btn svg {
+        width: 24px;
+        height: 24px;
+        fill: currentColor;
+      }
+      .icon-btn.on {
+        border-radius: 14px;
+        background: var(--primary);
+        color: var(--on-primary);
+      }
+      .switch {
+        position: relative;
+        width: 64px;
+        height: 36px;
+        border-radius: 18px;
+        background: var(--primary);
+      }
+      .switch::after {
+        content: "";
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        width: 28px;
+        height: 28px;
+        border-radius: 14px;
+        background: var(--on-primary);
+      }
+      .slider {
+        position: relative;
+        flex: 1;
+        height: 44px;
+        border-radius: 12px;
+        background: var(--secondary-container);
+        overflow: hidden;
+      }
+      .slider i {
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: 62%;
+        background: var(--primary);
+      }
+      .slider b {
+        position: absolute;
+        top: 6px;
+        bottom: 6px;
+        left: calc(62% - 2px);
+        width: 4px;
+        border-radius: 2px;
+        background: var(--on-primary);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <svg class="shape" id="cookie" viewBox="-100 -100 200 200"></svg>
+      <svg class="shape" id="burst" viewBox="-100 -100 200 200"></svg>
+
+      <div class="copy">
+        <div class="brand">
+          <svg viewBox="0 0 144 144">
+            <path
+              fill="#6750A4"
+              d="M89.4282 11.7931C116.492 0.0387955 143.961 27.5077 132.207 54.5718L130.263 59.0465C126.675 67.3094 126.675 76.6907 130.263 84.9535L132.207 89.4282C143.961 116.492 116.492 143.961 89.4282 132.207L84.9535 130.263C76.6907 126.675 67.3093 126.675 59.0465 130.263L54.5718 132.207C27.5077 143.961 0.0387983 116.492 11.7931 89.4282L13.7366 84.9535C17.3253 76.6907 17.3252 67.3093 13.7366 59.0465L11.7931 54.5718C0.0387955 27.5077 27.5077 0.0387993 54.5718 11.7931L59.0465 13.7366C67.3094 17.3252 76.6907 17.3252 84.9535 13.7366L89.4282 11.7931Z"
+            />
+          </svg>
+          shadcn-m3e.crystaworld.dev
+        </div>
+        <h1>shadcn<br /><span>M3E</span></h1>
+        <p class="tagline">
+          Material 3 Expressive for shadcn/ui — shape-morphing buttons, springy
+          motion and dynamic color.
+        </p>
+        <div class="chips">
+          <div class="chip">React 19</div>
+          <div class="chip">Tailwind CSS v4</div>
+          <div class="chip">Base UI</div>
+          <div class="chip">shadcn registry</div>
+        </div>
+      </div>
+
+      <div class="panel light" id="light">
+        <h2>Buttons</h2>
+        <div class="row">
+          <div class="btn">Filled</div>
+          <div class="btn tonal">Tonal</div>
+          <div class="btn outlined">Outlined</div>
+        </div>
+        <div class="row">
+          <div class="btn lg">
+            <svg viewBox="0 0 24 24">
+              <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+            </svg>
+            Large
+          </div>
+          <div class="icon-btn on">
+            <svg viewBox="0 0 24 24">
+              <path
+                d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"
+              />
+            </svg>
+          </div>
+          <div class="icon-btn">
+            <svg viewBox="0 0 24 24">
+              <path
+                d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+              />
+            </svg>
+          </div>
+        </div>
+        <div class="row">
+          <div class="slider"><i></i><b></b></div>
+          <div class="switch"></div>
+        </div>
+      </div>
+
+      <div class="panel dark" id="dark">
+        <h2>FAB</h2>
+        <div class="row">
+          <div class="fab">
+            <svg viewBox="0 0 24 24">
+              <path
+                d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"
+              />
+            </svg>
+          </div>
+          <div class="btn extended">
+            <svg viewBox="0 0 24 24">
+              <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+            </svg>
+            New
+          </div>
+          <div class="fab round">
+            <svg viewBox="0 0 24 24">
+              <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const q = new URLSearchParams(location.search)
+      const W = Number(q.get("w") || 1200)
+      const H = Number(q.get("h") || 630)
+      const root = document.documentElement.style
+      root.setProperty("--w", W + "px")
+      root.setProperty("--h", H + "px")
+
+      // a smooth n-lobed outline, the family of M3E shapes (cookie, sunny, …)
+      const lobes = (n, depth) => {
+        const pts = []
+        for (let i = 0; i < 240; i++) {
+          const t = (i / 240) * Math.PI * 2
+          const r = 92 * (1 - depth + depth * (0.5 + 0.5 * Math.cos(n * t)))
+          pts.push(r * Math.cos(t) + " " + r * Math.sin(t))
+        }
+        return "M" + pts.join("L") + "Z"
+      }
+      const put = (id, n, depth, fill, css) => {
+        const el = document.getElementById(id)
+        el.innerHTML = '<path d="' + lobes(n, depth) + '" fill="' + fill + '"/>'
+        Object.assign(el.style, css)
+      }
+
+      const sx = W / 1200
+      const sy = H / 630
+      put("cookie", 9, 0.14, "#eaddff", {
+        width: 560 * sx + "px",
+        height: 560 * sx + "px",
+        left: 700 * sx + "px",
+        top: -150 * sy + "px",
+        opacity: 0.9,
+      })
+      put("burst", 12, 0.12, "#ffd8e4", {
+        width: 400 * sx + "px",
+        height: 400 * sx + "px",
+        left: 930 * sx + "px",
+        top: 400 * sy + "px",
+        opacity: 0.85,
+        transform: "rotate(15deg)",
+      })
+
+      const place = (id, css) =>
+        Object.assign(document.getElementById(id).style, css)
+      place("light", {
+        left: 640 * sx + "px",
+        top: 118 * sy + "px",
+        transform: "rotate(-4deg)",
+        zoom: sx,
+      })
+      place("dark", {
+        left: 700 * sx + "px",
+        top: 440 * sy + "px",
+        transform: "rotate(3deg)",
+        zoom: sx,
+      })
+    </script>
+  </body>
+</html>

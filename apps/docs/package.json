@@ -12,6 +12,7 @@
     "typecheck": "tsc -b --noEmit",
     "deploy": "cf deploy",
     "deploy:preview": "cf previews deploy",
+    "gen:og": "node scripts/render-og.mjs",
     "predev": "bun run --cwd ../../packages/m3e registry:build",
     "prebuild": "bun run --cwd ../../packages/m3e registry:build"
   },
@@ -40,6 +41,7 @@
     "@types/react-dom": "^19",
     "@vitejs/plugin-react": "^6",
     "cf": "^1.0.0-beta.12",
+    "puppeteer-core": "^25.12.0",
     "wrangler": "^4.147.0"
   }
 }
