@@ -8,6 +8,7 @@ import { dpOf } from "@/parts/resize";
 import type { ListItem, PropDef } from "@/parts/types";
 import { AiHooks } from "./Inspector";
 import { AlignBox, AppearanceCorners, EntryList, FillRun, IconRow, NoteSection, PartHeader, PartTabs, PlaceFn, SlotStrip, Tab, TextRun, TriggerSection, WidthRows } from "./PartPanel";
+import { segmentedFits } from "@/lib/choices";
 import { Field, ImageRow, NamedSizes, PanelShell, Section, Segmented, Select, Slider, Toggle } from "./ui";
 
 /* The panel of a part that is a real shadcn M3E component. It is built from the part's own prop
@@ -48,7 +49,8 @@ function PropRow({ def, value, onChange, item, p, frameW, lang }: { def: PropDef
       return (
         <div>
           {label}
-          {options.length <= 3 ? (
+          {/* short pairs (横/縦) stay a segmented run; style names that would clip drop into a select */}
+          {segmentedFits(options.map((o) => o.label)) ? (
             <Segmented<string> options={options} value={String(value)} onChange={onChange} p={p} height={40} label={labelText} />
           ) : (
             <Select options={options} value={String(value)} onChange={onChange} p={p} label={labelText} />

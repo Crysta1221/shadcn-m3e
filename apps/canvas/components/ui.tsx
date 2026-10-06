@@ -1,5 +1,6 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { COLOR_TOKENS, ColorToken, PLACES, Palette, Place, R_INNER, SETTLE_MS, clamp, draftGradient } from "@/lib/tokens";
 import { AnimatePresence, animate, motion, useReducedMotion } from "motion/react";
 import { COLOR_TOKEN_TEXT, t, useLang } from "@/lib/i18n";
@@ -439,8 +440,31 @@ export function Segmented<K extends string>({
 
 export type SelectOption = { key: string; label: string; icon?: string };
 
+/** where the portaled list sits: above the trigger when the inspector's bottom edge is close */
+type MenuPlace = { left: number; width: number; maxHeight: number; top?: number; bottom?: number };
+
+const MENU_MAX = 232;
+const MENU_GAP = 4;
+
+function measureMenu(trigger: HTMLElement): MenuPlace | null {
+  const r = trigger.getBoundingClientRect();
+  if (r.bottom < 0 || r.top > window.innerHeight) return null;
+  const below = window.innerHeight - r.bottom - MENU_GAP - 8;
+  const above = r.top - MENU_GAP - 8;
+  const up = below < 160 && above > below;
+  const maxHeight = Math.max(88, Math.min(MENU_MAX, up ? above : below));
+  return {
+    left: r.left,
+    width: r.width,
+    maxHeight,
+    ...(up ? { bottom: window.innerHeight - r.top + MENU_GAP } : { top: r.bottom + MENU_GAP }),
+  };
+}
+
 /** A single-choice dropdown: the trigger shows what is picked, and the list that drops from it
- *  scrolls in place once the choices outgrow the box. */
+ *  scrolls once the choices outgrow the box. The list is portaled to the document: the settings
+ *  panel scrolls and clips, and a row being reordered is its own stacking context, so a list
+ *  drawn inside the row would be cut off or painted under the next row. */
 export function Select({
   options,
   value,
@@ -455,6 +479,7 @@ export function Select({
   label: string;
 }) {
   const [open, setOpen] = useState(false);
+  const [place, setPlace] = useState<MenuPlace | null>(null);
   const box = useRef<HTMLDivElement | null>(null);
   const trigger = useRef<HTMLButtonElement | null>(null);
   const list = useRef<HTMLDivElement | null>(null);
@@ -464,12 +489,36 @@ export function Select({
     setOpen(false);
     trigger.current?.focus();
   };
+  useLayoutEffect(() => {
+    if (!open) {
+      setPlace(null);
+      return;
+    }
+    const update = () => {
+      const next = trigger.current ? measureMenu(trigger.current) : null;
+      if (!next) {
+        setOpen(false);
+        return;
+      }
+      setPlace(next);
+    };
+    update();
+    window.addEventListener("scroll", update, true);
+    window.addEventListener("resize", update);
+    return () => {
+      window.removeEventListener("scroll", update, true);
+      window.removeEventListener("resize", update);
+    };
+  }, [open]);
+  const placed = place !== null;
   useEffect(() => {
-    if (!open) return;
+    if (!open || !placed) return;
     /* focus goes to the chosen entry, so the arrow keys start from where the list does */
     (list.current?.querySelector('[aria-selected="true"]') as HTMLElement | null)?.focus();
     const onDown = (e: PointerEvent) => {
-      if (!box.current?.contains(e.target as Node)) setOpen(false);
+      const target = e.target as Node;
+      if (box.current?.contains(target) || list.current?.contains(target)) return;
+      setOpen(false);
     };
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -484,7 +533,7 @@ export function Select({
       window.removeEventListener("pointerdown", onDown, true);
       window.removeEventListener("keydown", onKey, true);
     };
-  }, [open]);
+  }, [open, placed]);
   /* the arrow keys walk the entries, Home and End jump to either end */
   const onListKey = (e: React.KeyboardEvent) => {
     const items = Array.from(list.current?.querySelectorAll<HTMLElement>('[role="option"]') ?? []);
@@ -518,7 +567,7 @@ export function Select({
           width: "100%",
           height: 48,
           padding: "0 12px 0 14px",
-          borderRadius: open ? "12px 12px 4px 4px" : 12,
+          borderRadius: !open ? 12 : place?.bottom !== undefined ? "4px 4px 12px 12px" : "12px 12px 4px 4px",
           border: "none",
           background: p.surfaceContainerHigh,
           color: p.onSurface,
@@ -536,7 +585,9 @@ export function Select({
         <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{current?.label ?? ""}</span>
         <Icon name={open ? "expand_less" : "expand_more"} size={20} />
       </button>
-      {open && (
+      {open &&
+        place &&
+        createPortal(
         <div
           ref={list}
           role="listbox"
@@ -544,12 +595,13 @@ export function Select({
           onKeyDown={onListKey}
           className="no-scrollbar"
           style={{
-            position: "absolute",
-            left: 0,
-            right: 0,
-            top: 52,
-            zIndex: 40,
-            maxHeight: 232,
+            position: "fixed",
+            left: place.left,
+            width: place.width,
+            top: place.top,
+            bottom: place.bottom,
+            zIndex: 80,
+            maxHeight: place.maxHeight,
             overflowY: "auto",
             overscrollBehavior: "contain",
             padding: 4,
@@ -594,8 +646,9 @@ export function Select({
               </button>
             );
           })}
-        </div>
-      )}
+        </div>,
+          document.body,
+        )}
     </div>
   );
 }

@@ -41,6 +41,7 @@ import {
 import { Lang } from "@/lib/i18n";
 import { Icon, boxStyle } from "./M3Node";
 import { IconPicker } from "./IconPicker";
+import { segmentedFits } from "@/lib/choices";
 import { CornerIcon, Field, IconBtn, RUN_CELL, Section, Segmented, Select, SelectOption, Slider, Toggle } from "./ui";
 import { AiHooks, variantsOf } from "./Inspector";
 import { LinkStage, TapStage } from "./TapStage";
@@ -1052,18 +1053,31 @@ function EntryRow({
       )}
       {icons && <IconCell icon={tab.icon || null} open={open} title={t("changeIcon", lang)} onClick={onPick} p={p} />}
       </div>
-      {fields?.map((f) => (
-        <Segmented<string>
-          key={f.key}
-          options={f.options}
-          value={(tab[f.key as keyof NavTab] as string | undefined) || f.options[0]?.key || ""}
-          onChange={(v) => onField?.(f.key, v)}
-          p={p}
-          height={28}
-          tight
-          label={f.label}
-        />
-      ))}
+      {fields?.map((f) => {
+        const value = (tab[f.key as keyof NavTab] as string | undefined) || f.options[0]?.key || "";
+        /* a button's own variant is six style names; they do not fit one row, so that
+           choice is a select. Short width words still sit side by side. */
+        if (segmentedFits(f.options.map((o) => o.label))) {
+          return (
+            <Segmented<string>
+              key={f.key}
+              options={f.options}
+              value={value}
+              onChange={(v) => onField?.(f.key, v)}
+              p={p}
+              height={28}
+              tight
+              label={f.label}
+            />
+          );
+        }
+        return (
+          <div key={f.key} style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            <div style={{ fontSize: 12, fontWeight: 600, color: p.onSurfaceVariant, padding: "0 4px" }}>{f.label}</div>
+            <Select options={f.options} value={value} onChange={(v) => onField?.(f.key, v)} p={p} label={f.label} />
+          </div>
+        );
+      })}
     </Reorder.Item>
   );
 }
