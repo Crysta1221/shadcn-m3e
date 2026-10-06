@@ -291,6 +291,15 @@ function iconsOf(src) {
   return out
 }
 
+// A dependency this package pins to an exact version (recharts) is published
+// as name@version, so `shadcn add` installs the version the components were
+// written against; ranges (^1.2.3) are left to the consumer's package manager.
+const PINNED = JSON.parse(
+  readFileSync(join(PKG, "package.json"), "utf8")
+).dependencies
+const withVersion = (pkg) =>
+  /^\d+\.\d+\.\d+$/.test(PINNED[pkg] ?? "") ? `${pkg}@${PINNED[pkg]}` : pkg
+
 const title = (name) =>
   name
     .split("-")
@@ -340,7 +349,9 @@ for (const item of items.values()) {
     description:
       item.description ??
       `${item.title ?? title(item.name)} — Material 3 Expressive, based on shadcn/ui.`,
-    dependencies: [...npm].toSorted((a, b) => a.localeCompare(b)),
+    dependencies: [...npm]
+      .toSorted((a, b) => a.localeCompare(b))
+      .map(withVersion),
     registryDependencies: [...deps]
       .toSorted((a, b) => a.localeCompare(b))
       .map((d) => `${NS}/${d}`),

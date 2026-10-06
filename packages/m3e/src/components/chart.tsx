@@ -203,6 +203,13 @@ function ChartTooltipContent({
             const key = String(nameKey ?? item.name ?? item.dataKey ?? "value")
             const itemConfig = getPayloadConfigFromPayload(config, item, key)
             const indicatorColor = color ?? item.payload?.fill ?? item.color
+            // custom properties: React's CSSProperties has no `--*` keys
+            // oxlint-disable no-unsafe-type-assertion
+            const indicatorStyle = {
+              "--color-bg": indicatorColor,
+              "--color-border": indicatorColor,
+            } as React.CSSProperties
+            // oxlint-enable no-unsafe-type-assertion
 
             return (
               <div
@@ -231,10 +238,7 @@ function ChartTooltipContent({
                               "my-0.5": nestLabel && indicator === "dashed",
                             }
                           )}
-                          style={{
-                            "--color-bg": indicatorColor,
-                            "--color-border": indicatorColor,
-                          }}
+                          style={indicatorStyle}
                         />
                       )
                     )}

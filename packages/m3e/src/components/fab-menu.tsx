@@ -167,7 +167,7 @@ function FabMenuContent({
               style: {
                 ...child.props.style,
                 "--i": items.length - 1 - i,
-              },
+              } as React.CSSProperties,
             })
           : child
       )}

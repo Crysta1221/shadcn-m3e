@@ -15,5 +15,5 @@
       "@/styles/*": ["./src/styles/*"]
     }
   },
-  "include": ["src", "react-css.d.ts"]
+  "include": ["src"]
 }

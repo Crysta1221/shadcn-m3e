@@ -596,7 +596,7 @@ export const REGISTRY_META: Record<string, RegistryMeta> = {
     "title": "Chart",
     "type": "registry:ui",
     "dependencies": [
-      "recharts"
+      "recharts@3.8.0"
     ],
     "registryDependencies": [
       "cn",

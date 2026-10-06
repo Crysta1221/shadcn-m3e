@@ -46,7 +46,7 @@ function SideSheet({
       data-detached={detached || undefined}
       aria-hidden={!open || undefined}
       inert={!open}
-      style={{ "--side-sheet-w": `${w}px`, ...style }}
+      style={{ "--side-sheet-w": `${w}px`, ...style } as React.CSSProperties}
       className={cn(
         "h-full shrink-0 overflow-hidden transition-[width] motion-spatial-default",
         open

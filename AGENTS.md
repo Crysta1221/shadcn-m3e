@@ -27,17 +27,17 @@ Before you finish a change: `typecheck`, `lint`, `format`, and `registry:build` 
 
 Each app deploys as its own Worker via Workers Builds (repo connected once per Worker; see the dashboard settings below — root directory, commands and watch paths live in the dashboard, not in the repo).
 
-- `apps/docs` → Worker `shadcn-m3e-docs`. Configured for `cf` (the new CLI, beta): `apps/docs/cloudflare.config.ts` (Worker name, SPA `notFoundHandling`, observability) plus `apps/docs/wrangler.config.ts` (`assetsDirectory: "dist"` — cf has no `assets.directory` field; static sites keep that in the Wrangler build config). `cf`/`wrangler` are devDependencies of `apps/docs`. Deploys `bun run --cwd apps/docs deploy` (`cf deploy`), previews `deploy:preview` (`cf previews deploy`).
-- `apps/canvas` → Worker `m3e-canvas`. A Vite+ SPA (`vp build` → `dist/`) deployed with the Wrangler CLI: `apps/canvas/wrangler.jsonc` + `bun run deploy:canvas` (root script). No entrypoint — assets only, SPA fallback.
-- `cf` runs under Node.js (loading `cloudflare.config.ts` on Bun fails) and requires Node 22.18+. On Windows, `cf deploy` currently fails at `spawn EFTYPE` — a cf beta bug: it spawns `wrangler/bin/cf-wrangler.js` directly instead of through `node`. Works on Linux, so Workers Builds is unaffected; locally `node node_modules/wrangler/bin/cf-wrangler.js build` produces `.cloudflare/output/v0` the same way.
-- `devEngines` pins bun, which makes `npm`/`npx` fail inside the repo — CI commands must go through `bun run` scripts, never `npx`.
+- `apps/docs` → Worker `shadcn-m3e-docs`: `apps/docs/wrangler.toml` (Worker name, `dist/` assets with `drop-trailing-slash` and the `404-page` fallback, observability logs and traces). No entrypoint — assets only.
+- `apps/canvas` → Worker `m3e-canvas`: `apps/canvas/wrangler.toml` (`dist/` assets with the SPA fallback, observability). A Vite+ SPA (`vp build` → `dist/`).
+- Both deploy with the Wrangler CLI (a root devDependency) and get Worker Previews from `wrangler preview`; the dashboard only treats a preview command that runs `wrangler preview` as one. `bun run --cwd apps/docs deploy` / `deploy:preview` and `bun run deploy:canvas` / `deploy:canvas:preview` run the same commands locally.
+- `devEngines` pins bun, which makes `npm`/`npx` fail inside the repo — CI commands go through `bun run` scripts or `bunx`, never `npx`. Workers Builds installs its own Bun (1.2.x by default), so each Worker sets the build variable `BUN_VERSION` to the version in `devEngines`.
 
-Workers Builds dashboard settings:
+Workers Builds dashboard settings (both Workers: build variable `BUN_VERSION=1.4.2`):
 
-| Worker          | Root directory | Build command                             | Deploy / preview command                                                    | Build watch paths (includes)                                                 |
-| --------------- | -------------- | ----------------------------------------- | --------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| shadcn-m3e-docs | `/`            | `bun run registry:build && bun run build` | `bun run --cwd apps/docs deploy` / `bun run --cwd apps/docs deploy:preview` | `apps/docs/*`, `packages/m3e/*`, `package.json`, `bun.lock`, `tsconfig.json` |
-| m3e-canvas      | `/`            | `bun run build:canvas`                    | `bun run deploy:canvas`                                                     | `apps/canvas/*`, `package.json`, `bun.lock`, `tsconfig.json`                 |
+| Worker          | Root directory | Build command                             | Deploy command                                            | Preview command                                            | Build watch paths (includes)                                                 |
+| --------------- | -------------- | ----------------------------------------- | --------------------------------------------------------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| shadcn-m3e-docs | `/`            | `bun run registry:build && bun run build` | `bunx wrangler deploy --config apps/docs/wrangler.toml`   | `bunx wrangler preview --config apps/docs/wrangler.toml`   | `apps/docs/*`, `packages/m3e/*`, `package.json`, `bun.lock`, `tsconfig.json` |
+| m3e-canvas      | `/`            | `bun run build:canvas`                    | `bunx wrangler deploy --config apps/canvas/wrangler.toml` | `bunx wrangler preview --config apps/canvas/wrangler.toml` | `apps/canvas/*`, `package.json`, `bun.lock`, `tsconfig.json`                 |
 
 The root directory stays at `/` because `bun install` runs at the workspace root. Watch paths use dashboard wildcards (`*` crosses `/`, so nested paths are covered); `packages/m3e` is included for docs because the site builds against it.
 
@@ -86,6 +86,7 @@ Generated files (`*.generated.*`, `routeTree.gen.ts`, `icon-data*.ts`, `apps/doc
 - **Imports.** Use `@/components/m3e/*`, never `@/components/ui/*`. `cn` comes from `@/lib/m3e/cn` (it knows the M3E type scale; a bare `"cn"` import is aliased to it). Between items import by alias (`@/components/m3e/x`, `@/lib/m3e/x`, `@/hooks/x`): the registry builder follows those. Relative `./` imports are only for files inside one multi-file group (icons, theme). Never import from `apps/docs`.
 - **Registry.** Each `packages/m3e/src/components/<x>.tsx` becomes the item `@m3e/<x>`; its dependencies (npm packages, other items, icons) are derived from its imports by `scripts/build-registry.mjs`. Keep every component file self-contained and its imports honest. Files that only work together are grouped in that script.
 - **TypeScript.** `strict`, `noUnusedLocals`, `noUnusedParameters`, `verbatimModuleSyntax` (use `import type`), `erasableSyntaxOnly` (no enums, namespaces or parameter properties).
+- **CSS custom properties in `style`** need `as React.CSSProperties`: a consumer's React types have no `--*` keys. The docs add them (`apps/docs/src/react-css.d.ts`), `packages/m3e` deliberately does not, so `bun run typecheck` sees what a consumer sees.
 - **Style.** oxfmt: no semicolons, double quotes, ES5 trailing commas, 80 columns, Tailwind classes sorted (`cn`, `cva`). Run `bun run format` rather than formatting by hand. Prefer Tailwind v4 canonical class names (the linter warns).
 - **Components.** Named exports, `data-slot="<name>"` on the root, props spread last, `className` merged with `cn`. Wrap Base UI primitives; keep shadcn prop names and add M3E props beside them.
 - **Lint suppressions** need a reason on the same line or the line above. Fix the cause first.
