@@ -6,6 +6,7 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
+    "typecheck": "tsc -p . --noEmit",
     "registry:build": "node scripts/build-registry.mjs",
     "gen:icons": "node scripts/icons.mjs --src src,../../apps/docs/src --dir src/components",
     "check:icons": "node scripts/icons.mjs --check --src src,../../apps/docs/src --dir src/components",

@@ -114,11 +114,13 @@ function SplitButton({
     <div
       data-slot="split-button"
       className={cn(splitButtonVariants(), className)}
-      style={{
-        "--split-inner": s.inner,
-        "--split-pressed": s.pressed,
-        ...style,
-      }}
+      style={
+        {
+          "--split-inner": s.inner,
+          "--split-pressed": s.pressed,
+          ...style,
+        } as React.CSSProperties
+      }
       {...props}
     >
       <Button

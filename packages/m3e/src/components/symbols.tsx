@@ -1,12 +1,12 @@
+import { Icon, type IconProps } from "@iconify/react/offline"
+
+import { warnIfMissing } from "./icon-registry"
+
 /*
  * The Material Symbols Rounded glyphs the components use internally, from the
  * bundled icon data (see icon-registry.ts). They render as <svg>, so container
  * rules such as [&_svg]:size-5 size them.
  */
-import { Icon, type IconProps } from "@iconify/react/offline"
-
-import { warnIfMissing } from "./icon-registry"
-
 type SymbolProps = Omit<IconProps, "icon">
 
 function symbol(icon: string) {

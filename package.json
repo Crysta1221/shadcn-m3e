@@ -28,7 +28,7 @@
     "dev:canvas": "bun run --cwd apps/canvas dev",
     "build:canvas": "bun run --cwd apps/canvas build",
     "deploy:canvas": "wrangler deploy --config apps/canvas/wrangler.jsonc",
-    "typecheck": "bun run --cwd apps/docs typecheck",
+    "typecheck": "bun run --cwd apps/docs typecheck && bun run --cwd packages/m3e typecheck",
     "lint": "vp lint",
     "format": "vp fmt",
     "format:check": "vp fmt --check",

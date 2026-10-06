@@ -49,7 +49,9 @@ function Slider({
         setInternal(next)
         onValueChange?.(next, details)
       }}
-      style={{ "--slider-gap": GAP }}
+      // custom properties: React's CSSProperties has no `--*` keys
+      // oxlint-disable-next-line no-unsafe-type-assertion
+      style={{ "--slider-gap": GAP } as React.CSSProperties}
       {...props}
     >
       <SliderPrimitive.Control className="relative flex touch-none items-center select-none data-horizontal:h-11 data-horizontal:w-full data-vertical:h-full data-vertical:min-h-40 data-vertical:w-11 data-vertical:flex-col">

@@ -8,7 +8,9 @@ function AspectRatio({
   return (
     <div
       data-slot="aspect-ratio"
-      style={{ "--ratio": ratio }}
+      // custom properties: React's CSSProperties has no `--*` keys
+      // oxlint-disable-next-line no-unsafe-type-assertion
+      style={{ "--ratio": ratio } as React.CSSProperties}
       className={cn("relative aspect-(--ratio)", className)}
       {...props}
     />
