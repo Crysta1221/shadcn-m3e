@@ -31,3 +31,6 @@ dist-ssr
 .tanstack
 videos/
 apps/docs/src/__codegen__
+
+# generated changelog announcement images (og/update.ts)
+apps/docs/src/docs/changelog/*.png
