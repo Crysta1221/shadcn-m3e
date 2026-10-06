@@ -1,0 +1,13 @@
+{
+  "title": "Registry fixes",
+  "icon": "check_circle",
+  "items": [
+    { "type": "fix", "text": "Registry items type-check once installed" },
+    { "type": "fix", "text": "Header comments survive shadcn add" },
+    { "type": "fix", "text": "recharts ships with its pinned version" },
+    {
+      "type": "chore",
+      "text": "Worker Previews for docs and Playground"
+    }
+  ]
+}

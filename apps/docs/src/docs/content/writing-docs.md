@@ -68,3 +68,7 @@ bun run lint
 bun run gen:icons   # bundle the icons the docs use
 bun run check:icons # they exist and the data is up to date
 ```
+
+## Changelog
+
+Add `src/docs/changelog/YYYY-MM-DD.json` for each update: the file name is the date, with an optional `title` and `icon` and a list of `items`, each `{ "type": "feat" | "fix" | "docs" | "chore" | …, "text": "…" }`. The Changelog page lists the files newest first. `bun run --cwd apps/docs gen:update <YYYY-MM-DD>` draws the announcement image for an entry (up to five items fit) next to its JSON.

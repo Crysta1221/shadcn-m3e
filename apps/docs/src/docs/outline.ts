@@ -128,6 +128,18 @@ export const OUTLINE: GuideSection[] = [
       },
     ],
   },
+  {
+    title: "Project",
+    pages: [
+      {
+        slug: "changelog",
+        title: "Changelog",
+        icon: "history",
+        description:
+          "What changed in the components, the registry and the docs, newest first.",
+      },
+    ],
+  },
 ]
 
 export const GUIDE_PAGES = OUTLINE.flatMap((s) => s.pages)

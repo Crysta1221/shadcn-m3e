@@ -2,6 +2,7 @@ import { Link, createFileRoute } from "@tanstack/react-router"
 
 import { Button } from "@/components/m3e/button"
 import { Icon } from "@/components/m3e/icon"
+import { Changelog } from "@/docs/changelog"
 import { CONTENT } from "@/docs/content"
 import { Markdown } from "@/docs/markdown"
 import { NotFound } from "@/docs/not-found"
@@ -43,7 +44,7 @@ function DocPage() {
             <Icon name="chevron_right" size={18} />
             <span>{section?.title}</span>
           </div>
-          <Markdown source={source} />
+          {slug === "changelog" ? <Changelog /> : <Markdown source={source} />}
         </div>
 
         <nav
