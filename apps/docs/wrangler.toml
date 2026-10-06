@@ -1,0 +1,24 @@
+# Deployed by Workers Builds from the repository root:
+#   bunx wrangler deploy --config apps/docs/wrangler.toml
+#   bunx wrangler preview --config apps/docs/wrangler.toml
+# `vp build` emits dist/ beforehand; paths here are relative to this file.
+name = "shadcn-m3e-docs"
+compatibility_date = "2026-10-01"
+
+[assets]
+directory = "./dist"
+# serve dist/<route>/index.html at /<route>, like the router's own URLs
+html_handling = "drop-trailing-slash"
+# every page is prerendered (see the seo plugin), so a path without a file is
+# a real 404: serve dist/404.html with that status
+not_found_handling = "404-page"
+
+[observability]
+enabled = true
+
+[observability.logs]
+enabled = true
+invocation_logs = true
+
+[observability.traces]
+enabled = true

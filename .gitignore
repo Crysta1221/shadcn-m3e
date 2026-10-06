@@ -12,8 +12,7 @@ dist
 dist-ssr
 *.local
 
-# Cloudflare (cf / wrangler)
-.cloudflare/
+# Cloudflare (wrangler)
 .wrangler
 .dev.vars*
 .env*

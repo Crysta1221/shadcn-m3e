@@ -1,0 +1,20 @@
+# Deployed by Workers Builds from the repository root:
+#   bunx wrangler deploy --config apps/canvas/wrangler.toml
+#   bunx wrangler preview --config apps/canvas/wrangler.toml
+# `vp build` emits dist/ beforehand; paths here are relative to this file.
+name = "m3e-canvas"
+compatibility_date = "2026-10-01"
+
+[assets]
+directory = "./dist"
+not_found_handling = "single-page-application"
+
+[observability]
+enabled = true
+
+[observability.logs]
+enabled = true
+invocation_logs = true
+
+[observability.traces]
+enabled = true
