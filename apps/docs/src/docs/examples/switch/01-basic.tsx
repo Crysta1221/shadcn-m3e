@@ -1,5 +1,6 @@
+import { Icon } from "@/components/m3e/icon"
 import { Label } from "@/components/m3e/label"
-import { Switch } from "@/components/m3e/switch"
+import { CheckedIcon, Switch, UncheckedIcon } from "@/components/m3e/switch"
 
 export const meta = {
   title: "Basic",
@@ -20,6 +21,28 @@ export default function Demo() {
       </Label>
       <Label>
         <Switch disabled /> Disabled
+      </Label>
+      <Label>
+        <Switch>
+          <CheckedIcon />
+          <UncheckedIcon />
+        </Switch>
+        State icons
+      </Label>
+      <Label>
+        <Switch defaultChecked>
+          <CheckedIcon />
+        </Switch>
+        Only checked icon
+      </Label>
+      <Label>
+        <Switch>
+          <CheckedIcon />
+          <UncheckedIcon>
+            <Icon name="check_indeterminate_small" />
+          </UncheckedIcon>
+        </Switch>
+        Custom icon
       </Label>
     </>
   )

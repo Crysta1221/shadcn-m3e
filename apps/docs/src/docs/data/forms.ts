@@ -36,7 +36,15 @@ export const forms: DocEntry[] = [
     description:
       "Turns a single setting on or off. The handle grows when selected and squeezes to 28dp while pressed.",
     spec: "https://m3.material.io/components/switch/overview",
-    imports: [{ from: "switch", names: ["Switch"] }],
+    imports: [
+      {
+        from: "switch",
+        names: ["Switch", "CheckedIcon", "UncheckedIcon"],
+      },
+    ],
+    notes: [
+      "Nest CheckedIcon and/or UncheckedIcon inside Switch for handle glyphs. UncheckedIcon keeps the handle at 24dp in both states so the icon fits.",
+    ],
     props: [
       {
         rows: [

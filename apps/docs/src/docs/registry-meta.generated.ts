@@ -1783,10 +1783,20 @@ export const REGISTRY_META: Record<string, RegistryMeta> = {
     ],
     "registryDependencies": [
       "cn",
+      "icon",
       "ripple",
       "styles"
     ],
-    "icons": [],
+    "icons": [
+      {
+        "name": "check",
+        "glyph": "check-outline-rounded"
+      },
+      {
+        "name": "close",
+        "glyph": "close-outline-rounded"
+      }
+    ],
     "files": [
       {
         "path": "src/components/m3e/switch.tsx",
