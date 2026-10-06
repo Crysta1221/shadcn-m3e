@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Documentation
+    url: https://shadcn-m3e.crystaworld.dev
+    about: Component pages, installation and the registry.
+  - name: Material 3 Expressive guidelines
+    url: https://m3.material.io
+    about: Check the spec before reporting a visual difference.

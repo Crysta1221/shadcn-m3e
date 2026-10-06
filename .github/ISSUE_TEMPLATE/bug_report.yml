@@ -1,0 +1,58 @@
+name: Bug report
+description: Something does not work or does not match the Material 3 Expressive spec.
+labels: ["bug", "status: unplanned"]
+body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Component (packages/m3e)
+        - Registry / shadcn add
+        - Docs site
+        - Playground (apps/canvas)
+        - Deployment
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: component
+    attributes:
+      label: Component or page
+      description: e.g. `switch`, `/components/switch`
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What you expected, and what you got instead.
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: A link, a minimal snippet, or steps starting from `shadcn add @m3e/<name>`.
+      placeholder: |
+        1. Open /components/...
+        2. ...
+    validations:
+      required: true
+  - type: textarea
+    id: env
+    attributes:
+      label: Environment
+      description: Browser and version, OS, light or dark mode, React / Tailwind / shadcn CLI versions.
+  - type: textarea
+    id: extra
+    attributes:
+      label: Screenshots or recordings (optional)
+      description: Drag and drop images or videos here. Not required, but they help with visual bugs.
+    validations:
+      required: false
+  - type: textarea
+    id: console
+    attributes:
+      label: Console output (optional)
+      render: shell
+    validations:
+      required: false

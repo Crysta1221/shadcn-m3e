@@ -1,0 +1,58 @@
+name: Feature request
+description: Propose a new component, a new option, or an improvement.
+labels: ["feat", "status: unplanned"]
+body:
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Kind
+      options:
+        - New component (not in the registry yet)
+        - Change to an existing component (new prop, variant or behavior)
+        - Docs or demo
+        - Tooling / registry
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: existing
+    attributes:
+      label: Existing component
+      description: For a change to an existing component, which one? (e.g. `switch`.) For a new component, the closest existing one, if any.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or use case
+      description: What are you trying to do that is hard or impossible today?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+    validations:
+      required: true
+  - type: input
+    id: spec
+    attributes:
+      label: Material 3 / Compose spec link
+      description: The m3.material.io page or Compose Material3 token file this is based on.
+  - type: checkboxes
+    id: m3e
+    attributes:
+      label: Material 3 Expressive
+      description: Tick what applies.
+      options:
+        - label: It is in the Material 3 Expressive spec (m3.material.io or Compose Material3).
+        - label: It follows the M3E rules in AGENTS.md (role colors, shape and type scales, spring motion).
+        - label: It is not in the spec, and I explain below why it still belongs here.
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+  - type: checkboxes
+    id: contribute
+    attributes:
+      label: Contribution
+      options:
+        - label: I am willing to open a PR for this.
