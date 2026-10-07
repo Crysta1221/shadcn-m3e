@@ -338,6 +338,8 @@ export const COMMON_LABELS: Record<string, Labels> = {
   elevated: { ja: "浮き上がり", zh: "凸起", ko: "입체" },
   outlined: { ja: "枠線", zh: "描边", ko: "윤곽" },
   text: { ja: "テキスト", zh: "文本", ko: "텍스트" },
+  narrow: { ja: "狭い", zh: "窄", ko: "좁게" },
+  wide: { ja: "広い", zh: "宽", ko: "넓게" },
   flat: { ja: "フラット", zh: "扁平", ko: "플랫" },
   outline: { ja: "枠線", zh: "描边", ko: "윤곽" },
   ghost: { ja: "ゴースト", zh: "幽灵", ko: "고스트" },
