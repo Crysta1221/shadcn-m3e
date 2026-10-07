@@ -36,12 +36,7 @@ export const forms: DocEntry[] = [
     description:
       "Turns a single setting on or off. The handle grows when selected and squeezes to 28dp while pressed.",
     spec: "https://m3.material.io/components/switch/overview",
-    imports: [
-      {
-        from: "switch",
-        names: ["Switch", "CheckedIcon", "UncheckedIcon"],
-      },
-    ],
+    imports: [{ from: "switch", names: ["Switch"] }],
     props: [
       {
         title: "Switch",
@@ -52,29 +47,24 @@ export const forms: DocEntry[] = [
             default: '"default"',
             description: "52×32dp, or a compact 40×24dp (not in the M3 spec).",
           },
-        ],
-      },
-      {
-        title: "CheckedIcon",
-        rows: [
           {
-            name: "children",
-            type: "ReactNode",
-            default: "check glyph",
+            name: "icons",
+            type: "boolean",
+            default: "false",
             description:
-              "Optional custom glyph for the checked state. Must be nested inside Switch.",
+              "Show the default check and close glyphs on the handle.",
           },
-        ],
-      },
-      {
-        title: "UncheckedIcon",
-        rows: [
           {
-            name: "children",
+            name: "checkedIcon",
             type: "ReactNode",
-            default: "close glyph",
             description:
-              "Optional custom glyph for the unchecked state. Must be nested inside Switch.",
+              "Custom glyph for the checked state. Allows to show an icon only for the checked state if `icons` is false and no `uncheckedIcon` is provided.",
+          },
+          {
+            name: "uncheckedIcon",
+            type: "ReactNode",
+            description:
+              "Custom glyph for the unchecked state. Allows to show an icon only for the unchecked state if `icons` is false and no `checkedIcon` is provided.",
           },
         ],
       },

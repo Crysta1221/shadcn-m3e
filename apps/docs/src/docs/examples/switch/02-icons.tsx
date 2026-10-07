@@ -1,44 +1,34 @@
 import { Icon } from "@/components/m3e/icon"
 import { Label } from "@/components/m3e/label"
-import { CheckedIcon, Switch, UncheckedIcon } from "@/components/m3e/switch"
+import { Switch } from "@/components/m3e/switch"
 
 export const meta = {
   title: "Icons",
   description:
-    "Ability to have an optional icon within the switch handle. Custom icons need a gen:icons pass so the glyph is bundled.",
+    "Optional icons on the handle. Custom icons need a `gen:icons` pass so the glyph is bundled.",
 }
 
 export default function Demo() {
   return (
     <>
       <Label>
-        <Switch>
-          <CheckedIcon />
-          <UncheckedIcon />
-        </Switch>
+        <Switch icons />
         Checked and unchecked icons
       </Label>
       <Label>
-        <Switch defaultChecked>
-          <CheckedIcon />
-        </Switch>
+        <Switch defaultChecked checkedIcon={<Icon name="check" />} />
         Only checked icon
       </Label>
       <Label>
-        <Switch size="sm">
-          <CheckedIcon />
-          <UncheckedIcon />
-        </Switch>
+        <Switch size="sm" icons />
         Compact with icons
       </Label>
       <Label>
-        <Switch>
-          <CheckedIcon />
-          <UncheckedIcon>
-            {/* Requires bun run gen:icons so check_indeterminate_small is bundled */}
-            <Icon name="check_indeterminate_small" />
-          </UncheckedIcon>
-        </Switch>
+        <Switch
+          checkedIcon={<Icon name="check" />}
+          // Requires `npm run gen:icons` so check_indeterminate_small is bundled
+          uncheckedIcon={<Icon name="check_indeterminate_small" />}
+        />
         Custom icon
       </Label>
     </>
