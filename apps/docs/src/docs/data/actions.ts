@@ -68,7 +68,7 @@ export const actions: DocEntry[] = [
     spec: "https://m3.material.io/components/buttons/overview",
     imports: [{ from: "toggle", names: ["Toggle"] }],
     notes: [
-      'The standard variant has no container until selected; icons of selected toggles are filled when you use <Icon fill="auto" />.',
+      'The standard variant has no container until selected; icons of selected toggles are filled when you use `<Icon fill="auto" />`.',
     ],
     props: [
       {

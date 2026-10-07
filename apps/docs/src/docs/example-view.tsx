@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils"
 
 import { CodeBlock } from "./code-block"
 import type { Example } from "./examples"
+import { InlineText } from "./inline-text"
 import { DOCS } from "./registry"
 
 /*
@@ -49,7 +50,7 @@ function ExampleView({
         </h3>
         {meta.description && (
           <p className="text-body-medium text-on-surface-variant">
-            {meta.description}
+            <InlineText text={meta.description} />
           </p>
         )}
         {meta.uses && (

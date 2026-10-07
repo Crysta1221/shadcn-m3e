@@ -3,7 +3,7 @@ import { Toggle } from "@/components/m3e/toggle"
 
 export const meta = {
   title: "Standard and filled",
-  description: 'fill="auto" fills the icon while the toggle is selected.',
+  description: '`fill="auto"` fills the icon while the toggle is selected.',
 }
 
 export default function Demo() {
