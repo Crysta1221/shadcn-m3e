@@ -1790,11 +1790,11 @@ export const REGISTRY_META: Record<string, RegistryMeta> = {
     "icons": [
       {
         "name": "check",
-        "glyph": "check-outline-rounded"
+        "glyph": "check-rounded"
       },
       {
         "name": "close",
-        "glyph": "close-outline-rounded"
+        "glyph": "close-rounded"
       }
     ],
     "files": [

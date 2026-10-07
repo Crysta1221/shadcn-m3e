@@ -42,17 +42,39 @@ export const forms: DocEntry[] = [
         names: ["Switch", "CheckedIcon", "UncheckedIcon"],
       },
     ],
-    notes: [
-      "Nest CheckedIcon and/or UncheckedIcon inside Switch for handle glyphs. UncheckedIcon keeps the handle at 24dp in both states so the icon fits.",
-    ],
     props: [
       {
+        title: "Switch",
         rows: [
           {
             name: "size",
             type: '"default" | "sm"',
             default: '"default"',
             description: "52×32dp, or a compact 40×24dp (not in the M3 spec).",
+          },
+        ],
+      },
+      {
+        title: "CheckedIcon",
+        rows: [
+          {
+            name: "children",
+            type: "ReactNode",
+            default: "check glyph",
+            description:
+              "Optional custom glyph for the checked state. Must be nested inside Switch.",
+          },
+        ],
+      },
+      {
+        title: "UncheckedIcon",
+        rows: [
+          {
+            name: "children",
+            type: "ReactNode",
+            default: "close glyph",
+            description:
+              "Optional custom glyph for the unchecked state. Must be nested inside Switch.",
           },
         ],
       },

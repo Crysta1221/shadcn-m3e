@@ -3,16 +3,16 @@
 import type * as React from "react"
 import { Switch as SwitchPrimitive } from "@base-ui/react/switch"
 
-import { Icon } from "@/components/m3e/icon"
 import { Ripple } from "@/components/m3e/ripple"
+import { CheckIcon, CloseIcon } from "@/components/m3e/symbols"
 import { cn } from "@/lib/m3e/cn"
 
 /*
  * M3 switch: 52×32 track. The handle grows 16 → 24dp when selected and to
- * 28dp while pressed, moving on the spatial spring. With an UncheckedIcon the
- * handle stays 24dp while off so the glyph fits; icons are 16dp and centered.
+ * 28dp while pressed, moving on the spatial spring.
  * `sm` is a compact 40×24 variant for dense UIs (not in the M3 spec).
  */
+
 function Switch({
   className,
   size = "default",
@@ -44,11 +44,10 @@ function Switch({
           "group-data-[size=default]/switch:size-4 group-data-[size=default]/switch:translate-x-1.5",
           "group-data-[size=default]/switch:data-checked:size-6 group-data-[size=default]/switch:data-checked:translate-x-[22px]",
           "group-data-[size=default]/switch:group-data-press/switch:size-7 group-data-[size=default]/switch:group-data-press/switch:translate-x-0 group-data-[size=default]/switch:group-data-press/switch:data-checked:translate-x-5",
-          // UncheckedIcon: keep the handle at 24dp while off so the glyph fits
-          // (only when unchecked — otherwise it would pin a checked thumb left)
-          "group-data-[size=default]/switch:data-unchecked:has-data-[slot=switch-unchecked-icon]:size-6 group-data-[size=default]/switch:data-unchecked:has-data-[slot=switch-unchecked-icon]:translate-x-0.5",
+          // UncheckedIcon: keeps 24dp while off so the glyph fits
+          "group-data-[size=default]/switch:data-unchecked:has-data-[slot=switch-unchecked-icon]:not-group-data-press/switch:size-6 group-data-[size=default]/switch:data-unchecked:has-data-[slot=switch-unchecked-icon]:not-group-data-press/switch:translate-x-0.5",
           "group-data-[size=sm]/switch:size-3 group-data-[size=sm]/switch:translate-x-1 group-data-[size=sm]/switch:group-data-press/switch:size-5 group-data-[size=sm]/switch:group-data-press/switch:translate-x-0 group-data-[size=sm]/switch:data-checked:size-4 group-data-[size=sm]/switch:data-checked:translate-x-[18px] group-data-[size=sm]/switch:group-data-press/switch:data-checked:translate-x-4",
-          "group-data-[size=sm]/switch:data-unchecked:has-data-[slot=switch-unchecked-icon]:size-4 group-data-[size=sm]/switch:data-unchecked:has-data-[slot=switch-unchecked-icon]:translate-x-0.5",
+          "group-data-[size=sm]/switch:data-unchecked:has-data-[slot=switch-unchecked-icon]:not-group-data-press/switch:size-4 group-data-[size=sm]/switch:data-unchecked:has-data-[slot=switch-unchecked-icon]:not-group-data-press/switch:translate-x-0.5",
           "group-hover/switch:bg-on-surface-variant data-checked:bg-on-primary data-checked:state-layer-primary group-hover/switch:data-checked:bg-primary-container",
           "group-hover/switch:before:opacity-8 group-focus-visible/switch:before:opacity-10 group-data-press/switch:before:opacity-10",
           "group-data-disabled/switch:bg-on-surface/38 group-data-disabled/switch:before:opacity-0! group-data-disabled/switch:data-checked:bg-surface",
@@ -62,6 +61,7 @@ function Switch({
   )
 }
 
+/** Glyph shown on the checked handle. Nest inside Switch. */
 function CheckedIcon({
   className,
   children,
@@ -71,16 +71,17 @@ function CheckedIcon({
     <span
       data-slot="switch-checked-icon"
       className={cn(
-        "absolute inset-0 hidden items-center justify-center text-on-primary-container group-data-checked/switch:flex group-data-disabled/switch:text-on-surface group-data-disabled/switch:opacity-38 [&_svg]:size-4",
+        "pointer-events-none absolute inset-0 flex items-center justify-center text-on-primary-container opacity-0 transition-opacity motion-effects-default group-data-checked/switch:opacity-100 group-data-disabled/switch:group-data-checked/switch:text-on-surface group-data-disabled/switch:group-data-checked/switch:opacity-38 [&_svg]:size-4 group-data-[size=sm]/switch:[&_svg]:size-3",
         className
       )}
       {...props}
     >
-      {children ?? <Icon name="check" />}
+      {children ?? <CheckIcon />}
     </span>
   )
 }
 
+/** Glyph shown on the unchecked handle. Nest inside Switch. */
 function UncheckedIcon({
   className,
   children,
@@ -90,12 +91,12 @@ function UncheckedIcon({
     <span
       data-slot="switch-unchecked-icon"
       className={cn(
-        "absolute inset-0 hidden items-center justify-center text-surface-container-highest group-data-unchecked/switch:flex group-data-disabled/switch:text-surface [&_svg]:size-4",
+        "pointer-events-none absolute inset-0 flex items-center justify-center text-surface-container-highest opacity-0 transition-opacity motion-effects-default group-data-unchecked/switch:opacity-100 group-data-disabled/switch:group-data-unchecked/switch:text-surface [&_svg]:size-4 group-data-[size=sm]/switch:[&_svg]:size-3",
         className
       )}
       {...props}
     >
-      {children ?? <Icon name="close" />}
+      {children ?? <CloseIcon />}
     </span>
   )
 }
