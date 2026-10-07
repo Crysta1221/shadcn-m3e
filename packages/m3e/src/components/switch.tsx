@@ -65,6 +65,7 @@ function Switch({
         {showChecked ? (
           <span
             data-slot="switch-checked-icon"
+            aria-hidden="true"
             className="pointer-events-none absolute inset-0 flex items-center justify-center text-on-primary-container opacity-0 transition-opacity motion-effects-default group-data-checked/switch:opacity-100 group-data-disabled/switch:group-data-checked/switch:text-on-surface group-data-disabled/switch:group-data-checked/switch:opacity-38 [&_svg]:size-4 group-data-[size=sm]/switch:[&_svg]:size-3"
           >
             {checkedIcon ?? <CheckIcon />}
@@ -73,6 +74,7 @@ function Switch({
         {showUnchecked ? (
           <span
             data-slot="switch-unchecked-icon"
+            aria-hidden="true"
             className="pointer-events-none absolute inset-0 flex items-center justify-center text-surface-container-highest opacity-0 transition-opacity motion-effects-default group-data-unchecked/switch:opacity-100 group-data-disabled/switch:group-data-unchecked/switch:text-surface [&_svg]:size-4 group-data-[size=sm]/switch:[&_svg]:size-3"
           >
             {uncheckedIcon ?? <CloseIcon />}
