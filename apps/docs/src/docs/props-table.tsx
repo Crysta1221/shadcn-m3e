@@ -8,6 +8,7 @@ import {
   TableRow,
 } from "@/components/m3e/table"
 
+import { InlineText } from "./inline-text"
 import type { PropRow } from "./registry"
 
 function PropsTable({ title, rows }: { title?: string; rows: PropRow[] }) {
@@ -40,7 +41,7 @@ function PropsTable({ title, rows }: { title?: string; rows: PropRow[] }) {
                   {r.default ?? "—"}
                 </TableCell>
                 <TableCell className="whitespace-normal text-on-surface-variant">
-                  {r.description}
+                  <InlineText text={r.description} />
                 </TableCell>
               </TableRow>
             ))}

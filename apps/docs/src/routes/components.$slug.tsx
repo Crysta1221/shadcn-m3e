@@ -4,9 +4,10 @@ import { Badge } from "@/components/m3e/badge"
 import { Button } from "@/components/m3e/button"
 import { Icon } from "@/components/m3e/icon"
 import { CodeBlock } from "@/docs/code-block"
-import { NotFound } from "@/docs/not-found"
 import { ExampleView } from "@/docs/example-view"
 import { loadExamples } from "@/docs/examples"
+import { InlineText } from "@/docs/inline-text"
+import { NotFound } from "@/docs/not-found"
 import { PropsTable } from "@/docs/props-table"
 import { RegistryInstall } from "@/docs/registry-install"
 import { CATEGORIES, DOCS, importLine } from "@/docs/registry"
@@ -54,7 +55,7 @@ function ComponentPage() {
           </Badge>
         </div>
         <p className="text-body-large text-on-surface-variant">
-          {doc.description}
+          <InlineText text={doc.description} />
         </p>
         {doc.spec && (
           <a
@@ -84,7 +85,9 @@ function ComponentPage() {
           <h2 className="text-headline-small text-on-surface">Usage</h2>
           <ul className="flex list-disc flex-col gap-2 pl-6 text-body-large text-on-surface-variant">
             {doc.notes.map((n) => (
-              <li key={n}>{n}</li>
+              <li key={n}>
+                <InlineText text={n} />
+              </li>
             ))}
           </ul>
         </section>
