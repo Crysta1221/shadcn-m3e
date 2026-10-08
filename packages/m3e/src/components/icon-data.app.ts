@@ -98,6 +98,9 @@ const data: IconifyJSON = {
     "check-box-rounded": {
       "body": "<path fill=\"currentColor\" d=\"m10.6 13.4l-2.15-2.15q-.275-.275-.7-.275t-.7.275t-.275.7t.275.7L9.9 15.5q.3.3.7.3t.7-.3l5.65-5.65q.275-.275.275-.7t-.275-.7t-.7-.275t-.7.275zM5 21q-.825 0-1.412-.587T3 19V5q0-.825.588-1.412T5 3h14q.825 0 1.413.588T21 5v14q0 .825-.587 1.413T19 21z\"/>"
     },
+    "check-indeterminate-small-rounded": {
+      "body": "<path fill=\"currentColor\" d=\"M7 13q-.425 0-.712-.288T6 12t.288-.712T7 11h10q.425 0 .713.288T18 12t-.288.713T17 13z\"/>"
+    },
     "code-off-rounded": {
       "body": "<path fill=\"currentColor\" d=\"M4.825 12.025L8.7 15.9q.275.275.275.7t-.275.7t-.7.275t-.7-.275l-4.6-4.6q-.15-.15-.213-.325T2.426 12t.063-.375t.212-.325l2.875-2.875l-3.5-3.5q-.3-.3-.3-.712t.3-.713t.713-.3t.712.3l17 17q.3.3.3.7t-.3.7t-.712.3t-.713-.3L7 9.85zm12.6 2.113q0-.413.3-.713l1.45-1.45L15.3 8.1q-.275-.275-.275-.7t.275-.7t.7-.275t.7.275l4.6 4.6q.15.15.213.325t.062.375t-.062.375t-.213.325l-2.175 2.175q-.3.3-.7.288t-.7-.313t-.3-.712\"/>"
     },
@@ -668,6 +671,9 @@ const data: IconifyJSON = {
     },
     "bottom-navigation-rounded": {
       "parent": "bottom-navigation"
+    },
+    "check-indeterminate-small-outline-rounded": {
+      "parent": "check-indeterminate-small-rounded"
     },
     "code-off-outline-rounded": {
       "parent": "code-off-rounded"

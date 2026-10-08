@@ -1,22 +1,34 @@
 "use client"
 
+import type * as React from "react"
 import { Switch as SwitchPrimitive } from "@base-ui/react/switch"
-import { cn } from "@/lib/m3e/cn"
 
 import { Ripple } from "@/components/m3e/ripple"
+import { CheckIcon, CloseIcon } from "@/components/m3e/symbols"
+import { cn } from "@/lib/m3e/cn"
 
 /*
  * M3 switch: 52×32 track. The handle grows 16 → 24dp when selected and to
  * 28dp while pressed, moving on the spatial spring.
  * `sm` is a compact 40×24 variant for dense UIs (not in the M3 spec).
  */
+
 function Switch({
   className,
   size = "default",
+  icons = false,
+  checkedIcon,
+  uncheckedIcon,
   ...props
 }: SwitchPrimitive.Root.Props & {
   size?: "sm" | "default"
+  icons?: boolean
+  checkedIcon?: React.ReactNode
+  uncheckedIcon?: React.ReactNode
 }) {
+  const showChecked = icons || checkedIcon != null
+  const showUnchecked = icons || uncheckedIcon != null
+
   return (
     <SwitchPrimitive.Root
       data-slot="switch"
@@ -35,18 +47,39 @@ function Switch({
       <SwitchPrimitive.Thumb
         data-slot="switch-thumb"
         className={cn(
-          "state-layer-circle pointer-events-none absolute top-1/2 left-0 block -translate-y-1/2 rounded-full bg-outline transition-shape [transition-property:width,height,translate,background-color] state-layer-on-surface",
+          "state-layer-circle pointer-events-none absolute top-1/2 left-0 flex -translate-y-1/2 items-center justify-center rounded-full bg-outline transition-shape [transition-property:width,height,translate,background-color] state-layer-on-surface",
           // unchecked 16dp (centered 16dp from the outer left edge), checked 24dp, pressed 28dp
           "group-data-[size=default]/switch:size-4 group-data-[size=default]/switch:translate-x-1.5",
           "group-data-[size=default]/switch:data-checked:size-6 group-data-[size=default]/switch:data-checked:translate-x-[22px]",
           "group-data-[size=default]/switch:group-data-press/switch:size-7 group-data-[size=default]/switch:group-data-press/switch:translate-x-0 group-data-[size=default]/switch:group-data-press/switch:data-checked:translate-x-5",
+          // Unchecked with icon: IconHandleHeight/Width 24dp (Compose SwitchTokens)
+          "group-data-[size=default]/switch:data-unchecked:has-data-[slot=switch-unchecked-icon]:not-group-data-press/switch:size-6 group-data-[size=default]/switch:data-unchecked:has-data-[slot=switch-unchecked-icon]:not-group-data-press/switch:translate-x-0.5",
           "group-data-[size=sm]/switch:size-3 group-data-[size=sm]/switch:translate-x-1 group-data-[size=sm]/switch:group-data-press/switch:size-5 group-data-[size=sm]/switch:group-data-press/switch:translate-x-0 group-data-[size=sm]/switch:data-checked:size-4 group-data-[size=sm]/switch:data-checked:translate-x-[18px] group-data-[size=sm]/switch:group-data-press/switch:data-checked:translate-x-4",
+          "group-data-[size=sm]/switch:data-unchecked:has-data-[slot=switch-unchecked-icon]:not-group-data-press/switch:size-4 group-data-[size=sm]/switch:data-unchecked:has-data-[slot=switch-unchecked-icon]:not-group-data-press/switch:translate-x-0.5",
           "group-hover/switch:bg-on-surface-variant data-checked:bg-on-primary data-checked:state-layer-primary group-hover/switch:data-checked:bg-primary-container",
           "group-hover/switch:before:opacity-8 group-focus-visible/switch:before:opacity-10 group-data-press/switch:before:opacity-10",
           "group-data-disabled/switch:bg-on-surface/38 group-data-disabled/switch:before:opacity-0! group-data-disabled/switch:data-checked:bg-surface",
           "group-data-[size=sm]/switch:[--state-layer-size:32px]"
         )}
       >
+        {showChecked ? (
+          <span
+            data-slot="switch-checked-icon"
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 flex items-center justify-center text-on-primary-container opacity-0 transition-opacity motion-effects-default group-data-checked/switch:opacity-100 group-data-disabled/switch:group-data-checked/switch:text-on-surface group-data-disabled/switch:group-data-checked/switch:opacity-38 [&_svg]:size-4 group-data-[size=sm]/switch:[&_svg]:size-3"
+          >
+            {checkedIcon ?? <CheckIcon />}
+          </span>
+        ) : null}
+        {showUnchecked ? (
+          <span
+            data-slot="switch-unchecked-icon"
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 flex items-center justify-center text-surface-container-highest opacity-0 transition-opacity motion-effects-default group-data-unchecked/switch:opacity-100 group-data-disabled/switch:group-data-unchecked/switch:text-surface [&_svg]:size-4 group-data-[size=sm]/switch:[&_svg]:size-3"
+          >
+            {uncheckedIcon ?? <CloseIcon />}
+          </span>
+        ) : null}
         <Ripple className="inset-auto top-1/2 left-1/2 size-10 -translate-1/2 rounded-full ripple-on-surface group-data-[size=sm]/switch:size-8 group-data-checked/switch:ripple-primary" />
       </SwitchPrimitive.Thumb>
     </SwitchPrimitive.Root>

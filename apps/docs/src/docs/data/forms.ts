@@ -39,12 +39,32 @@ export const forms: DocEntry[] = [
     imports: [{ from: "switch", names: ["Switch"] }],
     props: [
       {
+        title: "Switch",
         rows: [
           {
             name: "size",
             type: '"default" | "sm"',
             default: '"default"',
             description: "52×32dp, or a compact 40×24dp (not in the M3 spec).",
+          },
+          {
+            name: "icons",
+            type: "boolean",
+            default: "false",
+            description:
+              "Show the default check and close glyphs on the handle.",
+          },
+          {
+            name: "checkedIcon",
+            type: "ReactNode",
+            description:
+              "Custom glyph for the checked state. Allows to show an icon only for the checked state if `icons` is false and no `uncheckedIcon` is provided.",
+          },
+          {
+            name: "uncheckedIcon",
+            type: "ReactNode",
+            description:
+              "Custom glyph for the unchecked state. Allows to show an icon only for the unchecked state if `icons` is false and no `checkedIcon` is provided.",
           },
         ],
       },
