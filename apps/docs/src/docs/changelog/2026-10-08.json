@@ -1,0 +1,28 @@
+{
+  "title": "Switch icons and a phone search",
+  "icon": "toggle_on",
+  "items": [
+    {
+      "type": "feat",
+      "text": "Icons on the Switch handle",
+      "by": "anjerodev",
+      "pr": 2
+    },
+    {
+      "type": "feat",
+      "text": "Inline code in the docs prose",
+      "by": "anjerodev",
+      "pr": 5
+    },
+    {
+      "type": "feat",
+      "text": "GitHub link and a phone command search",
+      "pr": 4
+    },
+    {
+      "type": "fix",
+      "text": "Long Playground style names use a select",
+      "pr": 4
+    }
+  ]
+}
