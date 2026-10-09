@@ -23,6 +23,7 @@ import {
   type Node,
 } from "./kit"
 import {
+  credit,
   formatDate,
   isChangeEntry,
   typeLabel,
@@ -71,8 +72,11 @@ function fit(text: string, max = 44): string {
   return `${cut.slice(0, cut.lastIndexOf(" ")).replace(/[,;:.\s]+$/, "")}…`
 }
 
-function row({ type, text }: ChangeItem): Node {
-  const { label, bg, fg } = typeStyle(type)
+function row(item: ChangeItem): Node {
+  const { label, bg, fg } = typeStyle(item.type)
+  const by = credit(item).trim()
+  // the credit is set at 22px, about three quarters of a 29px character
+  const room = 44 - Math.ceil((by.length + 1) * 0.75)
   return h("div", { display: "flex", alignItems: "center", gap: 18 }, [
     h(
       "div",
@@ -90,7 +94,12 @@ function row({ type, text }: ChangeItem): Node {
       },
       label
     ),
-    h("div", { fontSize: 29, color: ON_SURFACE }, fit(text)),
+    h("div", { display: "flex", alignItems: "baseline", gap: 10 }, [
+      h("div", { fontSize: 29, color: ON_SURFACE }, fit(item.text, room)),
+      ...(by
+        ? [h("div", { fontSize: 22, color: ON_SURFACE_VARIANT }, by)]
+        : []),
+    ]),
   ])
 }
 

@@ -4,13 +4,30 @@
  * Changelog page (`content.ts`) and the announcement image (`og/update.ts`).
  * Plain data and functions only: the image script runs this file in Bun.
  */
-export type ChangeItem = { type: string; text: string }
+export type ChangeItem = {
+  type: string
+  text: string
+  /** GitHub login of an outside contributor, shown as "by @login" */
+  by?: string
+  /** number of the pull request that made the change */
+  pr?: number
+}
 export type ChangeEntry = {
   /** a short theme for the day, shown under the date */
   title?: string
   /** Material Symbols name for the announcement image */
   icon?: string
   items: ChangeItem[]
+}
+
+const REPO_URL = "https://github.com/Crysta1221/shadcn-m3e"
+
+export const prUrl = (pr: number) => `${REPO_URL}/pull/${pr}`
+export const userUrl = (login: string) => `https://github.com/${login}`
+
+/** " by @login (#2)", the credit after an item's text; empty when it has none */
+export function credit({ by, pr }: ChangeItem): string {
+  return `${by ? ` by @${by}` : ""}${pr ? ` (#${pr})` : ""}`
 }
 
 const MONTHS = [

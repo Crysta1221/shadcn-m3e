@@ -1,3 +1,5 @@
+import type * as React from "react"
+
 import { cn } from "@/lib/m3e/cn"
 
 import { CHANGELOG } from "./content"
@@ -5,7 +7,9 @@ import {
   CHANGELOG_INTRO,
   formatDate,
   newestFirst,
+  prUrl,
   typeLabel,
+  userUrl,
 } from "./changelog-format"
 import { Markdown } from "./markdown"
 
@@ -13,6 +17,19 @@ import { Markdown } from "./markdown"
 const TAG: Record<string, string> = {
   feat: "bg-primary-container text-on-primary-container",
   fix: "bg-tertiary-container text-on-tertiary-container",
+}
+
+function GitHubLink({ href, children }: React.ComponentProps<"a">) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noreferrer"
+      className="text-primary underline decoration-primary/40 underline-offset-2 hover:decoration-primary"
+    >
+      {children}
+    </a>
+  )
 }
 
 /** The Changelog page: each entry's date, its title and its items with a type tag. */
@@ -41,6 +58,23 @@ function Changelog() {
                   </span>
                   <span className="text-body-large text-on-surface-variant">
                     {item.text}
+                    {item.by && (
+                      <>
+                        {" by "}
+                        <GitHubLink href={userUrl(item.by)}>
+                          @{item.by}
+                        </GitHubLink>
+                      </>
+                    )}
+                    {item.pr && (
+                      <>
+                        {" ("}
+                        <GitHubLink href={prUrl(item.pr)}>
+                          #{item.pr}
+                        </GitHubLink>
+                        {")"}
+                      </>
+                    )}
                   </span>
                 </li>
               ))}
