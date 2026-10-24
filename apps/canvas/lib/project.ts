@@ -42,6 +42,11 @@ const validItem = (item: unknown) =>
   optionalNumber(item.count) &&
   (item.component === undefined || typeof item.component === "string") &&
   (item.props === undefined || isRecord(item.props)) &&
+  optionalNumber(item.size) &&
+  optionalNumber(item.size2) &&
+  optionalNumber(item.radiusTop) &&
+  optionalNumber(item.radiusBottom) &&
+  optionalNumber(item.value) &&
   validTabs(item.tabs);
 
 const validGroup = (group: unknown) =>
