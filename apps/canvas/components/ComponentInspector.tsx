@@ -128,6 +128,7 @@ export function ComponentProps({ item, palette: p, onChange, frame }: { item: It
         .map((d) => (
           <PropRow key={d.key} def={d} value={read(d)} onChange={(v) => set(d.key, v)} item={item} p={p} frameW={frame ? frameSizeOf(frame).w : PHONE_W} lang={lang} />
         ))}
+      {def.slug === "fab" && !!values.s("label") && !!values.s("icon") && <Toggle on={!!item.collapseOnScroll} onChange={(collapseOnScroll) => onChange({ collapseOnScroll: collapseOnScroll || undefined })} label={t("fabScrollSwitch", lang)} p={p} />}
     </div>
   );
 }

@@ -109,6 +109,7 @@ describe("isProject", () => {
     { id: null }, { name: 1 }, { x: Infinity }, { x: "0" }, { y: NaN },
     { w: 0 }, { w: -1 }, { w: Infinity }, { w: "100" }, { w: null },
     { h: 0 }, { h: -1 }, { h: NaN }, { h: "100" }, { h: null }, { note: false },
+    { length: 0 }, { length: -1 }, { length: Infinity }, { length: "1784" }, { length: null },
   ])("rejects invalid frame fields %# %o", (patch) => {
     const value = doc();
     expect(isProject({ ...value, frames: [{ ...value.frames[0], ...patch }] })).toBe(false);
@@ -127,6 +128,22 @@ describe("isProject", () => {
   it("accepts positive fractional frame dimensions and an empty note", () => {
     const value = doc();
     expect(isProject({ ...value, frames: [{ ...value.frames[0], w: 0.5, h: 800, note: "" }] })).toBe(true);
+  });
+
+  it("accepts a screen that runs longer than its device", () => {
+    const value = doc();
+    expect(isProject({ ...value, frames: [{ ...value.frames[0], length: 1784 }] })).toBe(true);
+  });
+
+  it.each(["size", "size2", "radiusTop", "radiusBottom", "value"])("rejects non-numeric %s before importing a project", async (field) => {
+    for (const invalid of [null, "wide", {}, [], NaN, Infinity, -Infinity]) {
+      const value = withItem({ [field]: invalid });
+      expect(isProject(value)).toBe(false);
+      await expect(readProject(new File([JSON.stringify(value)], "invalid.json"))).resolves.toBeNull();
+    }
+    for (const valid of [undefined, 0, 12.5, 64]) {
+      expect(isProject(withItem({ [field]: valid }))).toBe(true);
+    }
   });
 });
 
@@ -173,6 +190,14 @@ describe("readProject", () => {
     for (const value of [null, 0, 1, "true", "false", {}, []]) {
       expect(isProject(withItem({ kind: "navRail", [field]: value }))).toBe(false);
     }
+  });
+
+  it.each([undefined, false, true])("accepts optional extended FAB scroll-collapse boolean %s", (collapseOnScroll) => {
+    expect(isProject(withItem({ kind: "extendedFab", collapseOnScroll }))).toBe(true);
+  });
+
+  it.each([null, 0, 1, "true", "false", {}, []])("rejects non-boolean extended FAB scroll-collapse value %j", (collapseOnScroll) => {
+    expect(isProject(withItem({ kind: "extendedFab", collapseOnScroll }))).toBe(false);
   });
 
   it.each([undefined, 2, 4, 8, 16])("preserves progress thickness %s in project files", async (trackThickness) => {

@@ -37,7 +37,7 @@ function ComponentPage() {
   const next = ORDER[at + 1]
 
   return (
-    <article className="mx-auto flex max-w-3xl flex-col gap-10 p-6 py-10">
+    <article className="mx-auto flex max-w-3xl min-w-0 flex-col gap-10 p-3 py-10 sm:p-6 sm:py-10">
       <header className="flex flex-col gap-3">
         <div className="flex items-center gap-2 text-label-large text-on-surface-variant">
           <Link to="/components" className="hover:underline">
@@ -47,7 +47,7 @@ function ComponentPage() {
           <span>{doc.category}</span>
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-display-small-emphasized text-on-surface">
+          <h1 className="min-w-0 text-display-small-emphasized wrap-anywhere text-on-surface">
             {doc.name}
           </h1>
           <Badge variant={doc.origin === "m3e" ? "tertiary" : "secondary"}>

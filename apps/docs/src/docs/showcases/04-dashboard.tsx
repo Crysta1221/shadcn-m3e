@@ -74,8 +74,8 @@ export default function Demo() {
   const data = RANGES[range]
 
   return (
-    <div className="mx-auto flex max-w-3xl flex-col gap-4">
-      <div className="flex items-center justify-between gap-3">
+    <div className="@container/dashboard mx-auto flex max-w-3xl min-w-0 flex-col gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-title-large text-on-surface">Overview</h2>
         <Tabs value={range} onValueChange={(v) => isRange(v) && setRange(v)}>
           <TabsList variant="segmented">
@@ -85,7 +85,7 @@ export default function Demo() {
         </Tabs>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 @2xl/dashboard:grid-cols-3">
         {data.stats.map(([label, value, change, tone]) => (
           <Card key={label} variant="filled">
             <CardHeader>

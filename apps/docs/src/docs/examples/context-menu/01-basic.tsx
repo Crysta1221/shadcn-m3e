@@ -13,7 +13,7 @@ export const meta = {
 export default function Demo() {
   return (
     <ContextMenu>
-      <ContextMenuTrigger className="flex h-32 w-64 items-center justify-center rounded-lg border border-dashed border-outline text-body-medium text-on-surface-variant">
+      <ContextMenuTrigger className="flex h-32 w-full max-w-64 items-center justify-center rounded-lg border border-dashed border-outline text-body-medium text-on-surface-variant">
         Right-click here
       </ContextMenuTrigger>
       <ContextMenuContent className="w-48">

@@ -10,7 +10,7 @@ export const meta = {
 export default function Demo() {
   return (
     <>
-      <FloatingToolbar>
+      <FloatingToolbar aria-label="Formatting">
         <Button variant="text" size="icon" aria-label="Undo">
           <Icon name="undo" />
         </Button>
@@ -24,7 +24,7 @@ export default function Demo() {
           <Icon name="format_italic" />
         </Toggle>
       </FloatingToolbar>
-      <FloatingToolbar variant="vibrant">
+      <FloatingToolbar aria-label="Formatting" variant="vibrant">
         <Button variant="text" size="icon" aria-label="Undo">
           <Icon name="undo" />
         </Button>
@@ -32,7 +32,7 @@ export default function Demo() {
           <Icon name="format_bold" />
         </Toggle>
       </FloatingToolbar>
-      <FloatingToolbar orientation="vertical">
+      <FloatingToolbar aria-label="Formatting" orientation="vertical">
         <Button variant="text" size="icon" aria-label="Undo">
           <Icon name="undo" />
         </Button>

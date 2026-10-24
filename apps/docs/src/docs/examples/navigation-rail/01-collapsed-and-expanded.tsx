@@ -13,8 +13,8 @@ export const meta = {
 
 export default function Demo() {
   return (
-    <div className="flex h-96 gap-4">
-      <div className="overflow-hidden rounded-lg border border-outline-variant">
+    <div className="flex flex-wrap gap-4">
+      <div className="h-96 max-w-full overflow-hidden rounded-lg border border-outline-variant">
         <NavigationRail>
           <NavigationRailHeader>
             <Fab aria-label="Compose">
@@ -26,7 +26,7 @@ export default function Demo() {
           <NavigationRailItem icon="settings" label="Settings" />
         </NavigationRail>
       </div>
-      <div className="overflow-hidden rounded-lg border border-outline-variant">
+      <div className="h-96 max-w-full overflow-hidden rounded-lg border border-outline-variant">
         <NavigationRail expanded>
           <NavigationRailHeader>
             <ExtendedFab icon={<Icon name="edit" />}>Compose</ExtendedFab>

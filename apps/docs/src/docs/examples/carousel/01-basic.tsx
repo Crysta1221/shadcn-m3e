@@ -13,7 +13,7 @@ export const meta = {
 
 export default function Demo() {
   return (
-    <Carousel className="mx-auto w-full max-w-xs">
+    <Carousel aria-label="Numbered slides" className="mx-auto w-full max-w-xs">
       <CarouselContent>
         {Array.from({ length: 5 }, (_, i) => (
           <CarouselItem key={i}>
@@ -23,8 +23,10 @@ export default function Demo() {
           </CarouselItem>
         ))}
       </CarouselContent>
-      <CarouselPrevious />
-      <CarouselNext />
+      <div className="mt-3 flex justify-center gap-2">
+        <CarouselPrevious className="static translate-none" />
+        <CarouselNext className="static translate-none" />
+      </div>
     </Carousel>
   )
 }

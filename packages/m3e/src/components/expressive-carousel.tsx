@@ -176,9 +176,19 @@ function ExpressiveCarousel({
         onKeyDown={(e) => {
           const el = e.currentTarget
           if (e.key === "ArrowRight")
-            el.scrollBy({ left: step, behavior: "smooth" })
+            el.scrollBy({
+              left: step,
+              behavior: matchMedia("(prefers-reduced-motion: reduce)").matches
+                ? "auto"
+                : "smooth",
+            })
           else if (e.key === "ArrowLeft")
-            el.scrollBy({ left: -step, behavior: "smooth" })
+            el.scrollBy({
+              left: -step,
+              behavior: matchMedia("(prefers-reduced-motion: reduce)").matches
+                ? "auto"
+                : "smooth",
+            })
           else return
           e.preventDefault()
         }}

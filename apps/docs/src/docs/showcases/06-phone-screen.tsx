@@ -29,7 +29,7 @@ const TRIPS = [
 
 export default function Demo() {
   return (
-    <div className="relative mx-auto flex h-full w-[360px] flex-col border-x border-outline-variant bg-surface">
+    <div className="relative mx-auto flex h-full w-full max-w-[360px] flex-col border-x border-outline-variant bg-surface">
       <AppBar
         title="Trips"
         leading={

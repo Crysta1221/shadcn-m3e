@@ -264,6 +264,7 @@ export function migrateLegacy(it: Item): Migration | null {
     component: built.slug,
     props,
     legacy: it,
+    ...(built.slug === "fab" && it.collapseOnScroll ? { collapseOnScroll: true } : {}),
     ...look,
     ...(it.action ? { action: it.action } : {}),
     ...(Object.keys(actions).length ? { actions } : {}),

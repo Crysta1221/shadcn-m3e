@@ -20,29 +20,38 @@ export default function Demo() {
   const [open, setOpen] = React.useState(true)
 
   return (
-    <div className="flex h-96 overflow-hidden rounded-lg border border-outline-variant">
-      <div className="flex min-w-0 flex-1 flex-col items-start gap-3 p-6">
-        <h3 className="text-title-medium text-on-surface">Inbox</h3>
-        <p className="text-body-medium text-on-surface-variant">
-          The list keeps its place; only its width changes.
-        </p>
-        <Button variant="tonal" onClick={() => setOpen((o) => !o)}>
-          <Icon name="tune" />
-          {open ? "Hide filters" : "Filters"}
-        </Button>
-      </div>
-      <SideSheet open={open}>
-        <SideSheetHeader title="Filters" onClose={() => setOpen(false)} />
-        <SideSheetContent>
-          <p>Narrow the messages down by sender, date or label.</p>
-        </SideSheetContent>
-        <SideSheetFooter>
-          <Button onClick={() => setOpen(false)}>Apply</Button>
-          <Button variant="outlined" onClick={() => setOpen(false)}>
-            Cancel
+    <div className="@container/sheet">
+      <div className="flex h-[32rem] flex-col overflow-hidden rounded-lg border border-outline-variant @2xl/sheet:h-96 @2xl/sheet:flex-row">
+        <div className="flex min-w-0 flex-1 flex-col items-start gap-3 p-6">
+          <h3 className="text-title-medium text-on-surface">Inbox</h3>
+          <p className="text-body-medium text-on-surface-variant">
+            The list keeps its place; only its width changes.
+          </p>
+          <Button variant="tonal" onClick={() => setOpen((o) => !o)}>
+            <Icon name="tune" />
+            {open ? "Hide filters" : "Filters"}
           </Button>
-        </SideSheetFooter>
-      </SideSheet>
+        </div>
+        <SideSheet
+          open={open}
+          className={
+            open
+              ? "h-auto min-h-0 max-w-full flex-1 @2xl/sheet:h-full @2xl/sheet:flex-none [&>div]:max-w-full"
+              : "h-0 @2xl/sheet:h-full"
+          }
+        >
+          <SideSheetHeader title="Filters" onClose={() => setOpen(false)} />
+          <SideSheetContent>
+            <p>Narrow the messages down by sender, date or label.</p>
+          </SideSheetContent>
+          <SideSheetFooter>
+            <Button onClick={() => setOpen(false)}>Apply</Button>
+            <Button variant="outlined" onClick={() => setOpen(false)}>
+              Cancel
+            </Button>
+          </SideSheetFooter>
+        </SideSheet>
+      </div>
     </div>
   )
 }

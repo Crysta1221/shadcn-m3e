@@ -12,7 +12,7 @@ function ExamplesPage() {
   const examples = Route.useLoaderData()
 
   return (
-    <div className="mx-auto flex max-w-5xl flex-col gap-10 p-6 py-10">
+    <div className="mx-auto flex max-w-5xl min-w-0 flex-col gap-10 p-3 py-10 sm:p-6 sm:py-10">
       <header className="flex flex-col gap-3">
         <h1 className="text-display-small-emphasized text-on-surface">
           Examples

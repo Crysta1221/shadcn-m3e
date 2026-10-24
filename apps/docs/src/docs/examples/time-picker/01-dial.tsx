@@ -9,8 +9,12 @@ export const meta = {
 export default function Demo() {
   return (
     <>
-      <TimePicker onCancel={() => {}} onConfirm={() => {}} />
-      <TimePicker hour24 defaultValue={{ hours: 15, minutes: 45 }} />
+      <TimePicker className="p-2" onCancel={() => {}} onConfirm={() => {}} />
+      <TimePicker
+        className="p-2"
+        hour24
+        defaultValue={{ hours: 15, minutes: 45 }}
+      />
     </>
   )
 }

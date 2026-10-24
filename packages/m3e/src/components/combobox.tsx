@@ -30,6 +30,7 @@ function ComboboxTrigger({
 }: ComboboxPrimitive.Trigger.Props) {
   return (
     <ComboboxPrimitive.Trigger
+      aria-label={children ? undefined : "Show options"}
       data-slot="combobox-trigger"
       className={cn("[&_svg:not([class*='size-'])]:size-5", className)}
       {...props}
@@ -43,6 +44,7 @@ function ComboboxTrigger({
 function ComboboxClear({ className, ...props }: ComboboxPrimitive.Clear.Props) {
   return (
     <ComboboxPrimitive.Clear
+      aria-label="Clear selection"
       data-slot="combobox-clear"
       render={<InputGroupButton variant="ghost" size="icon-xs" />}
       className={cn(className)}
@@ -73,6 +75,7 @@ function ComboboxInput({
       <InputGroupAddon align="inline-end">
         {showTrigger && (
           <InputGroupButton
+            aria-label="Show options"
             size="icon-xs"
             variant="ghost"
             render={<ComboboxTrigger />}
@@ -261,6 +264,11 @@ function ComboboxChip({
       {children}
       {showRemove && (
         <ComboboxPrimitive.ChipRemove
+          aria-label={
+            typeof children === "string"
+              ? `Remove ${children}`
+              : "Remove selection"
+          }
           render={<Button variant="ghost" size="icon-xs" />}
           className="-ml-1 opacity-50 hover:opacity-100"
           data-slot="combobox-chip-remove"

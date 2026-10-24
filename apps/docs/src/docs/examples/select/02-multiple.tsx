@@ -21,7 +21,7 @@ export const meta = {
 export default function Demo() {
   return (
     <Select multiple defaultValue={["apple", "cherry"]} items={fruits}>
-      <SelectTrigger className="w-64">
+      <SelectTrigger aria-label="Options" className="w-full max-w-64">
         <SelectValue />
       </SelectTrigger>
       <SelectContent>

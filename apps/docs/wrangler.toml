@@ -22,3 +22,6 @@ invocation_logs = true
 
 [observability.traces]
 enabled = true
+
+# Wrangler requires this block even without Preview-specific settings.
+[previews]

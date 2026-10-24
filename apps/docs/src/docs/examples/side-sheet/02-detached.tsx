@@ -19,22 +19,34 @@ export default function Demo() {
   const [open, setOpen] = React.useState(true)
 
   return (
-    <div className="flex h-96 overflow-hidden rounded-lg border border-outline-variant">
-      <SideSheet open={open} side="left" detached width={300}>
-        <SideSheetHeader
-          title="Details"
-          onBack={() => setOpen(false)}
-          onClose={() => setOpen(false)}
-        />
-        <SideSheetContent>
-          <p>Only the sheet is rounded; the page behind it stays flat.</p>
-        </SideSheetContent>
-      </SideSheet>
-      <div className="flex min-w-0 flex-1 flex-col items-start gap-3 p-6">
-        <Button variant="tonal" onClick={() => setOpen((o) => !o)}>
-          <Icon name="info" />
-          {open ? "Close details" : "Details"}
-        </Button>
+    <div className="@container/sheet">
+      <div className="flex h-[32rem] flex-col overflow-hidden rounded-lg border border-outline-variant @2xl/sheet:h-96 @2xl/sheet:flex-row">
+        <SideSheet
+          open={open}
+          side="left"
+          detached
+          width={300}
+          className={
+            open
+              ? "h-auto min-h-0 max-w-full flex-1 @2xl/sheet:h-full @2xl/sheet:flex-none [&>div]:max-w-[calc(100%-2rem)]"
+              : "h-0 @2xl/sheet:h-full"
+          }
+        >
+          <SideSheetHeader
+            title="Details"
+            onBack={() => setOpen(false)}
+            onClose={() => setOpen(false)}
+          />
+          <SideSheetContent>
+            <p>Only the sheet is rounded; the page behind it stays flat.</p>
+          </SideSheetContent>
+        </SideSheet>
+        <div className="flex min-w-0 flex-1 flex-col items-start gap-3 p-6">
+          <Button variant="tonal" onClick={() => setOpen((o) => !o)}>
+            <Icon name="info" />
+            {open ? "Close details" : "Details"}
+          </Button>
+        </div>
       </div>
     </div>
   )

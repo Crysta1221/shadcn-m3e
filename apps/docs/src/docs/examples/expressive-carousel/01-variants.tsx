@@ -25,7 +25,11 @@ export default function Demo() {
             <p className="text-label-large text-on-surface-variant">
               {variant}
             </p>
-            <ExpressiveCarousel variant={variant} height={180}>
+            <ExpressiveCarousel
+              aria-label={`${variant} landscapes`}
+              variant={variant}
+              height={180}
+            >
               {slides.map((s, i) => (
                 <CarouselSlide key={s} className={tones[i % 3]}>
                   <span className="text-title-large">{s}</span>

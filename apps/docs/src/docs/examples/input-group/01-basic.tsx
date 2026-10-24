@@ -18,10 +18,10 @@ export default function Demo() {
         <InputGroupAddon>
           <Icon name="search" size={20} />
         </InputGroupAddon>
-        <InputGroupInput placeholder="Search..." />
+        <InputGroupInput aria-label="Search or URL" placeholder="Search..." />
       </InputGroup>
       <InputGroup>
-        <InputGroupInput placeholder="example.com" />
+        <InputGroupInput aria-label="Search or URL" placeholder="example.com" />
         <InputGroupAddon align="inline-end">
           <InputGroupText>https://</InputGroupText>
         </InputGroupAddon>

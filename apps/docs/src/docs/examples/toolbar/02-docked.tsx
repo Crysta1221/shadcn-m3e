@@ -9,7 +9,7 @@ export const meta = {
 
 export default function Demo() {
   return (
-    <DockedToolbar className="max-w-md">
+    <DockedToolbar aria-label="Actions" className="max-w-md">
       {["attach_file", "image", "mic", "more_vert"].map((icon) => (
         <Button key={icon} variant="text" size="icon" aria-label={icon}>
           <Icon name={icon} />

@@ -1700,6 +1700,7 @@ export const REGISTRY_META: Record<string, RegistryMeta> = {
     ],
     "registryDependencies": [
       "cn",
+      "portal-container",
       "styles"
     ],
     "icons": [],

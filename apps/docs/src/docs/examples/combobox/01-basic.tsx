@@ -17,7 +17,11 @@ export const meta = {
 export default function Demo() {
   return (
     <Combobox items={frameworks}>
-      <ComboboxInput placeholder="Select a framework" className="w-64" />
+      <ComboboxInput
+        aria-label="Framework"
+        placeholder="Select a framework"
+        className="w-full max-w-64"
+      />
       <ComboboxContent>
         <ComboboxEmpty>No items found.</ComboboxEmpty>
         <ComboboxList>

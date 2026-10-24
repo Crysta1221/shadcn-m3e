@@ -76,17 +76,21 @@ function YearList({
   start,
   end,
   onSelect,
+  onCancel,
 }: {
   selected: number
   start: number
   end: number
   onSelect: (year: number) => void
+  onCancel: () => void
 }) {
   const ref = React.useRef<HTMLDivElement>(null)
   React.useEffect(() => {
-    ref.current
-      ?.querySelector("[data-selected-year]")
-      ?.scrollIntoView({ block: "center" })
+    const selectedYear = ref.current?.querySelector<HTMLElement>(
+      "[data-selected-year]"
+    )
+    selectedYear?.scrollIntoView({ block: "center" })
+    selectedYear?.focus({ preventScroll: true })
   }, [])
   const years = Array.from({ length: end - start + 1 }, (_, i) => start + i)
 
@@ -95,7 +99,50 @@ function YearList({
       <div
         ref={ref}
         role="listbox"
+        tabIndex={-1}
         aria-label="Year"
+        onKeyDown={(event) => {
+          if (event.key === "Escape") {
+            event.preventDefault()
+            event.stopPropagation()
+            onCancel()
+            return
+          }
+          const options = Array.from(
+            event.currentTarget.querySelectorAll<HTMLElement>('[role="option"]')
+          )
+          const current = options.findIndex(
+            (option) => option === document.activeElement
+          )
+          const step =
+            event.key === "ArrowDown"
+              ? 1
+              : event.key === "ArrowUp"
+                ? -1
+                : event.key === "ArrowRight"
+                  ? event.currentTarget.closest('[dir="rtl"]')
+                    ? -1
+                    : 1
+                  : event.key === "ArrowLeft"
+                    ? event.currentTarget.closest('[dir="rtl"]')
+                      ? 1
+                      : -1
+                    : 0
+          const index =
+            event.key === "Home"
+              ? 0
+              : event.key === "End"
+                ? options.length - 1
+                : step
+                  ? Math.max(0, Math.min(options.length - 1, current + step))
+                  : -1
+          if (index < 0) return
+          event.preventDefault()
+          options.forEach((option, i) => {
+            option.tabIndex = i === index ? 0 : -1
+          })
+          options[index]?.focus()
+        }}
         className="grid grid-cols-3 justify-items-center gap-y-2 px-6 py-2"
       >
         {years.map((year) => (
@@ -103,6 +150,7 @@ function YearList({
             key={year}
             role="option"
             aria-selected={year === selected}
+            tabIndex={year === selected ? 0 : -1}
             data-selected-year={year === selected ? "" : undefined}
             variant={year === selected ? "filled" : "text"}
             className={cn(
@@ -190,6 +238,7 @@ function PickerBody({
   const [years, setYears] = React.useState(false)
   const [texts, setTexts] = React.useState<[string, string]>(["", ""])
   const firstField = React.useRef<HTMLInputElement>(null)
+  const yearTrigger = React.useRef<HTMLButtonElement>(null)
 
   // typing was asked for: the cursor goes to the first field
   React.useEffect(() => {
@@ -282,6 +331,7 @@ function PickerBody({
         <>
           <div className="flex h-12 items-center justify-between pr-3 pl-3">
             <Button
+              ref={yearTrigger}
               variant="text"
               size="sm"
               aria-expanded={years}
@@ -328,8 +378,13 @@ function PickerBody({
               selected={month.getFullYear()}
               start={startYear}
               end={endYear}
+              onCancel={() => {
+                setYears(false)
+                yearTrigger.current?.focus()
+              }}
               onSelect={(y) => {
                 setMonth(new Date(y, month.getMonth(), 1))
+                yearTrigger.current?.focus()
                 setYears(false)
               }}
             />

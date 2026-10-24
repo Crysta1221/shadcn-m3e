@@ -60,6 +60,7 @@ import {
   frameRadius,
   frameRect,
   frameSizeOf,
+  frameLengthOf,
   carryItemSize,
   matchRunSize,
   runSizePatch,
@@ -119,7 +120,7 @@ import { LangMenu } from "@/components/Menus";
 import { AiActionKey, AiPanel, aiErrorText } from "@/components/AiPanel";
 import { TidyState, PANEL_FADE_H } from "@/components/ui";
 import { AiSettings, DEFAULT_AI, hasKey, isSecureUrl, loadAiSettings, proposeBehavior, proposeDescription, pushHistory, saveAiSettings } from "@/lib/ai";
-import { barSlotOf, bodyRect, carryFrame, holdsEdgeBar, pullInto, tidyFrame } from "@/lib/tidy";
+import { barSlotOf, bodyRect, carryFrame, holdsEdgeBar, maxFrameLength, minFrameLength, stretchFrame, pullInto, tidyFrame } from "@/lib/tidy";
 import { combineButtons } from "@/lib/combine";
 import { LOST_TEXT, canMigrate, migrateLegacy, revertPatch, type Migration } from "@/lib/migrate";
 import { constrainModalRails, modalRailOf, updateRail } from "@/lib/rail";
@@ -406,9 +407,8 @@ const mobileSeed = (lang: Lang = getLang()): Group[] => {
 /** While the model works on a screen, the scheme's colors drift through its bezel. */
 function ThinkingRing({ p, frame }: { p: Palette; frame: Frame }) {
   const still = useReducedMotion();
-  const { w: frameW, h: frameH } = frameSizeOf(frame);
-  const w = frameW + BEZEL * 2;
-  const h = frameH + BEZEL * 2;
+  const w = frameSizeOf(frame).w + BEZEL * 2;
+  const h = frameLengthOf(frame) + BEZEL * 2;
   const d = Math.ceil(Math.hypot(w, h)) + 80;
   const stops = [p.primary, p.tertiaryContainer, p.inversePrimary, p.secondaryContainer, p.primaryContainer, p.primary];
   return (
@@ -624,6 +624,7 @@ export default function Editor({ initialLang, onReady }: { initialLang: Lang; on
   const lastPatchRef = useRef<{ key: string; at: number }>({ key: "", at: 0 });
 
   const snapshot = useCallback((withMeta = false) => {
+    lastPatchRef.current = { key: "", at: 0 };
     setQuickUndo(false);
     pastRef.current.push(current(withMeta));
     if (pastRef.current.length > HISTORY_MAX) pastRef.current.shift();
@@ -643,6 +644,7 @@ export default function Editor({ initialLang, onReady }: { initialLang: Lang; on
   );
 
   const restore = (snap: Snapshot) => {
+    lastPatchRef.current = { key: "", at: 0 };
     for (const g of snap.groups) instantRef.current.add(g.id);
     if (snap.meta) {
       applyDoc({ ...snap.meta, groups: snap.groups, frames: snap.frames }, true);
@@ -1264,7 +1266,8 @@ export default function Editor({ initialLang, onReady }: { initialLang: Lang; on
       }
       if (frameRef.current === "phone") {
         for (const f of framesRef.current) {
-          const { w, h } = frameSizeOf(f);
+          const { w } = frameSizeOf(f);
+          const h = frameLengthOf(f);
           xs.push(
             f.x,
             f.x + FRAME_MARGIN,
@@ -2182,20 +2185,23 @@ export default function Editor({ initialLang, onReady }: { initialLang: Lang; on
     if (frameRef.current !== "phone") return none;
     const f = frameOfGroup(g, framesRef.current, widthsRef.current);
     if (!f) return none;
-    const { w: frameW, h: frameH } = frameSizeOf(f);
+    const { w: frameW, h: deviceH } = frameSizeOf(f);
+    const frameH = frameLengthOf(f);
     const a = sizeOf(before, widthsRef.current);
     const b = sizeOf(after, widthsRef.current);
-    const shift = (pos: number, len: number, next: number, f0: number, fLen: number) => {
+    const shift = (pos: number, len: number, next: number, f0: number, fLen: number, foot = true) => {
       const d = next - len;
       if (d === 0) return 0;
       const near = (v: number, target: number) => Math.abs(v - target) <= 1;
       if (near(pos + len / 2, f0 + fLen / 2)) return -Math.round(d / 2);
-      if (near(pos + len, f0 + fLen - FRAME_MARGIN) || near(pos + len, f0 + fLen)) return -d;
+      if (foot && (near(pos + len, f0 + fLen - FRAME_MARGIN) || near(pos + len, f0 + fLen))) return -d;
       return 0;
     };
     return {
       dx: shift(g.x, a.w, b.w, f.x, frameW),
-      dy: shift(g.y, a.h, b.h, f.y, frameH),
+      /* on a screen that runs further, a part keeps to its foot, or to the middle of the device;
+       * the foot of the device is no edge there, since the body runs on past it */
+      dy: shift(g.y, a.h, b.h, f.y, frameH) || (frameH > deviceH ? shift(g.y, a.h, b.h, f.y, deviceH, false) : 0),
     };
   };
 
@@ -2719,6 +2725,10 @@ export default function Editor({ initialLang, onReady }: { initialLang: Lang; on
     () => frames.find((f) => f.id === selectedFrameId) ?? null,
     [frames, selectedFrameId],
   );
+  const selectedMinLength = useMemo(
+    () => (selectedFrame ? minFrameLength(groups, selectedFrame, frames, widths) : 0),
+    [groups, selectedFrame, frames, widths],
+  );
   /** the selected toggle button is drawn in its "on" look while the panel edits that look */
   const [showOnId, setShowOnId] = useState<string | null>(null);
   /** the FAB whose menu the panel is showing open: it is open while its trigger tab is */
@@ -2811,7 +2821,8 @@ export default function Editor({ initialLang, onReady }: { initialLang: Lang; on
     let x = cx - sz.w / 2;
     let y = cy - sz.h / 2;
     if (f) {
-      const { w, h } = frameSizeOf(f);
+      const { w } = frameSizeOf(f);
+      const h = frameLengthOf(f);
       const lx = f.x + Math.min(FRAME_MARGIN, (w - sz.w) / 2);
       const ly = f.y + Math.min(FRAME_MARGIN, (h - sz.h) / 2);
       x = clamp(x, lx, Math.max(lx, f.x + w - FRAME_MARGIN - sz.w));
@@ -2873,7 +2884,9 @@ export default function Editor({ initialLang, onReady }: { initialLang: Lang; on
   const setFramePreset = (id: string, preset: FramePreset) => {
     const current = framesRef.current.find((f) => f.id === id);
     if (!current) return;
-    const next = { ...current, ...framePresetPatch(preset) };
+    const sized = { ...current, ...framePresetPatch(preset) };
+    /* a screen no longer than its new device does not scroll any more */
+    const next = sized.length !== undefined && sized.length <= frameSizeOf(sized).h ? { ...sized, length: undefined } : sized;
     const before = frameSizeOf(current);
     const after = frameSizeOf(next);
     if (before.w === after.w && before.h === after.h) return;
@@ -2891,6 +2904,87 @@ export default function Editor({ initialLang, onReady }: { initialLang: Lang; on
     retidyRef.current = id;
     setFrames(laid.frames);
     setGroups(laid.groups);
+  };
+
+  /** the document a run of length changes started from, and what the last of them made of it */
+  const lengthRun = useRef<{ id: string; from: { frames: Frame[]; groups: Group[] }; to: { frames: Frame[]; groups: Group[] } } | null>(null);
+  /** makes a screen run longer than its device, or back: what stands at its foot goes with the foot.
+   *  A slider sends a stream of lengths; each is worked out from where the stream began, so a part
+   *  is never taken for one at the foot halfway through and dragged along from then on. */
+  /** One drag of a screen's length handle: the document it started from, and how it takes its one undo step */
+  type LengthDrag = { from: { frames: Frame[]; groups: Group[] }; snap: () => void };
+  const setFrameLength = (id: string, length: number, drag?: LengthDrag) => {
+    const run = lengthRun.current;
+    const from = drag
+      ? drag.from
+      : run && run.id === id && run.to.frames === framesRef.current && run.to.groups === groupsRef.current
+        ? run.from
+        : { frames: framesRef.current, groups: groupsRef.current };
+    const start = from.frames.find((f) => f.id === id);
+    const current = framesRef.current.find((f) => f.id === id);
+    if (!start || !current) return;
+    const to = Math.max(length, minFrameLength(from.groups, start, from.frames, widthsRef.current));
+    if (to === frameLengthOf(current)) return;
+    const laid = stretchFrame(from.groups, start, to, from.frames, widthsRef.current);
+    lengthRun.current = { id, from, to: laid };
+    if (drag) drag.snap();
+    else snapshotFor("frame:" + id + ":length");
+    tidyRef.current = null;
+    setFrames(laid.frames);
+    setGroups(laid.groups);
+  };
+
+  /** the screen whose length handle is being dragged: it follows the pointer without easing */
+  const [lengthDragId, setLengthDragId] = useState<string | null>(null);
+  /** the grip under the chosen screen: dragging it makes the screen run longer or shorter, as the
+   *  length slider does, in steps of 4dp. The whole drag is worked out from the document it began
+   *  with, and takes one undo step, and only once the length really changes. */
+  const onLengthHandleDown = (e: React.PointerEvent, f: Frame) => {
+    if (e.button !== 0) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const pointerId = e.pointerId;
+    const startY = e.clientY;
+    const start = frameLengthOf(f);
+    const deviceH = frameSizeOf(f).h;
+    const max = maxFrameLength(f);
+    let snapped = false;
+    const drag: LengthDrag = {
+      from: { frames: framesRef.current, groups: groupsRef.current },
+      snap: () => {
+        if (snapped) return;
+        snapshot();
+        snapped = true;
+      },
+    };
+    lengthRun.current = null;
+    setLengthDragId(f.id);
+    /* captured, the pointer's events reach the window through the handle wherever it is let go;
+     * should the handle go away mid-drag, they reach the window directly */
+    (e.currentTarget as HTMLElement).setPointerCapture(pointerId);
+    const move = (ev: PointerEvent) => {
+      if (ev.pointerId !== pointerId) return;
+      setFrameLength(f.id, clamp(Math.round((start + (ev.clientY - startY) / viewRef.current.z) / 4) * 4, deviceH, max), drag);
+    };
+    const end = (ev: PointerEvent) => {
+      if (ev.pointerId !== pointerId) return;
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", end);
+      window.removeEventListener("pointercancel", end);
+      lengthRun.current = null;
+      setLengthDragId(null);
+    };
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", end);
+    window.addEventListener("pointercancel", end);
+  };
+  /** the same handle from the keyboard: arrows move it by 4dp, with Shift by 40dp */
+  const onLengthHandleKey = (e: React.KeyboardEvent, f: Frame) => {
+    if (e.key !== "ArrowUp" && e.key !== "ArrowDown") return;
+    e.preventDefault();
+    e.stopPropagation();
+    const step = (e.shiftKey ? 40 : 4) * (e.key === "ArrowDown" ? 1 : -1);
+    setFrameLength(f.id, clamp(frameLengthOf(f) + step, frameSizeOf(f).h, maxFrameLength(f)));
   };
 
   /** the tidy button's state for the screen in play; the layout pass runs only when the document changes */
@@ -3152,8 +3246,7 @@ export default function Editor({ initialLang, onReady }: { initialLang: Lang; on
       await document.fonts?.ready;
       const el = document.querySelector<HTMLElement>(`[data-export="${f.id}"]`);
       if (!el) return;
-      const { w, h } = frameSizeOf(f);
-      const url = await toPng(el, { pixelRatio: 2, cacheBust: true, width: w, height: h });
+      const url = await toPng(el, { pixelRatio: 2, cacheBust: true, width: frameSizeOf(f).w, height: frameLengthOf(f) });
       const a = document.createElement("a");
       a.href = url;
       a.download = `${f.name || "screen"}.png`;
@@ -3166,7 +3259,8 @@ export default function Editor({ initialLang, onReady }: { initialLang: Lang; on
   /** the runs of one screen drawn with plain divs: the export layer */
   const renderExport = (f: Frame) => {
     const gs = groups.filter((g) => frameOfGroup(g, frames, widths)?.id === f.id);
-    const { w, h } = frameSizeOf(f);
+    const { w } = frameSizeOf(f);
+    const h = frameLengthOf(f);
     return (
       <div
         data-export={f.id}
@@ -3262,7 +3356,8 @@ export default function Editor({ initialLang, onReady }: { initialLang: Lang; on
   const glideToFrame = (f: Frame) => {
     const r = canvasRect();
     if (!r) return;
-    const { w, h } = frameSizeOf(f);
+    const { w } = frameSizeOf(f);
+    const h = frameLengthOf(f);
     const boxW = w + BEZEL * 2;
     const boxH = h + BEZEL * 2 + FRAME_LABEL_H;
     const v = viewRef.current;
@@ -4275,7 +4370,8 @@ export default function Editor({ initialLang, onReady }: { initialLang: Lang; on
                 frames.map((f) => {
                   const on = f.id === selectedFrameId;
                   const bg = p[f.bg ?? "surface"];
-                  const { w, h } = frameSizeOf(f);
+                  const { w, h: fold } = frameSizeOf(f);
+                  const h = frameLengthOf(f);
                   const radius = frameRadius(f);
                   return (
                     <div
@@ -4329,7 +4425,7 @@ export default function Editor({ initialLang, onReady }: { initialLang: Lang; on
                           animation: draftBusy ? "m3e-drift 3s ease-in-out infinite" : undefined,
                           boxShadow: on ? "0 18px 50px rgba(0,0,0,0.16)" : "0 18px 50px rgba(0,0,0,0.14)",
                           cursor: handMode ? "grab" : "move",
-                          transition: `background-color 160ms, box-shadow 120ms, ${SIZE_TRANSITION}`,
+                          transition: lengthDragId === f.id ? "background-color 160ms, box-shadow 120ms" : `background-color 160ms, box-shadow 120ms, ${SIZE_TRANSITION}`,
                         }}
                       >
                         <AnimatePresence>{aiFrameId === f.id && <ThinkingRing key="ring" p={p} frame={f} />}</AnimatePresence>
@@ -4344,7 +4440,7 @@ export default function Editor({ initialLang, onReady }: { initialLang: Lang; on
                             borderRadius: radius,
                             background: bg,
                             overflow: "hidden",
-                            transition: SIZE_TRANSITION,
+                            transition: lengthDragId === f.id ? undefined : SIZE_TRANSITION,
                           }}
                         >
                           {groups
@@ -4353,6 +4449,10 @@ export default function Editor({ initialLang, onReady }: { initialLang: Lang; on
                           {groups.some((g) => frameOf.get(g.id) === f.id && modalRailOf(g)) && (
                             <div aria-hidden style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.32)", pointerEvents: "none", zIndex: 1 }} />
                           )}
+                          {/* where the device ends on a screen that runs further: below it, the body scrolls */}
+                          {h > fold && (
+                            <div aria-hidden style={{ position: "absolute", left: 0, right: 0, top: fold, borderTop: `2px dashed ${p.outline}`, opacity: 0.6, pointerEvents: "none", zIndex: 2 }} />
+                          )}
                           {draftBusy && (
                             <div style={{ position: "absolute", inset: 0, zIndex: 90, background: canvasBg, display: "grid", placeItems: "center" }}>
                               <LoadingIndicator size={96} color="url(#m3e-drafting)" />
@@ -4360,6 +4460,35 @@ export default function Editor({ initialLang, onReady }: { initialLang: Lang; on
                           )}
                         </div>
                       </div>
+                      {/* the chosen screen's length grip, a small nub on its bottom bezel: drag it down and the body runs on */}
+                      {on && !handMode && !draftBusy && (
+                        <div
+                          role="slider"
+                          tabIndex={0}
+                          aria-label={t("screenLength", lang)}
+                          aria-valuemin={selectedMinLength}
+                          aria-valuemax={maxFrameLength(f)}
+                          aria-valuenow={h}
+                          onPointerDown={(e) => onLengthHandleDown(e, f)}
+                          onKeyDown={(e) => onLengthHandleKey(e, f)}
+                          style={{
+                            position: "absolute",
+                            left: w / 2 - 32,
+                            top: h - 4,
+                            width: 64,
+                            height: BEZEL + 8,
+                            display: "grid",
+                            placeItems: "center",
+                            transform: `scale(${clamp(1 / view.z, 1, 2)})`,
+                            cursor: "ns-resize",
+                            touchAction: "none",
+                            zIndex: 1,
+                            transition: lengthDragId === f.id ? undefined : `top ${SETTLE_MS}ms cubic-bezier(0.2, 0, 0, 1)`,
+                          }}
+                        >
+                          <div style={{ width: 40, height: 4, borderRadius: 2, background: p.onPrimary, opacity: 0.9 }} />
+                        </div>
+                      )}
                     </div>
                   );
                 })}
@@ -4827,6 +4956,8 @@ export default function Editor({ initialLang, onReady }: { initialLang: Lang; on
                   onPlace={(pl) => setPlace(selectedFrame, pl)}
                   canCombine={canCombine && tidyTarget?.id === selectedFrame.id}
                   onCombine={() => combine(selectedFrame)}
+                  minLength={selectedMinLength}
+                  onLength={(length) => setFrameLength(selectedFrame.id, length)}
                   ai={{ ready: aiReady, reason: aiReason, busy: aiBusy && aiFrameId === selectedFrame.id, onRun: () => runAi("describe", selectedFrame), onCancel: cancelAi }}
                 />
               ) : rightTab === "edit" ? (

@@ -9,5 +9,14 @@ export const meta = {
 
 export default function Demo() {
   const [range, setRange] = React.useState<DateRange | undefined>()
-  return <Calendar mode="range" selected={range} onSelect={setRange} />
+  return (
+    <div className="@container/calendar w-full">
+      <Calendar
+        className="[--cell-size:--spacing(8)] @sm/calendar:[--cell-size:--spacing(10)]"
+        mode="range"
+        selected={range}
+        onSelect={setRange}
+      />
+    </div>
+  )
 }

@@ -17,7 +17,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { buildCode } from "../lib/codegen";
-import { allKindsDoc } from "../lib/codegen.fixture";
+import { allKindsDoc, scrollingDoc } from "../lib/codegen.fixture";
 import { setGlobalLang } from "../lib/i18n";
 import { migrateLegacy } from "../lib/migrate";
 import type { Item } from "../lib/tokens";
@@ -33,6 +33,8 @@ const tag = `${process.pid}`;
 const sketchFile = join(dir, `sketch-${tag}.tsx`);
 const partsFile = join(dir, `parts-${tag}.tsx`);
 const migratedFile = join(dir, `migrated-${tag}.tsx`);
+const scrollingFile = join(dir, `scrolling-${tag}.tsx`);
+const scrollingMigratedFile = join(dir, `scrolling-migrated-${tag}.tsx`);
 
 /* --- the registry lists what the docs list --------------------------------------------- */
 const { DOCS } = (await import(join(docs, "src", "docs", "registry.ts"))) as { DOCS: { slug: string; name: string; category: string }[] };
@@ -84,6 +86,10 @@ mkdirSync(dir, { recursive: true });
 writeFileSync(sketchFile, sketchCode);
 writeFileSync(migratedFile, migratedCode);
 writeFileSync(partsFile, partsCode);
+const long = scrollingDoc();
+writeFileSync(scrollingFile, buildCode(long, {}).code);
+long.groups = long.groups.map((group) => ({ ...group, items: group.items.map((item) => ({ ...item, ...migrateLegacy(item)?.patch })) }));
+writeFileSync(scrollingMigratedFile, buildCode(long, {}).code);
 
 let status = 1;
 try {
@@ -105,5 +111,7 @@ try {
   rmSync(sketchFile, { force: true });
   rmSync(migratedFile, { force: true });
   rmSync(partsFile, { force: true });
+  rmSync(scrollingFile, { force: true });
+  rmSync(scrollingMigratedFile, { force: true });
 }
 process.exit(status);

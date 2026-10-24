@@ -21,6 +21,103 @@ const CONTENT =
   // state reads from the container
   "[&_[data-slot=button]]:bg-transparent [&_[data-slot=toggle]]:bg-transparent"
 
+const toolbarItems = (element: HTMLDivElement) =>
+  Array.from(
+    element.querySelectorAll<HTMLElement>(
+      'button:not([disabled]):not([aria-disabled="true"]),a[href],input:not([disabled])'
+    )
+  ).filter(
+    (item) =>
+      item.closest('[role="toolbar"]') === element &&
+      !item.closest("[inert],[hidden]")
+  )
+
+function ToolbarSurface({
+  orientation = "horizontal",
+  onKeyDown,
+  onFocusCapture,
+  ref,
+  ...props
+}: React.ComponentProps<"div"> & { orientation?: "horizontal" | "vertical" }) {
+  const root = React.useRef<HTMLDivElement>(null)
+  React.useEffect(() => {
+    const element = root.current
+    if (!element) return undefined
+    const update = () => {
+      const controls = toolbarItems(element)
+      const active =
+        controls.find((item) => item === document.activeElement) ??
+        controls.find((item) => item.tabIndex === 0) ??
+        controls[0]
+      controls.forEach((item) => {
+        item.tabIndex = item === active ? 0 : -1
+      })
+    }
+    update()
+    const observer = new MutationObserver(update)
+    observer.observe(element, { childList: true, subtree: true })
+    return () => observer.disconnect()
+  }, [])
+  return (
+    <div
+      ref={(element) => {
+        root.current = element
+        if (typeof ref === "function") return ref(element)
+        if (ref) ref.current = element
+      }}
+      role="toolbar"
+      tabIndex={-1}
+      aria-orientation={orientation}
+      onFocusCapture={(event) => {
+        onFocusCapture?.(event)
+        toolbarItems(event.currentTarget).forEach((item) => {
+          item.tabIndex = item === document.activeElement ? 0 : -1
+        })
+      }}
+      onKeyDown={(event) => {
+        onKeyDown?.(event)
+        if (
+          event.defaultPrevented ||
+          !(event.target instanceof HTMLElement) ||
+          event.target.matches('input,textarea,[contenteditable="true"]')
+        )
+          return
+        const controls = toolbarItems(event.currentTarget)
+        const current = controls.findIndex(
+          (item) => item === document.activeElement
+        )
+        const rtl = getComputedStyle(event.currentTarget).direction === "rtl"
+        const forward =
+          orientation === "vertical"
+            ? "ArrowDown"
+            : rtl
+              ? "ArrowLeft"
+              : "ArrowRight"
+        const back =
+          orientation === "vertical"
+            ? "ArrowUp"
+            : rtl
+              ? "ArrowRight"
+              : "ArrowLeft"
+        const next =
+          event.key === "Home"
+            ? 0
+            : event.key === "End"
+              ? controls.length - 1
+              : event.key === forward
+                ? (current + 1) % controls.length
+                : event.key === back
+                  ? (current - 1 + controls.length) % controls.length
+                  : -1
+        if (next < 0) return
+        event.preventDefault()
+        controls[next]?.focus()
+      }}
+      {...props}
+    />
+  )
+}
+
 const floatingToolbarVariants = cva(
   `inline-flex items-center gap-1 rounded-full p-2 shadow-elevation-3 ${CONTENT}`,
   {
@@ -50,8 +147,9 @@ function FloatingToolbar({
   ...props
 }: FloatingToolbarProps) {
   return (
-    <div
+    <ToolbarSurface
       role="toolbar"
+      orientation={orientation ?? "horizontal"}
       aria-orientation={orientation ?? "horizontal"}
       data-slot="floating-toolbar"
       data-variant={variant ?? "standard"}
@@ -66,7 +164,7 @@ function FloatingToolbar({
 
 function DockedToolbar({ className, ...props }: React.ComponentProps<"div">) {
   return (
-    <div
+    <ToolbarSurface
       role="toolbar"
       data-slot="docked-toolbar"
       className={cn(

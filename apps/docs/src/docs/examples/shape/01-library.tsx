@@ -8,7 +8,7 @@ export const meta = {
 
 export default function Demo() {
   return (
-    <ul className="grid grid-cols-3 gap-x-2 gap-y-4 sm:grid-cols-5 md:grid-cols-7">
+    <ul className="grid grid-cols-[repeat(auto-fit,minmax(4rem,1fr))] gap-x-2 gap-y-4">
       {SHAPE_NAMES.map((name) => (
         <li key={name} className="flex flex-col items-center gap-1 text-center">
           <Shape name={name} />

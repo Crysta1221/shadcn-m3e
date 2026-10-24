@@ -15,7 +15,7 @@ export const meta = {
 
 export default function Demo() {
   return (
-    <div className="grid gap-4 sm:grid-cols-3">
+    <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,14rem),1fr))] gap-4">
       {(["filled", "elevated", "outlined"] as const).map((variant) => (
         <Card key={variant} variant={variant}>
           <CardHeader>

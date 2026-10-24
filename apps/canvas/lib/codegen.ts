@@ -24,6 +24,8 @@ import {
   explodeGroup,
   frameOfGroup,
   frameSizeOf,
+  frameLengthOf,
+  canCollapseFab,
   groupBounds,
   layoutOf,
   paletteOf,
@@ -42,6 +44,7 @@ import { inlineNode, itemOfFile, namesIn } from "../parts/print";
 import { appearanceOf } from "../parts/appearance";
 import { imageKeys, partBySlug, treeOf } from "../parts/registry";
 import { fullWidth, roleOf } from "../parts/role";
+import { pinOf } from "./tidy";
 
 export const REGISTRY_URL = "https://shadcn-m3e.crystaworld.dev/r/{name}.json";
 
@@ -375,7 +378,7 @@ function jsx(it: Item, c: Ctx, widths: Record<string, number>): string {
 const FILLS: Kind[] = ["slider", "divider", "linearProgress", "select", "textField", "tabs", "card", "listItem"];
 
 /** the pieces of a screen, each run placed where the sketch has it */
-function screenBody(frame: Frame, runs: Group[], c: Ctx, widths: Record<string, number>): string[] {
+function screenBody(frame: Frame, runs: Group[], c: Ctx, widths: Record<string, number>, pinEdges = true, foldOnScroll = false): string[] {
   const { h } = frameSizeOf(frame);
   const out: string[] = [];
   for (const run of runs) {
@@ -383,12 +386,17 @@ function screenBody(frame: Frame, runs: Group[], c: Ctx, widths: Record<string, 
     const at = layoutOf(run, widths)[0];
     const top = Math.round(at.y - frame.y);
     const left = Math.round(at.x - frame.x);
-    const body = run.items.map((it) => jsx(it, c, widths));
+    const body = run.items.map((it) => {
+      const source = jsx(it, c, widths);
+      if (!foldOnScroll || !it.collapseOnScroll || !canCollapseFab(it)) return source;
+      const fab = source.replace(/ collapsed(?:=\{[^}]*\}|="[^"]*")?/g, "").replace("<ExtendedFab", `<ExtendedFab collapsed={fabFolded${it.props?.collapsed === true ? " || true" : ""}}`);
+      return `<div className="flex justify-end" style={{ width: ${Math.round(sizeOf(it, widths).w)} }}>${fab}</div>`;
+    });
     /* a part that spans the screen keeps to its edges; the bars stay pinned to the top or the bottom */
     if (run.items.length === 1 && fullWidth(first)) {
       const r = roleOf(first);
-      const bottom = r === "bottom" && top + sizeOf(first, widths).h > h - 1;
-      const pinnedTop = r === "top" && top <= STATUS_BAR_H;
+      const bottom = pinEdges && r === "bottom" && top + sizeOf(first, widths).h > h - 1;
+      const pinnedTop = pinEdges && r === "top" && top <= STATUS_BAR_H;
       const anchor = bottom ? "bottom-0" : pinnedTop ? "top-0" : `top-[${top}px]`;
       out.push(`<div className="absolute inset-x-0 ${anchor}">${body[0]}</div>`);
       continue;
@@ -499,12 +507,26 @@ export function buildCode(doc: Doc, widths: Record<string, number>, onlyFrameId?
       .flatMap((g) => (g.free ? explodeGroup(g, widths) : [g]))
       .sort((a, b) => a.y - b.y || a.x - b.x);
     const { w, h } = frameSizeOf(frame);
+    const length = frameLengthOf(frame);
+    const scrolls = length > h;
+    const folds = scrolls && runs.some((run) => run.items.some((item) => item.collapseOnScroll && canCollapseFab(item)));
     const name = componentName(frame.name, i, taken);
-    const body = screenBody(frame, runs, c, widths);
+    let body: string[];
+    if (scrolls) {
+      const pinned = runs.filter((run) => pinOf(run, frame, widths));
+      const flowing = runs.filter((run) => !pinOf(run, frame, widths));
+      const fixed = pinned.map((run) => ({ ...run, y: run.y - (pinOf(run, frame, widths) === "foot" ? length - h : 0), items: run.items.map((item) => roleOf(item) === "rail" ? item.kind === "component" ? { ...item, props: { ...item.props, height: h } } : { ...item, size2: h } : item) }));
+      const content = screenBody(frame, flowing, c, widths, false, folds);
+      const overlays = screenBody(frame, fixed, c, widths, true, folds);
+      const scrollHandler = folds ? ' onScroll={(event) => { const top = event.currentTarget.scrollTop; if (top !== lastScrollTop.current) setFabFolded(top > lastScrollTop.current); lastScrollTop.current = top }}' : "";
+      body = [`<div role="region" aria-label=${str(`${frame.name || "Screen"} content`)} tabIndex={0} className="absolute inset-0 overflow-x-hidden overflow-y-auto overscroll-contain"${scrollHandler}><div className="relative" style={{ height: ${length} }}>${content.join("")}</div></div>`, ...overlays];
+    } else body = screenBody(frame, runs, c, widths);
     const bg = frame.bg ? `bg-${role(frame.bg)}` : "bg-surface";
     const open = `<div className=${str(`relative overflow-hidden ${bg} w-[${w}px] h-[${h}px]`)}>`;
     const inner = [open, ...body, "</div>"].join("");
-    return `export function ${name}() {\n  return (\n${pretty(inner, 2)}\n  )\n}`;
+    if (folds) c.imports.set("react", new Set(["useRef", "useState"]));
+    const state = folds ? "  const [fabFolded, setFabFolded] = useState(false)\n  const lastScrollTop = useRef(0)\n" : "";
+    return `export function ${name}() {\n${state}  return (\n${pretty(inner, 2)}\n  )\n}`;
   });
 
   const lines: string[] = [];
@@ -512,7 +534,7 @@ export function buildCode(doc: Doc, widths: Record<string, number>, onlyFrameId?
   for (const [source, set] of names) lines.push(`import { ${[...set].sort((a, b) => a.localeCompare(b)).join(", ")} } from "${source}"`);
 
   const registry = "@/components/m3e/";
-  const packages = names.map(([source]) => source).filter((source) => !source.startsWith(registry));
+  const packages = names.map(([source]) => source).filter((source) => !source.startsWith(registry) && source !== "react");
   const install = `npx shadcn@latest add @m3e/base ${[...new Set(names.filter(([source]) => source.startsWith(registry)).map(([source]) => itemOfFile(source.slice(registry.length))))].map((f) => `@m3e/${f}`).join(" ")}`;
   const header = [
     "// Generated by M3E Canvas. Components are shadcn M3E (https://shadcn-m3e.crystaworld.dev).",
