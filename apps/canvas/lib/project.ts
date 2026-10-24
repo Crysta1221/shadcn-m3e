@@ -22,6 +22,7 @@ const validItem = (item: unknown) =>
   validCorners(item.corners) &&
   (item.railExpanded === undefined || typeof item.railExpanded === "boolean") &&
   (item.railModal === undefined || typeof item.railModal === "boolean") &&
+  (item.collapseOnScroll === undefined || typeof item.collapseOnScroll === "boolean") &&
   (item.trackThickness === undefined || isTrackThickness(item.trackThickness)) &&
   (item.imagePos === undefined || isCardImagePos(item.imagePos)) &&
   (item.imageSize === undefined || (Number.isFinite(item.imageSize) && (item.imageSize as number) > 0)) &&
@@ -63,7 +64,8 @@ const validFrame = (frame: unknown) =>
   (frame.w === undefined || (Number.isFinite(frame.w) && (frame.w as number) > 0)) &&
   (frame.h === undefined || (Number.isFinite(frame.h) && (frame.h as number) > 0)) &&
   (frame.note === undefined || typeof frame.note === "string") &&
-  (frame.place === undefined || isPlace(frame.place));
+  (frame.place === undefined || isPlace(frame.place)) &&
+  (frame.length === undefined || (Number.isFinite(frame.length) && (frame.length as number) > 0));
 
 /** sketches saved before the prompt was web-only carry the target they picked; it is read and ignored */
 const isLegacyPlatform = (v: unknown) => v === "android" || v === "web";

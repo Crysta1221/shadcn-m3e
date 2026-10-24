@@ -1805,6 +1805,7 @@ function LegacyNode({
   ripple,
   lit,
   screen,
+  easeWidth = false,
 }: {
   item: Item;
   palette: Palette;
@@ -1821,6 +1822,8 @@ function LegacyNode({
   onPointerDown?: (e: React.PointerEvent) => void;
   /** how far a scrollable tab row is scrolled in the preview; the canvas uses the resting position */
   tabScroll?: number;
+  /** give a measured part an explicit width so the preview can ease to and from a fixed width */
+  easeWidth?: boolean;
   /** a press lights the part up from inside, the way Android does. The preview lights its own
    *  parts through the hit areas it lays over them, so it leaves this off. */
   ripple?: boolean;
@@ -1902,7 +1905,7 @@ function LegacyNode({
       }}
       style={{
         ...boxStyle(drawn, palette),
-        width: measured ? undefined : size.w,
+        width: measured && !easeWidth ? undefined : size.w,
         height: size.h,
         display: measured ? "inline-flex" : "block",
         alignItems: "center",
@@ -1921,11 +1924,13 @@ function LegacyNode({
         outline: selected ? `2px solid ${palette.primary}` : "2px solid transparent",
         outlineOffset: 3,
         /* a part that changes size with its screen, or with the size the author picked,
-           eases the way the screen does; a measured part has no width of its own to ease */
+           eases the way the screen does; a measured part has no width of its own to ease --
+           a label-bearing FAB excepted, which the preview swaps for an icon-only standard FAB, so
+           its width has to travel there and back */
         transition:
           instant || menu.snap
             ? "outline-color 120ms"
-            : `outline-color 120ms, height ${SETTLE_MS}ms cubic-bezier(0.2, 0, 0, 1)${measured ? "" : `, width ${SETTLE_MS}ms cubic-bezier(0.2, 0, 0, 1)`}`,
+            : `outline-color 120ms, height ${SETTLE_MS}ms cubic-bezier(0.2, 0, 0, 1)${measured && !easeWidth ? "" : `, width ${SETTLE_MS}ms cubic-bezier(0.2, 0, 0, 1)`}`,
         flex: "0 0 auto",
       }}
     >

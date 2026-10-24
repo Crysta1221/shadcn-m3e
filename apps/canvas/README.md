@@ -61,6 +61,11 @@ Works with any AI coding tool that takes a prompt, such as Claude Code, Codex, G
 
 ## Keyboard
 
+Screens can run longer than their device: set the content length in the screen
+panel, or drag the length grip. The preview scrolls the body under fixed bars.
+An icon-bearing extended FAB can collapse on downward scrolling and expand on
+upward scrolling. These behaviors are included in the generated web code.
+
 | Key                       | Action                                         |
 | ------------------------- | ---------------------------------------------- |
 | `V` / `H`                 | Select / hand tool (hold `Space` to pan)       |

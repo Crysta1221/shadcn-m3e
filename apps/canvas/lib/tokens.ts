@@ -1698,6 +1698,9 @@ export type Item = {
   bold?: boolean;
   /** height for free-form boxes, and for a button following the M3 size scale */
   size2?: number;
+  /** extended FAB only: in the preview, fold to an icon-only standard FAB when the body scrolls down
+     and unfold when it scrolls back up */
+  collapseOnScroll?: boolean;
   /** palette token used as background (boxes, list items) */
   fill?: ColorToken;
   /** background behind a list item's leading icon; "none" draws the icon bare */
@@ -1815,8 +1818,17 @@ export function extendedFabMetrics(h: number) {
 export function fabTypePatch(it: Item, to: FabKind): Partial<Item> {
   if (it.kind === to) return {};
   const base: Partial<Item> = { kind: to };
-  if (to === "fab") return { ...base, size: it.size2 ?? 56, size2: undefined };
+  if (to === "fab") return { ...base, size: it.size2 ?? 56, size2: undefined, collapseOnScroll: undefined };
   return { ...base, size: undefined, size2: Math.max(56, it.size ?? 56), label: it.label || KIND_SPEC.extendedFab.defLabel };
+}
+
+/** Both generations of FABs use the same persisted opt-in and scroll direction. */
+export function canCollapseFab(it: Item): boolean {
+  if (it.kind === "extendedFab") return !!it.icon;
+  if (it.kind !== "component" || it.component !== "fab") return false;
+  const def = partBySlug(it.component);
+  const values = def && reader(def, it.props);
+  return !!values?.s("label") && !!values.s("icon");
 }
 
 /** The two shapes a progress indicator takes: the bar and the ring. They are one part in the
@@ -2168,6 +2180,8 @@ export type Frame = {
   swipe?: Partial<Record<SwipeDir, string>>;
   /** where Tidy puts the body rows between the bars: from the top unless the author says otherwise */
   place?: Place;
+  /** how far the screen runs when it is longer than the device: its body scrolls under the bars */
+  length?: number;
 };
 
 /** how Tidy stacks the body of a screen: from the top, centered, against the bottom bar, or spread out */
@@ -2189,9 +2203,13 @@ export const isPhoneFrame = (f: Frame) => {
 export const framePresetOf = (f: Frame): FramePreset => (isPhoneFrame(f) ? "phone" : "desktop");
 export const framePresetPatch = (preset: FramePreset): Pick<Frame, "w" | "h"> =>
   preset === "desktop" ? { w: DESKTOP_W, h: DESKTOP_H } : { w: undefined, h: undefined };
+/** the device a screen is drawn for is `frameSizeOf`; the screen itself may run further down,
+ *  and everything laid out on it -- what it holds, where Tidy puts its bars -- goes by this */
+export const frameLengthOf = (f: Frame) => Math.max(f.length ?? 0, frameSizeOf(f).h);
+export const scrollsOf = (f: Frame) => frameLengthOf(f) > frameSizeOf(f).h;
 export const frameRect = (f: Frame) => {
-  const { w, h } = frameSizeOf(f);
-  return { l: f.x, t: f.y, r: f.x + w, b: f.y + h };
+  const { w } = frameSizeOf(f);
+  return { l: f.x, t: f.y, r: f.x + w, b: f.y + frameLengthOf(f) };
 };
 /** the corner radius of a screen: a phone's rounded glass, a flatter window for the desktop */
 export const frameRadius = (f: Frame) => (isPhoneFrame(f) ? PHONE_R : DESKTOP_R);
@@ -2521,7 +2539,8 @@ export function sizeOf(it: Item, widths: Record<string, number>) {
     case "component": {
       /* a real component is as big as it measures; until it has been measured, the part's own guess */
       const def = partBySlug(it.component);
-      return { w: widths[it.id] ?? def?.w ?? s.w, h: widths[`${it.id}:h`] ?? def?.h ?? s.h };
+      const railHeight = roleOf(it) === "rail" && def ? reader(def, it.props).n("height") : undefined;
+      return { w: widths[it.id] ?? def?.w ?? s.w, h: railHeight ?? widths[`${it.id}:h`] ?? def?.h ?? s.h };
     }
     case "switch":
       return { w: it.size ?? widths[it.id] ?? s.w, h: s.h };

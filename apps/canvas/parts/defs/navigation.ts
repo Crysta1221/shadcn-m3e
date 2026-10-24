@@ -156,7 +156,8 @@ export const navigation: PartDef[] = [
       { key: "compact", label: "Compact items", kind: "bool", default: false },
       { key: "menu", label: "Menu button", kind: "bool", default: true },
       { key: "fab", label: "Compose button", kind: "bool", default: true },
-      { key: "height", label: "Height", kind: "number", default: 400, min: 240, max: 800, step: 8, unit: "px" },
+      // A rail follows a scrolling screen's content length, beyond the device height.
+      { key: "height", label: "Height", kind: "number", default: 400, min: 240, max: 10000, step: 8, unit: "px" },
     ],
     slots: (p) => listSlots(p.list("items")),
     selectKey: "selected",
