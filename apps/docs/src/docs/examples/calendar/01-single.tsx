@@ -8,5 +8,14 @@ export const meta = {
 
 export default function Demo() {
   const [date, setDate] = React.useState<Date | undefined>(() => new Date())
-  return <Calendar mode="single" selected={date} onSelect={setDate} />
+  return (
+    <div className="@container/calendar w-full">
+      <Calendar
+        className="[--cell-size:--spacing(8)] @sm/calendar:[--cell-size:--spacing(10)]"
+        mode="single"
+        selected={date}
+        onSelect={setDate}
+      />
+    </div>
+  )
 }

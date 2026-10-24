@@ -9,7 +9,7 @@ export const meta = {
 
 export default function Demo() {
   return (
-    <NativeSelect className="w-56" defaultValue="b">
+    <NativeSelect aria-label="Example option" className="w-56" defaultValue="b">
       <NativeSelectOption value="a">Option A</NativeSelectOption>
       <NativeSelectOption value="b">Option B</NativeSelectOption>
       <NativeSelectOption value="c">Option C</NativeSelectOption>

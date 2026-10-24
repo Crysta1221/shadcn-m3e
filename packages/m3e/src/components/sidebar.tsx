@@ -60,13 +60,17 @@ function SidebarProvider({
   className,
   style,
   children,
+  isMobile: isMobileProp,
   ...props
 }: React.ComponentProps<"div"> & {
   defaultOpen?: boolean
   open?: boolean
   onOpenChange?: (open: boolean) => void
+  /** Override the viewport breakpoint for an embedded layout. */
+  isMobile?: boolean
 }) {
-  const isMobile = useIsMobile()
+  const viewportMobile = useIsMobile()
+  const isMobile = isMobileProp ?? viewportMobile
   const [openMobile, setOpenMobile] = React.useState(false)
 
   const [_open, _setOpen] = React.useState(defaultOpen)

@@ -321,6 +321,22 @@ export const navigation: DocEntry[] = [
       },
     ],
     showcase: "sidebar-layout",
+    notes: [
+      "SidebarProvider uses the viewport breakpoint by default. In an embedded layout, measure its container and pass isMobile to use that width instead.",
+    ],
+    props: [
+      {
+        title: "SidebarProvider",
+        rows: [
+          {
+            name: "isMobile",
+            type: "boolean",
+            description:
+              "Override the viewport breakpoint, for example when the sidebar is inside a narrow preview. Omit to keep viewport-based behavior.",
+          },
+        ],
+      },
+    ],
   },
   {
     slug: "search",

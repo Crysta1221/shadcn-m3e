@@ -6,5 +6,5 @@ export const meta = {
 }
 
 export default function Demo() {
-  return <Textarea placeholder="Type your message here." />
+  return <Textarea aria-label="Message" placeholder="Type your message here." />
 }

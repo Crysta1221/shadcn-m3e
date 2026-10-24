@@ -26,14 +26,35 @@ export const meta = {
 
 export default function Demo() {
   return (
-    <ChartContainer config={config} className="h-56 max-w-lg">
-      <BarChart data={data}>
-        <CartesianGrid vertical={false} />
-        <XAxis dataKey="month" tickLine={false} axisLine={false} />
-        <ChartTooltip content={<ChartTooltipContent />} />
-        <Bar dataKey="desktop" fill="var(--color-desktop)" radius={4} />
-        <Bar dataKey="mobile" fill="var(--color-mobile)" radius={4} />
-      </BarChart>
-    </ChartContainer>
+    <figure className="w-full min-w-0">
+      <ChartContainer config={config} className="h-56 w-full max-w-lg min-w-0">
+        <BarChart data={data}>
+          <CartesianGrid vertical={false} />
+          <XAxis dataKey="month" tickLine={false} axisLine={false} />
+          <ChartTooltip content={<ChartTooltipContent />} />
+          <Bar dataKey="desktop" fill="var(--color-desktop)" radius={4} />
+          <Bar dataKey="mobile" fill="var(--color-mobile)" radius={4} />
+        </BarChart>
+      </ChartContainer>
+      <table className="sr-only">
+        <caption>Desktop and mobile visitors by month</caption>
+        <thead>
+          <tr>
+            <th scope="col">Month</th>
+            <th scope="col">Desktop</th>
+            <th scope="col">Mobile</th>
+          </tr>
+        </thead>
+        <tbody>
+          {data.map((row) => (
+            <tr key={row.month}>
+              <th scope="row">{row.month}</th>
+              <td>{row.desktop}</td>
+              <td>{row.mobile}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </figure>
   )
 }

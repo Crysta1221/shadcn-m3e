@@ -11,17 +11,21 @@ export const meta = {
 
 export default function Demo() {
   return (
-    <InputOTP maxLength={6}>
-      <InputOTPGroup>
-        <InputOTPSlot index={0} />
-        <InputOTPSlot index={1} />
-        <InputOTPSlot index={2} />
+    <InputOTP
+      aria-label="Verification code"
+      maxLength={6}
+      containerClassName="w-full max-w-sm"
+    >
+      <InputOTPGroup className="min-w-0 flex-1">
+        <InputOTPSlot index={0} className="min-w-0 flex-1" />
+        <InputOTPSlot index={1} className="min-w-0 flex-1" />
+        <InputOTPSlot index={2} className="min-w-0 flex-1" />
       </InputOTPGroup>
       <InputOTPSeparator />
-      <InputOTPGroup>
-        <InputOTPSlot index={3} />
-        <InputOTPSlot index={4} />
-        <InputOTPSlot index={5} />
+      <InputOTPGroup className="min-w-0 flex-1">
+        <InputOTPSlot index={3} className="min-w-0 flex-1" />
+        <InputOTPSlot index={4} className="min-w-0 flex-1" />
+        <InputOTPSlot index={5} className="min-w-0 flex-1" />
       </InputOTPGroup>
     </InputOTP>
   )

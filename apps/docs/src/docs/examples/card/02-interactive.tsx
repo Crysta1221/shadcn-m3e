@@ -12,7 +12,12 @@ export const meta = {
 
 export default function Demo() {
   return (
-    <Card variant="elevated" interactive tabIndex={0} className="w-64">
+    <Card
+      variant="elevated"
+      interactive
+      tabIndex={0}
+      className="w-full max-w-64"
+    >
       <CardHeader>
         <CardTitle>Clickable</CardTitle>
         <CardDescription>Try hovering me.</CardDescription>

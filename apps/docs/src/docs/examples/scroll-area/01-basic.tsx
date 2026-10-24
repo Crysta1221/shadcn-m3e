@@ -6,7 +6,7 @@ export const meta = {
 
 export default function Demo() {
   return (
-    <ScrollArea className="h-48 w-64 rounded-md border border-outline-variant">
+    <ScrollArea className="h-48 w-full max-w-64 rounded-md border border-outline-variant">
       <div className="flex flex-col gap-2 p-4 text-body-medium text-on-surface">
         {Array.from({ length: 30 }, (_, i) => (
           <span key={i}>Item {i + 1}</span>

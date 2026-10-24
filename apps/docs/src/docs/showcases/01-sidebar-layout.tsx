@@ -1,3 +1,4 @@
+import * as React from "react"
 import {
   Sidebar,
   SidebarContent,
@@ -21,8 +22,19 @@ export const meta = {
 }
 
 export default function Demo() {
+  const ref = React.useRef<HTMLDivElement>(null)
+  const [isMobile, setIsMobile] = React.useState(true)
+  React.useEffect(() => {
+    const element = ref.current
+    if (!element) return undefined
+    const observer = new ResizeObserver(([entry]) =>
+      setIsMobile(entry.contentRect.width < 768)
+    )
+    observer.observe(element)
+    return () => observer.disconnect()
+  }, [])
   return (
-    <SidebarProvider>
+    <SidebarProvider ref={ref} isMobile={isMobile}>
       <Sidebar>
         <SidebarContent>
           <SidebarGroup>

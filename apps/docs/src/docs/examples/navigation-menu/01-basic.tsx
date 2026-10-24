@@ -19,7 +19,7 @@ export default function Demo() {
         <NavigationMenuItem>
           <NavigationMenuTrigger>Getting started</NavigationMenuTrigger>
           <NavigationMenuContent>
-            <ul className="grid w-64 gap-1 p-2">
+            <ul className="grid w-full max-w-64 gap-1 p-2">
               <li>
                 <NavigationMenuLink href="#">Introduction</NavigationMenuLink>
               </li>

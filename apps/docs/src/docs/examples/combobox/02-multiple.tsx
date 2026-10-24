@@ -31,14 +31,17 @@ export default function Demo() {
       items={frameworks}
       defaultValue={[frameworks[0], frameworks[2]]}
     >
-      <ComboboxChips ref={anchor} className="w-80">
+      <ComboboxChips ref={anchor} className="w-full max-w-80">
         <ComboboxValue>
           {(values: string[]) => (
             <React.Fragment>
               {values.map((value) => (
                 <ComboboxChip key={value}>{value}</ComboboxChip>
               ))}
-              <ComboboxChipsInput placeholder="Add more" />
+              <ComboboxChipsInput
+                aria-label="Frameworks"
+                placeholder="Add more"
+              />
             </React.Fragment>
           )}
         </ComboboxValue>

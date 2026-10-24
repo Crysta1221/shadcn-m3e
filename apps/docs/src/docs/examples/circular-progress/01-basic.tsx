@@ -7,10 +7,14 @@ export const meta = {
 export default function Demo() {
   return (
     <>
-      <CircularProgress value={70} />
-      <CircularProgress value={70} variant="wavy" />
-      <CircularProgress />
-      <CircularProgress variant="wavy" />
+      <CircularProgress aria-label="Example progress" value={70} />
+      <CircularProgress
+        aria-label="Example progress"
+        value={70}
+        variant="wavy"
+      />
+      <CircularProgress aria-label="Example progress" />
+      <CircularProgress aria-label="Example progress" variant="wavy" />
     </>
   )
 }

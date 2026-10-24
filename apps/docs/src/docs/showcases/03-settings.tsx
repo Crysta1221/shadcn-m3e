@@ -73,7 +73,7 @@ export default function Demo() {
           <Slider defaultValue={[60]} aria-label="Notification volume" />
         </div>
       </CardContent>
-      <CardFooter className="justify-end gap-2">
+      <CardFooter className="flex-wrap justify-end gap-2">
         <Button variant="text">Cancel</Button>
         <Button>Save</Button>
       </CardFooter>

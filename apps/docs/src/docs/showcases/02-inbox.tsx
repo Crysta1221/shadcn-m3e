@@ -14,6 +14,8 @@ import {
   NavigationRail,
   NavigationRailHeader,
   NavigationRailItem,
+  NavigationBar,
+  NavigationBarItem,
 } from "@/components/m3e/navigation"
 import { SearchBar } from "@/components/m3e/search"
 
@@ -40,45 +42,59 @@ const MAIL = [
 
 export default function Demo() {
   return (
-    <div className="flex h-full">
-      <NavigationRail className="bg-surface-container-low">
-        <NavigationRailHeader>
-          <Fab aria-label="Compose">
-            <Icon name="edit" />
-          </Fab>
-        </NavigationRailHeader>
-        <NavigationRailItem icon="inbox" label="Inbox" badge={3} active />
-        <NavigationRailItem icon="star" label="Starred" />
-        <NavigationRailItem icon="send" label="Sent" />
-        <NavigationRailItem icon="delete" label="Trash" />
-      </NavigationRail>
-      <div className="flex min-w-0 flex-1 flex-col gap-4 overflow-y-auto p-4">
-        <SearchBar placeholder="Search mail" />
-        <ItemGroup>
-          {MAIL.map(([from, subject, preview, time]) => (
-            <Item
-              key={subject}
-              variant="segmented"
-              // oxlint-disable-next-line jsx-a11y/control-has-associated-label -- Item children fill the button via `render`
-              render={<button type="button" />}
-            >
-              <ItemMedia>
-                <Avatar>
-                  <AvatarFallback>{from[0]}</AvatarFallback>
-                </Avatar>
-              </ItemMedia>
-              <ItemContent>
-                <ItemTitle>{from}</ItemTitle>
-                <ItemDescription>
-                  {subject} — {preview}
-                </ItemDescription>
-              </ItemContent>
-              <ItemActions className="text-label-small text-on-surface-variant">
-                {time}
-              </ItemActions>
-            </Item>
-          ))}
-        </ItemGroup>
+    <div className="@container/inbox h-full">
+      <div className="relative flex h-full flex-col @xl/inbox:flex-row">
+        <NavigationRail className="hidden bg-surface-container-low @xl/inbox:flex">
+          <NavigationRailHeader>
+            <Fab aria-label="Compose">
+              <Icon name="edit" />
+            </Fab>
+          </NavigationRailHeader>
+          <NavigationRailItem icon="inbox" label="Inbox" badge={3} active />
+          <NavigationRailItem icon="star" label="Starred" />
+          <NavigationRailItem icon="send" label="Sent" />
+          <NavigationRailItem icon="delete" label="Trash" />
+        </NavigationRail>
+        <div className="flex min-w-0 flex-1 flex-col gap-4 overflow-y-auto p-4">
+          <SearchBar placeholder="Search mail" />
+          <ItemGroup>
+            {MAIL.map(([from, subject, preview, time]) => (
+              <Item
+                key={subject}
+                variant="segmented"
+                // oxlint-disable-next-line jsx-a11y/control-has-associated-label -- Item children fill the button via `render`
+                render={<button type="button" />}
+              >
+                <ItemMedia>
+                  <Avatar>
+                    <AvatarFallback>{from[0]}</AvatarFallback>
+                  </Avatar>
+                </ItemMedia>
+                <ItemContent>
+                  <ItemTitle>{from}</ItemTitle>
+                  <ItemDescription>
+                    {subject} — {preview}
+                  </ItemDescription>
+                </ItemContent>
+                <ItemActions className="text-label-small text-on-surface-variant">
+                  {time}
+                </ItemActions>
+              </Item>
+            ))}
+          </ItemGroup>
+        </div>
+        <Fab
+          aria-label="Compose"
+          className="absolute right-4 bottom-20 @xl/inbox:hidden"
+        >
+          <Icon name="edit" />
+        </Fab>
+        <NavigationBar className="shrink-0 @xl/inbox:hidden">
+          <NavigationBarItem icon="inbox" label="Inbox" active />
+          <NavigationBarItem icon="star" label="Starred" />
+          <NavigationBarItem icon="send" label="Sent" />
+          <NavigationBarItem icon="delete" label="Trash" />
+        </NavigationBar>
       </div>
     </div>
   )

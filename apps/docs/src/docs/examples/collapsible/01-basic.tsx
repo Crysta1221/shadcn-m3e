@@ -11,7 +11,7 @@ export const meta = {
 
 export default function Demo() {
   return (
-    <Collapsible className="flex w-64 flex-col gap-2">
+    <Collapsible className="flex w-full max-w-64 flex-col gap-2">
       <CollapsibleTrigger render={<Button variant="tonal" />}>
         Toggle details
       </CollapsibleTrigger>

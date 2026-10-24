@@ -7,7 +7,7 @@ export const meta = {
 
 export default function Demo() {
   return (
-    <div className="w-72">
+    <div className="w-full max-w-72">
       <AspectRatio ratio={16 / 9}>
         <div className="flex size-full items-center justify-center rounded-lg bg-tertiary-container text-title-large text-on-tertiary-container">
           16:9

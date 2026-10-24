@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router"
 
 import { Button } from "@/components/m3e/button"
 import { Icon } from "@/components/m3e/icon"
+import { PortalContainer } from "@/components/m3e/portal-container"
 import { cn } from "@/lib/utils"
 
 import { CodeBlock } from "./code-block"
@@ -30,6 +31,7 @@ function ExampleView({
   const { id: exampleId, meta, Component, code } = example
   const [open, setOpen] = React.useState(false)
   const id = React.useId()
+  const [frame, setFrame] = React.useState<HTMLDivElement | null>(null)
 
   return (
     <section
@@ -72,12 +74,13 @@ function ExampleView({
 
       <div className="overflow-hidden rounded-lg border border-outline-variant">
         <div
+          ref={meta.frame ? setFrame : undefined}
           className={cn(
             "bg-surface",
             meta.frame
               ? FRAME
               : cn(
-                  "p-6",
+                  "min-w-0 p-1 sm:p-6",
                   meta.layout === "block"
                     ? "block"
                     : "flex min-h-32 flex-wrap items-center justify-center gap-3"
@@ -85,7 +88,13 @@ function ExampleView({
           )}
           style={meta.frame ? { height: meta.frame } : undefined}
         >
-          <Component />
+          {meta.frame ? (
+            <PortalContainer container={frame}>
+              <Component />
+            </PortalContainer>
+          ) : (
+            <Component />
+          )}
         </div>
         <div className="flex justify-end border-t border-outline-variant bg-surface-container-low px-2 py-1">
           <Button
