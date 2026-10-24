@@ -17,6 +17,9 @@ type FabMenuContextValue = {
   open: boolean
   setOpen: (open: boolean) => void
   count: React.RefObject<number>
+  trigger: React.RefObject<HTMLButtonElement | null>
+  openAt: (last: boolean) => void
+  menuId: string
 }
 const FabMenuContext = React.createContext<FabMenuContextValue | null>(null)
 
@@ -44,9 +47,19 @@ function FabMenu({
   const open = openProp ?? inner
   const ref = React.useRef<HTMLDivElement>(null)
   const count = React.useRef(0)
+  const trigger = React.useRef<HTMLButtonElement>(null)
+  const focusLast = React.useRef(false)
+  const menuId = React.useId()
 
   const setOpen = React.useCallback(
     (next: boolean) => {
+      if (
+        !next &&
+        ref.current
+          ?.querySelector('[role="menu"]')
+          ?.contains(document.activeElement)
+      )
+        trigger.current?.focus()
       setInner(next)
       onOpenChange?.(next)
     },
@@ -55,12 +68,25 @@ function FabMenu({
 
   React.useEffect(() => {
     if (!open) return undefined
+    const items = ref.current?.querySelectorAll<HTMLElement>(
+      '[role="menuitem"]:not([disabled]):not([aria-disabled="true"])'
+    )
+    items?.[focusLast.current ? items.length - 1 : 0]?.focus()
+    focusLast.current = false
     const onDown = (e: PointerEvent) => {
       if (!(e.target instanceof Node && ref.current?.contains(e.target)))
         setOpen(false)
     }
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false)
+      if (
+        e.key === "Escape" &&
+        e.target instanceof Node &&
+        ref.current?.contains(e.target)
+      ) {
+        e.preventDefault()
+        setOpen(false)
+        trigger.current?.focus()
+      }
     }
     document.addEventListener("pointerdown", onDown)
     document.addEventListener("keydown", onKey)
@@ -71,7 +97,19 @@ function FabMenu({
   }, [open, setOpen])
 
   return (
-    <FabMenuContext.Provider value={{ open, setOpen, count }}>
+    <FabMenuContext.Provider
+      value={{
+        open,
+        setOpen,
+        count,
+        trigger,
+        openAt: (last) => {
+          focusLast.current = last
+          setOpen(true)
+        },
+        menuId,
+      }}
+    >
       <div
         ref={ref}
         data-slot="fab-menu"
@@ -94,15 +132,33 @@ function FabMenuTrigger({
   className,
   icon,
   children,
+  onClick,
+  onKeyDown,
   ...props
 }: FabMenuTriggerProps) {
-  const { open, setOpen } = useFabMenu()
+  const { open, setOpen, trigger, openAt, menuId } = useFabMenu()
   return (
     <ButtonPrimitive
+      ref={trigger}
       data-slot="fab-menu-trigger"
       aria-expanded={open}
       aria-haspopup="menu"
-      onClick={() => setOpen(!open)}
+      aria-controls={menuId}
+      aria-label={children ? undefined : open ? "Close actions" : "Create"}
+      onClick={(event) => {
+        onClick?.(event)
+        if (!event.defaultPrevented) setOpen(!open)
+      }}
+      onKeyDown={(event) => {
+        onKeyDown?.(event)
+        if (
+          event.defaultPrevented ||
+          !["ArrowDown", "ArrowUp"].includes(event.key)
+        )
+          return
+        event.preventDefault()
+        openAt(event.key === "ArrowUp")
+      }}
       className={cn(
         fabVariants({
           color: open ? "primary" : "primary-container",
@@ -143,13 +199,48 @@ function FabMenuContent({
   className,
   children,
   align = "end",
+  onKeyDown,
   ...props
 }: React.ComponentProps<"div"> & { align?: "start" | "end" }) {
-  const { open } = useFabMenu()
+  const { open, menuId, setOpen } = useFabMenu()
   const items = React.Children.toArray(children)
   return (
     <div
       role="menu"
+      tabIndex={-1}
+      id={menuId}
+      aria-label="Actions"
+      aria-hidden={!open || undefined}
+      inert={!open}
+      onKeyDown={(event) => {
+        onKeyDown?.(event)
+        if (event.defaultPrevented) return
+        if (event.key === "Tab") {
+          setTimeout(() => setOpen(false), 0)
+          return
+        }
+        const controls = Array.from(
+          event.currentTarget.querySelectorAll<HTMLElement>(
+            '[role="menuitem"]:not([disabled]):not([aria-disabled="true"])'
+          )
+        )
+        const index = controls.findIndex(
+          (item) => item === document.activeElement
+        )
+        const next =
+          event.key === "Home"
+            ? 0
+            : event.key === "End"
+              ? controls.length - 1
+              : event.key === "ArrowDown"
+                ? (index + 1) % controls.length
+                : event.key === "ArrowUp"
+                  ? (index - 1 + controls.length) % controls.length
+                  : -1
+        if (next < 0) return
+        event.preventDefault()
+        controls[next]?.focus()
+      }}
       data-slot="fab-menu-content"
       data-open={open || undefined}
       className={cn(
@@ -191,7 +282,7 @@ function FabMenuItem({
     <ButtonPrimitive
       role="menuitem"
       data-slot="fab-menu-item"
-      tabIndex={open ? 0 : -1}
+      tabIndex={-1}
       onClick={(e) => {
         onClick?.(e)
         setOpen(false)

@@ -185,6 +185,8 @@ function TimePicker({
             <button
               type="button"
               className={box("hours")}
+              aria-label={`Hours: ${pad(shownHours)}`}
+              aria-pressed={field === "hours"}
               onClick={() => setField("hours")}
             >
               {pad(shownHours)}
@@ -225,6 +227,8 @@ function TimePicker({
             <button
               type="button"
               className={box("minutes")}
+              aria-label={`Minutes: ${pad(value.minutes)}`}
+              aria-pressed={field === "minutes"}
               onClick={() => setField("minutes")}
             >
               {pad(value.minutes)}

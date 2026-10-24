@@ -37,6 +37,12 @@ type SearchViewProps = Omit<React.ComponentProps<"div">, "onChange"> & {
   "aria-label"?: string
 }
 
+const SearchContext = React.createContext<{
+  activeId: string | null
+  activate: (id: string) => void
+  close: () => void
+} | null>(null)
+
 function SearchView({
   value: valueProp,
   onValueChange,
@@ -61,6 +67,7 @@ function SearchView({
   const ref = React.useRef<HTMLDivElement>(null)
   const input = React.useRef<HTMLInputElement>(null)
   const listId = React.useId()
+  const [activeId, setActiveId] = React.useState<string | null>(null)
 
   const setValue = (v: string) => {
     setInnerValue(v)
@@ -84,9 +91,15 @@ function SearchView({
         setOpen(false)
     }
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
+      if (
+        e.key === "Escape" &&
+        e.target instanceof Node &&
+        ref.current?.contains(e.target)
+      ) {
+        e.preventDefault()
+        input.current?.focus()
         setOpen(false)
-        input.current?.blur()
+        setActiveId(null)
       }
     }
     document.addEventListener("pointerdown", onDown)
@@ -97,6 +110,15 @@ function SearchView({
     }
   }, [open, variant, setOpen])
 
+  const close = React.useCallback(() => {
+    input.current?.focus()
+    setOpen(false)
+    setActiveId(null)
+  }, [setOpen])
+  const context = React.useMemo(
+    () => ({ activeId, activate: setActiveId, close }),
+    [activeId, close]
+  )
   const full = variant === "fullscreen"
   const sm = size === "sm" && !full
   const header = (
@@ -118,7 +140,11 @@ function SearchView({
             size="icon"
             aria-label="Back"
             className="text-on-surface"
-            onClick={() => setOpen(false)}
+            onClick={() => {
+              input.current?.focus()
+              setOpen(false)
+              setActiveId(null)
+            }}
           >
             <Icon name="arrow_back" />
           </Button>
@@ -130,17 +156,59 @@ function SearchView({
         ref={input}
         role="combobox"
         aria-expanded={open}
-        aria-controls={listId}
+        aria-controls={open ? listId : undefined}
+        aria-autocomplete="list"
+        aria-activedescendant={open ? (activeId ?? undefined) : undefined}
         aria-label={ariaLabel}
         type="search"
         value={value}
         placeholder={placeholder}
-        onChange={(e) => setValue(e.target.value)}
+        onChange={(e) => {
+          setValue(e.target.value)
+          setActiveId(null)
+        }}
         onFocus={() => setOpen(true)}
         onKeyDown={(e) => {
-          if (e.key === "Enter") onSubmit?.(value)
-          if (e.key === "ArrowDown")
-            ref.current?.querySelector<HTMLElement>('[role="option"]')?.focus()
+          const options = Array.from(
+            ref.current?.querySelectorAll<HTMLButtonElement>(
+              '[role="option"]:not([disabled]):not([aria-disabled="true"])'
+            ) ?? []
+          )
+          const current = options.findIndex((option) => option.id === activeId)
+          if (e.key === "Enter") {
+            if (open && current >= 0) {
+              e.preventDefault()
+              options[current].click()
+            } else onSubmit?.(value)
+            return
+          }
+          if (e.key === "Tab") {
+            setOpen(false)
+            setActiveId(null)
+            return
+          }
+          if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+            e.preventDefault()
+            setOpen(true)
+            const next =
+              e.key === "ArrowDown"
+                ? (current + 1) % options.length
+                : current < 0
+                  ? options.length - 1
+                  : (current - 1 + options.length) % options.length
+            const option = options[next]
+            if (option) {
+              setActiveId(option.id)
+              option.scrollIntoView({ block: "nearest" })
+            }
+          } else if (activeId && (e.key === "Home" || e.key === "End")) {
+            e.preventDefault()
+            const option = options[e.key === "Home" ? 0 : options.length - 1]
+            if (option) {
+              setActiveId(option.id)
+              option.scrollIntoView({ block: "nearest" })
+            }
+          }
         }}
         className="h-full min-w-0 flex-1 bg-transparent text-body-large text-on-surface caret-primary outline-none placeholder:text-on-surface-variant [&::-webkit-search-cancel-button]:hidden"
       />
@@ -184,6 +252,7 @@ function SearchView({
     <div
       id={listId}
       role="listbox"
+      aria-label={`${ariaLabel} suggestions`}
       data-slot="search-results"
       className={cn(
         "overflow-y-auto overscroll-contain border-t border-outline",
@@ -196,53 +265,57 @@ function SearchView({
 
   if (full) {
     return (
+      <SearchContext.Provider value={context}>
+        <div
+          ref={ref}
+          data-slot="search-view"
+          data-variant="fullscreen"
+          data-open={open || undefined}
+          className={cn(
+            open
+              ? "fixed inset-0 z-50 bg-surface-container-high"
+              : outlined
+                ? "relative rounded-full border border-outline bg-surface"
+                : "relative rounded-full bg-surface-container-high shadow-elevation-3",
+            "transition-shape motion-spatial-default",
+            className
+          )}
+          {...props}
+        >
+          {header}
+          {open && results}
+        </div>
+      </SearchContext.Provider>
+    )
+  }
+
+  return (
+    <SearchContext.Provider value={context}>
       <div
         ref={ref}
         data-slot="search-view"
-        data-variant="fullscreen"
+        data-variant="docked"
         data-open={open || undefined}
         className={cn(
-          open
-            ? "fixed inset-0 z-50 bg-surface-container-high"
-            : outlined
-              ? "relative rounded-full border border-outline bg-surface"
-              : "relative rounded-full bg-surface-container-high shadow-elevation-3",
-          "transition-shape motion-spatial-default",
+          "relative w-full overflow-hidden rounded-2xl transition-shape motion-spatial-default",
+          outlined
+            ? "border border-outline bg-surface"
+            : "bg-surface-container-high shadow-elevation-3",
           className
         )}
         {...props}
       >
         {header}
-        {open && results}
+        <div
+          className={cn(
+            "grid transition-[grid-template-rows] motion-spatial-default",
+            open ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+          )}
+        >
+          <div className="min-h-0 overflow-hidden">{open && results}</div>
+        </div>
       </div>
-    )
-  }
-
-  return (
-    <div
-      ref={ref}
-      data-slot="search-view"
-      data-variant="docked"
-      data-open={open || undefined}
-      className={cn(
-        "relative w-full overflow-hidden rounded-2xl transition-shape motion-spatial-default",
-        outlined
-          ? "border border-outline bg-surface"
-          : "bg-surface-container-high shadow-elevation-3",
-        className
-      )}
-      {...props}
-    >
-      {header}
-      <div
-        className={cn(
-          "grid transition-[grid-template-rows] motion-spatial-default",
-          open ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
-        )}
-      >
-        <div className="min-h-0 overflow-hidden">{open && results}</div>
-      </div>
-    </div>
+    </SearchContext.Provider>
   )
 }
 
@@ -305,19 +378,37 @@ function SearchResult({
   trailing,
   className,
   children,
+  id: idProp,
+  onClick,
+  onPointerMove,
   ...props
 }: React.ComponentProps<"button"> & {
   icon?: React.ReactNode
   trailing?: React.ReactNode
 }) {
+  const autoId = React.useId()
+  const id = idProp ?? autoId
+  const context = React.useContext(SearchContext)
   return (
     <button
       type="button"
       role="option"
-      aria-selected={false}
+      id={id}
+      tabIndex={context ? -1 : undefined}
+      aria-selected={context?.activeId === id}
+      onPointerMove={(event) => {
+        onPointerMove?.(event)
+        if (!event.defaultPrevented && !props.disabled) context?.activate(id)
+      }}
+      onMouseDown={(event) => event.preventDefault()}
+      onClick={(event) => {
+        onClick?.(event)
+        if (!event.defaultPrevented) context?.close()
+      }}
       data-slot="search-result"
       className={cn(
         "state-layer relative flex h-14 w-full cursor-pointer items-center gap-4 px-4 text-left text-body-large text-on-surface focus-ring-inset outline-none",
+        context?.activeId === id && "bg-on-surface/8",
         className
       )}
       {...props}

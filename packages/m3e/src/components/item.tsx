@@ -9,7 +9,7 @@ import { Separator } from "@/components/m3e/separator"
 function ItemGroup({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
-      role="list"
+      role="group"
       data-slot="item-group"
       className={cn(
         "group/item-group flex w-full flex-col gap-4 has-data-[size=sm]:gap-2.5 has-data-[size=xs]:gap-2 has-data-[variant=segmented]:gap-0.5",
