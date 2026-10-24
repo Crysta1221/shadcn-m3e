@@ -12,6 +12,8 @@ export default function Demo() {
   return (
     <div className="flex max-w-md flex-col gap-2">
       <Slider
+        aria-label="Volume"
+        showValueLabel
         value={[value]}
         onValueChange={(v) => setValue(Array.isArray(v) ? v[0] : v)}
         min={0}

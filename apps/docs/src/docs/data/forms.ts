@@ -82,6 +82,34 @@ export const forms: DocEntry[] = [
     imports: [{ from: "slider", names: ["Slider"] }],
     notes: [
       'Pass two values for a range slider. Vertical sliders use orientation="vertical".',
+      "Give the slider an aria-label or aria-labelledby. For a range, getAriaLabel names each handle separately.",
+      "showValueLabel displays a value bubble during dragging and keyboard focus. Escape dismisses it. format and locale control the displayed number.",
+    ],
+    props: [
+      {
+        title: "Slider",
+        rows: [
+          {
+            name: "showValueLabel",
+            type: "boolean",
+            default: "false",
+            description:
+              "Show the active handle's current value during pointer interaction or keyboard focus.",
+          },
+          {
+            name: "getAriaLabel",
+            type: "(index: number) => string",
+            description:
+              "Accessible name of each handle, such as minimum and maximum price.",
+          },
+          {
+            name: "getAriaValueText",
+            type: "(formattedValue: string, value: number, index: number) => string",
+            description:
+              "Readable value, including units or meaning where a number alone is insufficient.",
+          },
+        ],
+      },
     ],
   },
   {
