@@ -1,0 +1,27 @@
+{
+  "title": "Accessibility and scrolling screens",
+  "icon": "tune",
+  "items": [
+    { "type": "feat", "text": "Slider value labels while dragging", "pr": 7 },
+    {
+      "type": "feat",
+      "text": "Scrolling screens in the Playground",
+      "pr": 7
+    },
+    {
+      "type": "feat",
+      "text": "Extended FABs that collapse on scroll",
+      "pr": 7
+    },
+    {
+      "type": "fix",
+      "text": "Keyboard and focus in pickers and menus",
+      "pr": 7
+    },
+    {
+      "type": "fix",
+      "text": "Docs examples reflow on narrow screens",
+      "pr": 7
+    }
+  ]
+}
